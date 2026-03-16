@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": ["Bash(git switch:*)"]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read fp; [[ \"$fp\" =~ \\.tsx?$ ]] && npx prettier --write \"$fp\"; }"
+          }
+        ]
+      }
+    ]
+  }
+}

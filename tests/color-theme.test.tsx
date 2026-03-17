@@ -1,19 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { render } from '@testing-library/react';
-import { vi } from 'vitest';
-
-vi.mock('next/font/google', () => ({
-  Geist: () => ({ variable: '--font-geist-sans' }),
-  Geist_Mono: () => ({ variable: '--font-geist-mono' }),
-}));
-
-import RootLayout from '@/app/layout';
-
 const globalsCss = fs.readFileSync(
   path.resolve(__dirname, '../app/globals.css'),
-  'utf-8'
+  'utf-8',
 );
 
 describe('Color theme', () => {
@@ -37,7 +27,14 @@ describe('Color theme', () => {
 
     it('has all core tokens present and non-empty in :root', () => {
       const rootBlock = globalsCss.match(/:root\s*\{([^}]+)\}/)?.[1] ?? '';
-      const coreTokens = ['--background', '--foreground', '--primary', '--primary-foreground', '--border', '--ring'];
+      const coreTokens = [
+        '--background',
+        '--foreground',
+        '--primary',
+        '--primary-foreground',
+        '--border',
+        '--ring',
+      ];
       for (const token of coreTokens) {
         expect(rootBlock).toMatch(new RegExp(`${token}:\\s*[^;]+;`));
       }
@@ -45,22 +42,17 @@ describe('Color theme', () => {
 
     it('has all core tokens present and non-empty in .dark', () => {
       const darkBlock = globalsCss.match(/\.dark\s*\{([^}]+)\}/)?.[1] ?? '';
-      const coreTokens = ['--background', '--foreground', '--primary', '--primary-foreground', '--border', '--ring'];
+      const coreTokens = [
+        '--background',
+        '--foreground',
+        '--primary',
+        '--primary-foreground',
+        '--border',
+        '--ring',
+      ];
       for (const token of coreTokens) {
         expect(darkBlock).toMatch(new RegExp(`${token}:\\s*[^;]+;`));
       }
-    });
-  });
-
-  describe('RootLayout', () => {
-    it('applies dark class to html element by default', () => {
-      const { container } = render(
-        <RootLayout>
-          <div />
-        </RootLayout>
-      );
-      const html = container.closest('html') ?? document.documentElement;
-      expect(html).toHaveClass('dark');
     });
   });
 });

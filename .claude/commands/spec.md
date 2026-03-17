@@ -20,6 +20,8 @@ Then save the spec file to disk and print a short summary of what you did.
 
 ## Step 1. Check the current branch
 
+- Current git status: !`git status`
+
 Check the current Git branch, and abort this entire process if there are any uncommitted, unstaged, or untracked files in the working directory. Tell the user to commit or stash changes before proceeding, and DO NOT GO ANY FURTHER.
 
 ## Step 2. Parse the arguments

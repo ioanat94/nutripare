@@ -1,7 +1,8 @@
-import { cn } from "@/lib/utils";
-import { getTranslation } from "@firebase-oss/ui-core";
-import { useUI, PolicyContext } from "@firebase-oss/ui-react";
-import { cloneElement, useContext } from "react";
+import { PolicyContext, useUI } from '@firebase-oss/ui-react';
+import { cloneElement, useContext } from 'react';
+
+import { cn } from '@/lib/utils';
+import { getTranslation } from '@firebase-oss/ui-core';
 
 export function Policies() {
   const ui = useUI();
@@ -12,34 +13,38 @@ export function Policies() {
   }
 
   const { termsOfServiceUrl, privacyPolicyUrl, onNavigate } = policies;
-  const termsAndPrivacyText = getTranslation(ui, "messages", "termsAndPrivacy");
+  const termsAndPrivacyText = getTranslation(ui, 'messages', 'termsAndPrivacy');
   const parts = termsAndPrivacyText.split(/(\{tos\}|\{privacy\})/);
 
-  const className = cn("hover:underline font-semibold");
+  const className = cn('hover:underline font-semibold');
   const Handler = onNavigate ? (
     <button className={className} />
   ) : (
-    <a target="_blank" rel="noopener noreferrer" className={className} />
+    <a target='_blank' rel='noopener noreferrer' className={className} />
   );
 
   return (
-    <div className="text-text-muted text-center text-xs">
+    <div className='text-text-muted text-center text-xs'>
       {parts.map((part: string, index: number) => {
-        if (part === "{tos}") {
+        if (part === '{tos}') {
           return cloneElement(Handler, {
             key: index,
-            onClick: onNavigate ? () => onNavigate(termsOfServiceUrl) : undefined,
+            onClick: onNavigate
+              ? () => onNavigate(termsOfServiceUrl)
+              : undefined,
             href: onNavigate ? undefined : termsOfServiceUrl,
-            children: getTranslation(ui, "labels", "termsOfService"),
+            children: getTranslation(ui, 'labels', 'termsOfService'),
           });
         }
 
-        if (part === "{privacy}") {
+        if (part === '{privacy}') {
           return cloneElement(Handler, {
             key: index,
-            onClick: onNavigate ? () => onNavigate(privacyPolicyUrl) : undefined,
+            onClick: onNavigate
+              ? () => onNavigate(privacyPolicyUrl)
+              : undefined,
             href: onNavigate ? undefined : privacyPolicyUrl,
-            children: getTranslation(ui, "labels", "privacyPolicy"),
+            children: getTranslation(ui, 'labels', 'privacyPolicy'),
           });
         }
 

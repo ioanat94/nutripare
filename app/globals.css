@@ -1,6 +1,21 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@firebase-oss/ui-styles/tailwind';
+
+/* Firebase UI's @variant dark uses :root:is(.dark *) which never matches with
+   class-based dark mode. Override the fui variables here so they inherit from
+   our theme tokens, which correctly switch via .dark {} */
+:root {
+  --fui-primary: var(--primary);
+  --fui-primary-surface: var(--primary-foreground);
+  --fui-text: var(--foreground);
+  --fui-text-muted: var(--muted-foreground);
+  --fui-background: var(--card);
+  --fui-border: var(--border);
+  --fui-input: var(--input);
+  --fui-error: var(--destructive);
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -63,7 +78,7 @@
   --secondary: oklch(0.94 0.01 171);
   --secondary-foreground: oklch(0.13 0.02 220);
   --muted: oklch(0.94 0.005 220);
-  --muted-foreground: oklch(0.50 0.01 220);
+  --muted-foreground: oklch(0.5 0.01 220);
   --accent: oklch(0.92 0.05 171);
   --accent-foreground: oklch(0.35 0.12 171);
   --destructive: oklch(0.53 0.24 27);
@@ -76,9 +91,9 @@
   --ring: oklch(0.55 0.17 171);
   --chart-1: oklch(0.55 0.17 171);
   --chart-2: oklch(0.55 0.15 210);
-  --chart-3: oklch(0.50 0.18 260);
-  --chart-4: oklch(0.60 0.14 140);
-  --chart-5: oklch(0.55 0.20 30);
+  --chart-3: oklch(0.5 0.18 260);
+  --chart-4: oklch(0.6 0.14 140);
+  --chart-5: oklch(0.55 0.2 30);
   --radius: 0.625rem;
   --sidebar: oklch(0.96 0.005 220);
   --sidebar-foreground: oklch(0.13 0.02 220);
@@ -117,8 +132,8 @@
   --chart-2: oklch(0.75 0.15 210);
   --chart-3: oklch(0.65 0.18 260);
   --chart-4: oklch(0.78 0.14 140);
-  --chart-5: oklch(0.60 0.20 30);
-  --sidebar: oklch(0.10 0.02 220);
+  --chart-5: oklch(0.6 0.2 30);
+  --sidebar: oklch(0.1 0.02 220);
   --sidebar-foreground: oklch(0.96 0.005 220);
   --sidebar-primary: oklch(0.91 0.17 171);
   --sidebar-primary-foreground: oklch(0.13 0.02 220);
@@ -135,4 +150,25 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+}
+
+/* Reserve space for firebase-oss error messages so the form doesn't jump.
+   The error component renders null when empty (no DOM node), so we pre-reserve
+   the space via padding-bottom = gap-2 (0.5rem) + text-xs line-height (1rem). */
+.fui-screen {
+  width: 25rem;
+  max-width: 100%;
+  margin: 0 1rem;
+}
+
+.fui-form fieldset label {
+  padding-bottom: 1.5rem;
+}
+
+.fui-form fieldset label:has(.fui-error) {
+  padding-bottom: 0;
+}
+
+.fui-form fieldset {
+  margin-bottom: 1rem;
 }

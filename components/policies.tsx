@@ -1,7 +1,7 @@
 import { PolicyContext, useUI } from '@firebase-oss/ui-react';
 import { cloneElement, useContext } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/tailwind';
 import { getTranslation } from '@firebase-oss/ui-core';
 
 export function Policies() {

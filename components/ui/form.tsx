@@ -91,7 +91,7 @@ function FormLabel({
     <Label
       data-slot='form-label'
       data-error={!!error}
-      className={cn('data-[error=true]:text-destructive', className)}
+      className={cn(className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -145,7 +145,7 @@ function FormMessage({
     <p
       data-slot='form-message'
       id={formMessageId}
-      className={cn('text-destructive text-sm leading-5 min-h-5', className)}
+      className={cn('text-destructive text-sm leading-5 empty:hidden', className)}
       {...props}
     >
       {body}

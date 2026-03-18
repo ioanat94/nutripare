@@ -6,6 +6,7 @@ import type { FirestoreUser } from '@/types/firestore';
 
 const mockPush = vi.fn();
 const mockUseAuth = vi.fn();
+let mockPathname = '/';
 
 vi.mock('@/contexts/auth-context', () => ({
   useAuth: () => mockUseAuth(),
@@ -13,13 +14,14 @@ vi.mock('@/contexts/auth-context', () => ({
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush, replace: vi.fn() }),
-  usePathname: () => '/',
+  usePathname: () => mockPathname,
 }));
 
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.classList.remove('dark');
   mockPush.mockClear();
+  mockPathname = '/';
   mockUseAuth.mockReturnValue({ user: null, loading: false });
 });
 
@@ -97,6 +99,14 @@ describe('Navbar', () => {
   });
 
   it('clicking user icon while logged out navigates to /login with redirect param', () => {
+    mockUseAuth.mockReturnValue({ user: null, loading: false });
+    render(<Navbar />);
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    expect(mockPush).toHaveBeenCalledWith('/login?redirect=%2F');
+  });
+
+  it('clicking user icon while logged out on /login redirects to / after sign-in', () => {
+    mockPathname = '/login';
     mockUseAuth.mockReturnValue({ user: null, loading: false });
     render(<Navbar />);
     fireEvent.click(screen.getByRole('button', { name: /sign in/i }));

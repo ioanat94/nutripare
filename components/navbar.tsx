@@ -17,7 +17,8 @@ export function Navbar() {
     if (user) {
       router.push('/settings');
     } else {
-      router.push('/login?redirect=' + encodeURIComponent(pathname));
+      const redirect = pathname === '/login' ? '/' : pathname;
+      router.push('/login?redirect=' + encodeURIComponent(redirect));
     }
   }
 

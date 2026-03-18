@@ -151,24 +151,3 @@
     @apply bg-background text-foreground font-sans;
   }
 }
-
-/* Reserve space for firebase-oss error messages so the form doesn't jump.
-   The error component renders null when empty (no DOM node), so we pre-reserve
-   the space via padding-bottom = gap-2 (0.5rem) + text-xs line-height (1rem). */
-.fui-screen {
-  width: 25rem;
-  max-width: 100%;
-  margin: 0 1rem;
-}
-
-.fui-form fieldset label {
-  padding-bottom: 1.5rem;
-}
-
-.fui-form fieldset label:has(.fui-error) {
-  padding-bottom: 0;
-}
-
-.fui-form fieldset {
-  margin-bottom: 1rem;
-}

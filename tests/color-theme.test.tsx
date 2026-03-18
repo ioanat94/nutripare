@@ -9,7 +9,10 @@ const globalsCss = fs.readFileSync(
 describe('Color theme', () => {
   describe('globals.css', () => {
     it('contains --primary in :root block with a non-grey value', () => {
-      const rootBlock = globalsCss.match(/:root\s*\{([^}]+)\}/)?.[1] ?? '';
+      const rootBlock =
+        [...globalsCss.matchAll(/:root\s*\{([^}]+)\}/g)].find((m) =>
+          m[1].includes('--primary:'),
+        )?.[1] ?? '';
       const primaryMatch = rootBlock.match(/--primary:\s*([^;]+);/);
       expect(primaryMatch).not.toBeNull();
       const value = primaryMatch![1].trim();
@@ -26,7 +29,10 @@ describe('Color theme', () => {
     });
 
     it('has all core tokens present and non-empty in :root', () => {
-      const rootBlock = globalsCss.match(/:root\s*\{([^}]+)\}/)?.[1] ?? '';
+      const rootBlock =
+        [...globalsCss.matchAll(/:root\s*\{([^}]+)\}/g)].find((m) =>
+          m[1].includes('--primary:'),
+        )?.[1] ?? '';
       const coreTokens = [
         '--background',
         '--foreground',

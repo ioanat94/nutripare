@@ -32,7 +32,7 @@ export function SignInAuthScreen({
   useOnUserAuthenticated(onSignIn);
 
   return (
-    <div className='max-w-sm mx-auto'>
+    <div className='w-full max-w-lg mx-auto'>
       <Card>
         <CardHeader>
           <CardTitle>{titleText}</CardTitle>

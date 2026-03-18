@@ -103,9 +103,7 @@ export function SignInAuthForm(props: SignInAuthFormProps) {
         <Button type='submit' disabled={ui.state !== 'idle'}>
           {getTranslation(ui, 'labels', 'signIn')}
         </Button>
-        {form.formState.errors.root && (
-          <FormMessage>{form.formState.errors.root.message}</FormMessage>
-        )}
+        <FormMessage>{form.formState.errors.root?.message}</FormMessage>
         {props.onSignUpClick ? (
           <>
             <Button

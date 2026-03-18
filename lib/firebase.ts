@@ -1,4 +1,6 @@
 import { getApps, initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 import { initializeUI } from '@firebase-oss/ui-core';
 
@@ -18,5 +20,8 @@ const app =
 export const ui = initializeUI({
   app,
 });
+
+export const auth = getAuth(app);
+export const db = getFirestore(app);
 
 export default app;

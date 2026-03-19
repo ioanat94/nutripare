@@ -126,6 +126,19 @@ export default function ComparePage() {
             onDismiss={handleDismiss}
             onClearAll={handleClearAll}
           />
+          <p className='mt-4 text-xs text-muted-foreground'>
+            Data sourced from{' '}
+            <a
+              href='https://world.openfoodfacts.org'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='underline underline-offset-2 hover:text-foreground transition-colors'
+            >
+              Open Food Facts
+            </a>
+            , a free, collaborative database. Nutritional values may be
+            incomplete or inaccurate.
+          </p>
         </div>
       )}
     </main>

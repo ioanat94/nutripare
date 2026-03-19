@@ -61,21 +61,23 @@ export function NutritionTable({
         </p>
         <button
           onClick={onClearAll}
-          className='text-sm text-muted-foreground transition-colors hover:text-destructive'
+          className='cursor-pointer text-sm text-muted-foreground transition-colors hover:text-destructive'
         >
           Clear all
         </button>
       </div>
 
-      <Table>
+      <Table className='w-auto'>
         <TableHeader>
           <TableRow className='hover:bg-transparent'>
-            {/* Empty corner cell */}
-            <TableHead className='sticky left-0 z-10 bg-background w-40' />
+            {/* Corner cell — table-wide qualifier */}
+            <TableHead className='sticky left-0 z-10 bg-background w-40 align-bottom pb-3 text-right text-xs font-normal text-muted-foreground'>
+              per 100g
+            </TableHead>
             {products.map((p) => {
               const name = p.product_name || 'Unknown product';
               return (
-                <TableHead key={p.code} scope='col' className='min-w-[140px] align-top pb-3'>
+                <TableHead key={p.code} scope='col' className='min-w-[140px] max-w-[220px] align-top pb-3'>
                   <div className='flex items-start justify-between gap-2'>
                     <div className='min-w-0 flex-1'>
                       <span
@@ -92,7 +94,7 @@ export function NutritionTable({
                     <button
                       onClick={() => onDismiss(p.code)}
                       aria-label={`Dismiss ${name}`}
-                      className='flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+                      className='flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
                     >
                       <X className='size-3.5' aria-hidden='true' />
                     </button>

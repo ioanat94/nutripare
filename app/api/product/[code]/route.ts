@@ -8,6 +8,7 @@ export async function GET(
   const url = `https://world.openfoodfacts.net/api/v2/product/${code}?fields=code,product_name,nutriments`;
   const res = await fetch(url, {
     headers: { Authorization: 'Basic ' + btoa('off:off') },
+    next: { revalidate: 3600 },
   });
   const data = await res.json();
   return NextResponse.json(data);

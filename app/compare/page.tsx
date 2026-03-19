@@ -1,15 +1,18 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { Loader2, ScanBarcode, TriangleAlert } from 'lucide-react';
+import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
 
-import { NutritionTable } from '@/components/nutrition-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
+import { NutritionTable } from '@/components/nutrition-table';
 import type { ProductNutrition } from '@/types/openfoodfacts';
+import { useState } from 'react';
 
-function replaceOrAppend(prev: ProductNutrition[], next: ProductNutrition): ProductNutrition[] {
+function replaceOrAppend(
+  prev: ProductNutrition[],
+  next: ProductNutrition,
+): ProductNutrition[] {
   const idx = prev.findIndex((p) => p.code === next.code);
   if (idx !== -1) {
     const updated = [...prev];
@@ -44,44 +47,87 @@ export default function ComparePage() {
       }
     }
     setNotFoundCodes(notFound);
+    setInput('');
     setLoading(false);
   }
 
   function handleDismiss(code: string) {
-    setProducts((prev) => prev.filter((p) => p.code !== code));
+    setProducts((prev) => {
+      const next = prev.filter((p) => p.code !== code);
+      if (next.length === 0) setNotFoundCodes([]);
+      return next;
+    });
   }
 
   function handleClearAll() {
     setProducts([]);
+    setNotFoundCodes([]);
   }
 
   return (
-    <div>
-      <h2>Compare products</h2>
-      <form onSubmit={handleSubmit}>
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={loading}
-          placeholder="Enter EAN barcodes, comma-separated"
-          aria-label="EAN barcodes"
-        />
-        <Button type="submit" disabled={loading}>
-          {loading ? <Loader2 className="animate-spin" /> : 'Look up'}
+    <main className='mx-auto max-w-5xl px-6 py-12'>
+      {/* Header */}
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold tracking-tight'>Compare products</h1>
+        <p className='mt-1.5 max-w-xl text-muted-foreground'>
+          Enter EAN barcodes to see nutritional values side by side. Add
+          multiple codes at once by separating them with commas.
+        </p>
+      </div>
+
+      {/* Search form */}
+      <form onSubmit={handleSubmit} className='flex gap-2'>
+        <div className='relative flex-1'>
+          <ScanBarcode className='absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            disabled={loading}
+            placeholder='e.g. 5000112637922, 8076809513388'
+            aria-label='EAN barcodes'
+            className='pl-9'
+          />
+        </div>
+        <Button type='submit' disabled={loading} className='shrink-0'>
+          {loading ? (
+            <Loader2 className='size-4 animate-spin' />
+          ) : products.length > 0 ? (
+            'Add products'
+          ) : (
+            'Look up'
+          )}
         </Button>
       </form>
+
+      {/* Not-found notice — subtle, non-alarming */}
       {notFoundCodes.length > 0 && (
-        <div role="alert" className="mt-4 rounded-md border border-warning bg-warning/10 p-3 text-sm text-warning-foreground">
-          Could not find product(s) with code(s): {notFoundCodes.join(', ')}
+        <p
+          role='alert'
+          className='mt-3 flex items-center gap-1.5 text-sm text-warning'
+        >
+          <TriangleAlert className='size-4 shrink-0' aria-hidden='true' />
+          No product found for:{' '}
+          <span className='font-mono'>{notFoundCodes.join(', ')}</span>
+        </p>
+      )}
+
+      {/* One-time hint to keep adding */}
+      {products.length > 0 && (
+        <p className='mt-3 text-sm text-muted-foreground'>
+          Enter another barcode above to add a column.
+        </p>
+      )}
+
+      {/* Results */}
+      {products.length > 0 && (
+        <div className='mt-10'>
+          <NutritionTable
+            products={products}
+            onDismiss={handleDismiss}
+            onClearAll={handleClearAll}
+          />
         </div>
       )}
-      {products.length > 0 && (
-        <NutritionTable
-          products={products}
-          onDismiss={handleDismiss}
-          onClearAll={handleClearAll}
-        />
-      )}
-    </div>
+    </main>
   );
 }

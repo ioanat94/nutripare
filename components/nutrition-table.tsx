@@ -1,3 +1,5 @@
+import { X } from 'lucide-react';
+
 import {
   Table,
   TableBody,
@@ -35,7 +37,7 @@ const COLOR_CLASS: Record<ThresholdColor, string> = {
 };
 
 function renderCell(nutrient: string, value: number | undefined) {
-  if (value === undefined || isNaN(value)) return { text: '—', className: '' };
+  if (value === undefined || isNaN(value)) return { text: '—', className: 'text-muted-foreground' };
   const color = getThresholdColor(nutrient, value);
   return {
     text: Number.isInteger(value) ? String(value) : value.toFixed(1),
@@ -52,50 +54,74 @@ export function NutritionTable({
 
   return (
     <div>
-      <button
-        onClick={onClearAll}
-        className='mb-2 text-sm text-muted-foreground hover:text-foreground'
-      >
-        Clear all
-      </button>
+      {/* Toolbar */}
+      <div className='mb-3 flex items-center justify-between'>
+        <p className='text-sm text-muted-foreground'>
+          {products.length} {products.length === 1 ? 'product' : 'products'}
+        </p>
+        <button
+          onClick={onClearAll}
+          className='text-sm text-muted-foreground transition-colors hover:text-destructive'
+        >
+          Clear all
+        </button>
+      </div>
+
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead className='sticky left-0 bg-card' />
-            {products.map((p) => (
-              <TableHead key={p.code} scope='col'>
-                <div className='flex flex-col gap-1'>
-                  <span className='truncate max-w-40 block'>
-                    {p.product_name || 'Unknown product'}
-                  </span>
-                  <span className='text-xs text-muted-foreground'>
-                    {p.code}
-                  </span>
-                  <button
-                    onClick={() => onDismiss(p.code)}
-                    aria-label={`Dismiss ${p.product_name}`}
-                    className='text-muted-foreground hover:text-foreground w-fit'
-                  >
-                    ×
-                  </button>
-                </div>
-              </TableHead>
-            ))}
+          <TableRow className='hover:bg-transparent'>
+            {/* Empty corner cell */}
+            <TableHead className='sticky left-0 z-10 bg-background w-40' />
+            {products.map((p) => {
+              const name = p.product_name || 'Unknown product';
+              return (
+                <TableHead key={p.code} scope='col' className='min-w-[140px] align-top pb-3'>
+                  <div className='flex items-start justify-between gap-2'>
+                    <div className='min-w-0 flex-1'>
+                      <span
+                        title={name}
+                        className='block truncate text-sm font-semibold text-foreground'
+                      >
+                        {name}
+                      </span>
+                      <span className='font-mono text-xs text-muted-foreground'>
+                        {p.code}
+                      </span>
+                    </div>
+                    {/* Dismiss button — generously sized for mobile taps */}
+                    <button
+                      onClick={() => onDismiss(p.code)}
+                      aria-label={`Dismiss ${name}`}
+                      className='flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+                    >
+                      <X className='size-3.5' aria-hidden='true' />
+                    </button>
+                  </div>
+                </TableHead>
+              );
+            })}
           </TableRow>
         </TableHeader>
+
         <TableBody>
-          {ROWS.map((row) => (
-            <TableRow key={row.key}>
+          {ROWS.map((row, i) => (
+            <TableRow key={row.key} className={i % 2 === 0 ? 'bg-muted/30' : ''}>
+              {/* Nutrient label — sticky */}
               <TableCell
                 scope='row'
-                className='sticky left-0 bg-card font-medium'
+                className='sticky left-0 z-10 w-40 bg-background py-3 text-sm font-medium text-muted-foreground'
               >
                 {row.label}
               </TableCell>
+
+              {/* Value cells — right-aligned, tabular figures */}
               {products.map((p) => {
                 const { text, className } = renderCell(row.key, p[row.key]);
                 return (
-                  <TableCell key={p.code} className={className}>
+                  <TableCell
+                    key={p.code}
+                    className={`py-3 text-right tabular-nums text-sm font-medium ${className}`}
+                  >
                     {text}
                   </TableCell>
                 );

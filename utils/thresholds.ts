@@ -1,10 +1,27 @@
-export const THRESHOLDS = {
-  calories: { high: null, low: null },
-  protein: { high: 20, low: null },
-  carbohydrates: { high: null, low: null },
-  sugar: { high: 22.5, low: 5 },
-  fat: { high: null, low: null },
-  saturated_fat: { high: 5, low: 1.5 },
-  fiber: { high: 6, low: null },
-  salt: { high: 1.5, low: 0.3 },
+export type ThresholdColor = 'positive' | 'warning' | 'negative';
+export type ThresholdDirection = 'above' | 'below';
+
+export interface ThresholdCondition {
+  color: ThresholdColor;
+  when: ThresholdDirection;
+  value: number;
+}
+
+export type NutrientThresholds = Record<string, ThresholdCondition[]>;
+
+export const THRESHOLDS: NutrientThresholds = {
+  protein: [{ color: 'positive', when: 'above', value: 20 }],
+  sugar: [
+    { color: 'positive', when: 'below', value: 5 },
+    { color: 'negative', when: 'above', value: 22.5 },
+  ],
+  saturated_fat: [
+    { color: 'positive', when: 'below', value: 1.5 },
+    { color: 'negative', when: 'above', value: 5 },
+  ],
+  fiber: [{ color: 'positive', when: 'above', value: 6 }],
+  salt: [
+    { color: 'positive', when: 'below', value: 0.3 },
+    { color: 'negative', when: 'above', value: 1.5 },
+  ],
 };

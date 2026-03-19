@@ -25,3 +25,17 @@ export const THRESHOLDS: NutrientThresholds = {
     { color: 'negative', when: 'above', value: 1.5 },
   ],
 };
+
+export function getThresholdColor(
+  nutrient: string,
+  value: number | undefined,
+): ThresholdColor | null {
+  if (value === undefined || isNaN(value)) return null;
+  const conditions = THRESHOLDS[nutrient];
+  if (!conditions) return null;
+  for (const cond of conditions) {
+    if (cond.when === 'above' && value > cond.value) return cond.color;
+    if (cond.when === 'below' && value < cond.value) return cond.color;
+  }
+  return null;
+}

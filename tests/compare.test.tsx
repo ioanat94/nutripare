@@ -184,34 +184,27 @@ describe('ComparePage', () => {
     });
   });
 
-  it('logs "not found" when fetchProduct returns null', async () => {
+  it('shows warning alert when fetchProduct returns null', async () => {
     mockFetchProduct.mockResolvedValue(null);
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     await renderPage();
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
       target: { value: '000' },
     });
     fireEvent.click(screen.getByRole('button', { name: /look up/i }));
     await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith('Product not found: 000');
+      expect(screen.getByRole('alert')).toHaveTextContent('000');
     });
-    consoleSpy.mockRestore();
   });
 
-  it('calls console.error when fetchProduct throws', async () => {
+  it('shows warning alert when fetchProduct throws', async () => {
     mockFetchProduct.mockRejectedValue(new Error('Network error'));
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     await renderPage();
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
       target: { value: '999' },
     });
     fireEvent.click(screen.getByRole('button', { name: /look up/i }));
     await waitFor(() => {
-      expect(errorSpy).toHaveBeenCalledWith(
-        'Error fetching 999:',
-        expect.any(Error)
-      );
+      expect(screen.getByRole('alert')).toHaveTextContent('999');
     });
-    errorSpy.mockRestore();
   });
 });

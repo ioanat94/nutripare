@@ -34,3 +34,9 @@ Next.js 16 App Router application (React 19, TypeScript strict mode, Tailwind CS
 **Testing:** Vitest with jsdom environment, `@testing-library/react`, and `@testing-library/jest-dom`. The setup file (`tests/setup.ts`) runs `cleanup()` after each test automatically. Vitest globals are enabled so `describe`/`it`/`expect` don't need to be imported. The `s` regex flag is not available (tsconfig targets ES2017) — use `[^}]+` or `[\s\S]` instead.
 
 No API routes, database, or auth implementation exist yet — the project is in early scaffolding stage.
+
+## Planning
+
+When asked to plan a feature:
+- Save the plan to `./.claude/plans/<spec-name>.md` (matching the spec filename, without the path)
+- Do not ask to implement after planning — exit plan mode immediately once the plan is saved

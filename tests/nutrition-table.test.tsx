@@ -208,6 +208,70 @@ describe('NutritionTable', () => {
     expect(proteinRow).not.toHaveTextContent('👑');
   });
 
+  it('sorts products high to low on first click of a row label', () => {
+    const products = [
+      makeProduct({ code: '111', product_name: 'A', protein: 10 }),
+      makeProduct({ code: '222', product_name: 'B', protein: 30 }),
+      makeProduct({ code: '333', product_name: 'C', protein: 20 }),
+    ];
+    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /protein/i }));
+    const proteinRow = screen.getByText('Protein (g)').closest('tr')!;
+    const cells = proteinRow.querySelectorAll('td');
+    // cells[0] = label, then sorted: 30, 20, 10
+    expect(cells[1]).toHaveTextContent('30');
+    expect(cells[2]).toHaveTextContent('20');
+    expect(cells[3]).toHaveTextContent('10');
+  });
+
+  it('sorts products low to high on second click of a row label', () => {
+    const products = [
+      makeProduct({ code: '111', product_name: 'A', protein: 10 }),
+      makeProduct({ code: '222', product_name: 'B', protein: 30 }),
+      makeProduct({ code: '333', product_name: 'C', protein: 20 }),
+    ];
+    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} />);
+    const btn = screen.getByRole('button', { name: /protein/i });
+    fireEvent.click(btn);
+    fireEvent.click(btn);
+    const proteinRow = screen.getByText('Protein (g)').closest('tr')!;
+    const cells = proteinRow.querySelectorAll('td');
+    // sorted: 10, 20, 30
+    expect(cells[1]).toHaveTextContent('10');
+    expect(cells[2]).toHaveTextContent('20');
+    expect(cells[3]).toHaveTextContent('30');
+  });
+
+  it('shows sort arrow and highlights label when a row is active', () => {
+    render(
+      <NutritionTable
+        products={[
+          makeProduct({ code: '111', product_name: 'A' }),
+          makeProduct({ code: '222', product_name: 'B' }),
+        ]}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+      />,
+    );
+    const btn = screen.getByRole('button', { name: /protein/i });
+    expect(btn).not.toHaveClass('font-semibold');
+    fireEvent.click(btn);
+    expect(btn).toHaveClass('font-semibold');
+  });
+
+  it('pushes products with undefined values to the end when sorting', () => {
+    const products = [
+      makeProduct({ code: '111', product_name: 'A', protein: undefined }),
+      makeProduct({ code: '222', product_name: 'B', protein: 30 }),
+    ];
+    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /protein/i }));
+    const proteinRow = screen.getByText('Protein (g)').closest('tr')!;
+    const cells = proteinRow.querySelectorAll('td');
+    expect(cells[1]).toHaveTextContent('30');
+    expect(cells[2]).toHaveTextContent('—');
+  });
+
   it('hides table when products become empty after dismissing the last column', () => {
     const onDismiss = vi.fn();
     const { rerender } = render(

@@ -7,7 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NutritionTable } from '@/components/nutrition-table';
 import type { ProductNutrition } from '@/types/openfoodfacts';
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
+
+const BarcodeScanner = dynamic(() => import('@/components/barcode-scanner'), {
+  ssr: false,
+});
 
 function replaceOrAppend(
   prev: ProductNutrition[],
@@ -27,6 +32,7 @@ export default function ComparePage() {
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<ProductNutrition[]>([]);
   const [notFoundCodes, setNotFoundCodes] = useState<string[]>([]);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -64,6 +70,23 @@ export default function ComparePage() {
     setNotFoundCodes([]);
   }
 
+  async function handleScan(code: string) {
+    setScannerOpen(false);
+    setLoading(true);
+    try {
+      const product = await fetchProduct(code);
+      if (product === null) {
+        setNotFoundCodes([code]);
+      } else {
+        setProducts((prev) => replaceOrAppend(prev, product));
+        setNotFoundCodes([]);
+      }
+    } catch {
+      setNotFoundCodes([code]);
+    }
+    setLoading(false);
+  }
+
   return (
     <main className='mx-auto max-w-5xl px-6 py-12'>
       {/* Header */}
@@ -97,7 +120,24 @@ export default function ComparePage() {
             'Look up'
           )}
         </Button>
+        <Button
+          type='button'
+          variant='outline'
+          size='icon'
+          disabled={loading}
+          onClick={() => setScannerOpen(true)}
+          aria-label='Scan barcode'
+          className='shrink-0 px-5'
+        >
+          <ScanBarcode className='size-4' />
+        </Button>
       </form>
+      {scannerOpen && (
+        <BarcodeScanner
+          onScan={handleScan}
+          onClose={() => setScannerOpen(false)}
+        />
+      )}
 
       {/* Not-found notice — subtle, non-alarming */}
       {notFoundCodes.length > 0 && (

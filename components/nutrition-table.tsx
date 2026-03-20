@@ -178,11 +178,11 @@ export function NutritionTable({
                       key={p.code}
                       className={`py-3 tabular-nums text-sm font-medium ${className}`}
                     >
-                      <div className='flex items-center justify-end gap-1.5'>
+                      <div className='flex items-center justify-end'>
                         <span className='w-5 shrink-0 text-center text-base leading-none'>
                           {emoji}
                         </span>
-                        {text}
+                        <span className='w-12 text-right'>{text}</span>
                       </div>
                     </TableCell>
                   );

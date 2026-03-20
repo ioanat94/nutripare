@@ -22,7 +22,7 @@ function LoginContent() {
   }, [user, redirect, router]);
 
   return (
-    <div className='flex min-h-screen items-center justify-center'>
+    <div className='flex flex-1 items-center justify-center'>
       <AuthScreen
         title={mode === 'signIn' ? 'Sign In' : 'Sign Up'}
         description={

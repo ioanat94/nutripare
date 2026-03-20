@@ -39,3 +39,34 @@ export function getThresholdColor(
   }
   return null;
 }
+
+const round1 = (v: number) => parseFloat(v.toFixed(1));
+
+export function getExtremeEmoji(
+  nutrient: string,
+  values: (number | undefined)[],
+  index: number,
+): '👑' | '🚩' | null {
+  if (values.length < 2) return null;
+  const value = values[index];
+  if (value === undefined || isNaN(value)) return null;
+  const conditions = THRESHOLDS[nutrient];
+  if (!conditions) return null;
+
+  for (const cond of conditions) {
+    const passes = (v: number) =>
+      cond.when === 'above' ? v > cond.value : v < cond.value;
+    if (!passes(value)) continue;
+    const passing = values
+      .filter((v): v is number => v !== undefined && !isNaN(v) && passes(v))
+      .map(round1);
+    if (passing.length === 0) continue;
+    const extreme =
+      cond.when === 'above' ? Math.max(...passing) : Math.min(...passing);
+    if (round1(value) === extreme) {
+      return cond.color === 'positive' ? '👑' : '🚩';
+    }
+  }
+
+  return null;
+}

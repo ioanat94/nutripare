@@ -148,6 +148,66 @@ describe('NutritionTable', () => {
     expect(onDismiss).toHaveBeenCalledWith('111');
   });
 
+  it('shows crown on the highest protein value when it passes the positive threshold', () => {
+    // cells[0] = label, cells[1] = product A (protein 25), cells[2] = product B (protein 30)
+    const products = [
+      makeProduct({ code: '111', product_name: 'A', protein: 25 }),
+      makeProduct({ code: '222', product_name: 'B', protein: 30 }),
+    ];
+    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} />);
+    const proteinRow = screen.getByText('Protein (g)').closest('tr')!;
+    const cells = proteinRow.querySelectorAll('td');
+    expect(cells[2]).toHaveTextContent('👑');
+    expect(cells[1]).not.toHaveTextContent('👑');
+  });
+
+  it('shows crown on both products when tied for the extreme positive value', () => {
+    const products = [
+      makeProduct({ code: '111', product_name: 'A', protein: 30 }),
+      makeProduct({ code: '222', product_name: 'B', protein: 30 }),
+    ];
+    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} />);
+    const proteinRow = screen.getByText('Protein (g)').closest('tr')!;
+    const cells = proteinRow.querySelectorAll('td');
+    expect(cells[1]).toHaveTextContent('👑');
+    expect(cells[2]).toHaveTextContent('👑');
+  });
+
+  it('shows flag on the highest sugar value when it passes the negative threshold', () => {
+    // cells[0] = label, cells[1] = product A (sugar 25), cells[2] = product B (sugar 30)
+    const products = [
+      makeProduct({ code: '111', product_name: 'A', sugar: 25 }),
+      makeProduct({ code: '222', product_name: 'B', sugar: 30 }),
+    ];
+    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} />);
+    const sugarRow = screen.getByText('Sugar (g)').closest('tr')!;
+    const cells = sugarRow.querySelectorAll('td');
+    expect(cells[2]).toHaveTextContent('🚩');
+    expect(cells[1]).not.toHaveTextContent('🚩');
+  });
+
+  it('does not show any emoji when only one product is present', () => {
+    render(
+      <NutritionTable
+        products={[makeProduct({ protein: 30 })]}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+      />,
+    );
+    const proteinRow = screen.getByText('Protein (g)').closest('tr')!;
+    expect(proteinRow).not.toHaveTextContent('👑');
+  });
+
+  it('does not show crown when the highest value does not pass the positive threshold', () => {
+    const products = [
+      makeProduct({ code: '111', product_name: 'A', protein: 5 }),
+      makeProduct({ code: '222', product_name: 'B', protein: 10 }),
+    ];
+    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} />);
+    const proteinRow = screen.getByText('Protein (g)').closest('tr')!;
+    expect(proteinRow).not.toHaveTextContent('👑');
+  });
+
   it('hides table when products become empty after dismissing the last column', () => {
     const onDismiss = vi.fn();
     const { rerender } = render(

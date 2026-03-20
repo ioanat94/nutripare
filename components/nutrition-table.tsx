@@ -1,5 +1,3 @@
-import { X } from 'lucide-react';
-
 import {
   Table,
   TableBody,
@@ -8,10 +6,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
 
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import type { ThresholdColor } from '@/utils/thresholds';
-import { getThresholdColor } from '@/utils/thresholds';
+import { X } from 'lucide-react';
 
 interface NutritionTableProps {
   products: ProductNutrition[];
@@ -37,7 +36,8 @@ const COLOR_CLASS: Record<ThresholdColor, string> = {
 };
 
 function renderCell(nutrient: string, value: number | undefined) {
-  if (value === undefined || isNaN(value)) return { text: '—', className: 'text-muted-foreground' };
+  if (value === undefined || isNaN(value))
+    return { text: '—', className: 'text-muted-foreground' };
   const color = getThresholdColor(nutrient, value);
   return {
     text: Number.isInteger(value) ? String(value) : value.toFixed(1),
@@ -77,7 +77,11 @@ export function NutritionTable({
             {products.map((p) => {
               const name = p.product_name || 'Unknown product';
               return (
-                <TableHead key={p.code} scope='col' className='min-w-[140px] max-w-[220px] align-top pb-3'>
+                <TableHead
+                  key={p.code}
+                  scope='col'
+                  className='min-w-35 max-w-55 align-top pb-3'
+                >
                   <div className='flex items-start justify-between gap-2'>
                     <div className='min-w-0 flex-1'>
                       <span
@@ -107,7 +111,10 @@ export function NutritionTable({
 
         <TableBody>
           {ROWS.map((row, i) => (
-            <TableRow key={row.key} className={i % 2 === 0 ? 'bg-muted/30' : ''}>
+            <TableRow
+              key={row.key}
+              className={i % 2 === 0 ? 'bg-muted/30' : ''}
+            >
               {/* Nutrient label — sticky */}
               <TableCell
                 scope='row'
@@ -117,14 +124,24 @@ export function NutritionTable({
               </TableCell>
 
               {/* Value cells — right-aligned, tabular figures */}
-              {products.map((p) => {
+              {products.map((p, i) => {
                 const { text, className } = renderCell(row.key, p[row.key]);
+                const emoji = getExtremeEmoji(
+                  row.key,
+                  products.map((q) => q[row.key]),
+                  i,
+                );
                 return (
                   <TableCell
                     key={p.code}
-                    className={`py-3 text-right tabular-nums text-sm font-medium ${className}`}
+                    className={`py-3 tabular-nums text-sm font-medium ${className}`}
                   >
-                    {text}
+                    <div className='flex items-center justify-end gap-1.5'>
+                      <span className='w-5 shrink-0 text-center text-base leading-none'>
+                        {emoji}
+                      </span>
+                      {text}
+                    </div>
                   </TableCell>
                 );
               })}

@@ -18,7 +18,8 @@ import type { ProductNutrition } from '@/types/openfoodfacts';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 const BarcodeScanner = dynamic(() => import('@/components/barcode-scanner'), {
   ssr: false,
@@ -37,8 +38,9 @@ function replaceOrAppend(
   return [...prev, next];
 }
 
-export default function ComparePage() {
+function ComparePageContent() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<ProductNutrition[]>([]);
@@ -64,9 +66,14 @@ export default function ComparePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productCodesKey, user?.id]);
 
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const { valid, invalid } = parseEanInput(input);
+  useEffect(() => {
+    const codes = searchParams?.get('codes');
+    if (codes) runSearch(codes);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function runSearch(rawInput: string) {
+    const { valid, invalid } = parseEanInput(rawInput);
     setInvalidCodes(invalid);
     if (valid.length === 0) return;
     setLoading(true);
@@ -87,6 +94,11 @@ export default function ComparePage() {
     setNotFoundCodes(notFound);
     setInput('');
     setLoading(false);
+  }
+
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
+    await runSearch(input);
   }
 
   function handleDismiss(code: string) {
@@ -310,5 +322,13 @@ export default function ComparePage() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function ComparePage() {
+  return (
+    <Suspense>
+      <ComparePageContent />
+    </Suspense>
   );
 }

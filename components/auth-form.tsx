@@ -1,6 +1,5 @@
 'use client';
 
-import { Eye, EyeOff } from 'lucide-react';
 import { FirebaseUIError, getTranslation } from '@firebase-oss/ui-core';
 import {
   Form,
@@ -10,7 +9,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useMemo, useState } from 'react';
 import {
   useSignInAuthFormAction,
   useSignUpAuthFormAction,
@@ -19,8 +17,10 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Policies } from './policies';
 import { useForm } from 'react-hook-form';
+import { useMemo } from 'react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -67,9 +67,6 @@ export function AuthForm({
   const ui = useUI();
   const signInAction = useSignInAuthFormAction();
   const signUpAction = useSignUpAuthFormAction();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
   const schema = useMemo(() => buildSchema(mode), [mode]);
 
   const form = useForm<Schema>({
@@ -141,28 +138,11 @@ export function AuthForm({
                 ) : null}
               </FormLabel>
               <FormControl>
-                <div className='relative'>
-                  <Input
-                    {...field}
-                    type={showPassword ? 'text' : 'password'}
-                    aria-invalid={!!fieldState.error}
-                    className='h-10 pr-10 bg-transparent dark:bg-transparent'
-                  />
-                  <Button
-                    type='button'
-                    variant='ghost'
-                    size='icon'
-                    className='absolute right-0 top-0 h-full px-4 text-muted-foreground hover:text-foreground'
-                    onClick={() => setShowPassword((v) => !v)}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? (
-                      <EyeOff className='h-4 w-4' />
-                    ) : (
-                      <Eye className='h-4 w-4' />
-                    )}
-                  </Button>
-                </div>
+                <PasswordInput
+                  {...field}
+                  aria-invalid={!!fieldState.error}
+                  className='h-10 bg-transparent dark:bg-transparent'
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -176,28 +156,11 @@ export function AuthForm({
               <FormItem>
                 <FormLabel>Confirm password</FormLabel>
                 <FormControl>
-                  <div className='relative'>
-                    <Input
-                      {...field}
-                      type={showConfirm ? 'text' : 'password'}
-                      aria-invalid={!!fieldState.error}
-                      className='h-10 pr-10 bg-transparent dark:bg-transparent'
-                    />
-                    <Button
-                      type='button'
-                      variant='ghost'
-                      size='icon'
-                      className='absolute right-0 top-0 h-full px-4 text-muted-foreground hover:text-foreground'
-                      onClick={() => setShowConfirm((v) => !v)}
-                      tabIndex={-1}
-                    >
-                      {showConfirm ? (
-                        <EyeOff className='h-4 w-4' />
-                      ) : (
-                        <Eye className='h-4 w-4' />
-                      )}
-                    </Button>
-                  </div>
+                  <PasswordInput
+                    {...field}
+                    aria-invalid={!!fieldState.error}
+                    className='h-10 bg-transparent dark:bg-transparent'
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

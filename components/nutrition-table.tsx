@@ -1,9 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-
-import { ArrowDown, ArrowUp, X } from 'lucide-react';
-
+import { ArrowDown, ArrowUp, Loader2, Save, X } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -16,6 +13,7 @@ import { getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
 
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import type { ThresholdColor } from '@/utils/thresholds';
+import { useState } from 'react';
 
 type SortDir = 'desc' | 'asc';
 type SortState = { key: string; dir: SortDir } | null;
@@ -24,6 +22,8 @@ interface NutritionTableProps {
   products: ProductNutrition[];
   onDismiss: (code: string) => void;
   onClearAll: () => void;
+  onSaveProduct?: (code: string) => Promise<void>;
+  onSaveComparison?: () => Promise<void>;
 }
 
 const ROWS = [
@@ -57,8 +57,12 @@ export function NutritionTable({
   products,
   onDismiss,
   onClearAll,
+  onSaveProduct,
+  onSaveComparison,
 }: NutritionTableProps) {
   const [sort, setSort] = useState<SortState>(null);
+  const [savingProduct, setSavingProduct] = useState<string | null>(null);
+  const [savingComparison, setSavingComparison] = useState(false);
 
   if (products.length === 0) return null;
 
@@ -81,15 +85,35 @@ export function NutritionTable({
     : products;
 
   return (
-    <div>
+    <div className='overflow-x-auto'>
       {/* Toolbar */}
       <div className='mb-3 flex items-center justify-between'>
-        <p className='text-sm text-muted-foreground'>
-          {products.length} {products.length === 1 ? 'product' : 'products'}
-        </p>
+        <div className='flex items-center gap-3'>
+          <p className='text-sm text-muted-foreground'>
+            {products.length} {products.length === 1 ? 'product' : 'products'}
+          </p>
+          {onSaveComparison && products.length >= 2 && (
+            <button
+              onClick={async () => {
+                setSavingComparison(true);
+                await onSaveComparison();
+                setSavingComparison(false);
+              }}
+              disabled={savingComparison}
+              className='flex cursor-pointer items-center gap-1.5 text-sm text-positive transition-colors hover:text-positive/80 disabled:cursor-not-allowed disabled:opacity-50'
+            >
+              {savingComparison ? (
+                <Loader2 className='size-3.5 animate-spin' aria-hidden='true' />
+              ) : (
+                <Save className='size-3.5' aria-hidden='true' />
+              )}
+              Save Comparison
+            </button>
+          )}
+        </div>
         <button
           onClick={onClearAll}
-          className='cursor-pointer text-sm text-muted-foreground transition-colors hover:text-destructive'
+          className='cursor-pointer text-sm text-destructive transition-colors hover:text-destructive/80'
         >
           Clear all
         </button>
@@ -97,7 +121,7 @@ export function NutritionTable({
 
       <Table
         className='table-fixed'
-        style={{ width: `calc(10rem + ${sortedProducts.length} * 12rem)` }}
+        style={{ width: `calc(10rem + ${sortedProducts.length} * 14rem)` }}
       >
         <TableHeader>
           <TableRow className='hover:bg-transparent'>
@@ -125,14 +149,38 @@ export function NutritionTable({
                         {p.code}
                       </span>
                     </div>
-                    {/* Dismiss button — generously sized for mobile taps */}
-                    <button
-                      onClick={() => onDismiss(p.code)}
-                      aria-label={`Dismiss ${name}`}
-                      className='flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
-                    >
-                      <X className='size-3.5' aria-hidden='true' />
-                    </button>
+                    <div className='flex shrink-0 items-center gap-0.5'>
+                      {/* Save button */}
+                      {onSaveProduct && (
+                        <button
+                          onClick={async () => {
+                            setSavingProduct(p.code);
+                            await onSaveProduct(p.code);
+                            setSavingProduct(null);
+                          }}
+                          disabled={savingProduct === p.code}
+                          aria-label={`Save ${name}`}
+                          className='flex size-7 cursor-pointer items-center justify-center rounded-md text-positive transition-colors hover:bg-positive/10 disabled:cursor-not-allowed disabled:opacity-50'
+                        >
+                          {savingProduct === p.code ? (
+                            <Loader2
+                              className='size-3.5 animate-spin'
+                              aria-hidden='true'
+                            />
+                          ) : (
+                            <Save className='size-3.5' aria-hidden='true' />
+                          )}
+                        </button>
+                      )}
+                      {/* Dismiss button — generously sized for mobile taps */}
+                      <button
+                        onClick={() => onDismiss(p.code)}
+                        aria-label={`Dismiss ${name}`}
+                        className='flex size-7 cursor-pointer items-center justify-center rounded-md text-destructive transition-colors hover:bg-destructive/10'
+                      >
+                        <X className='size-3.5' aria-hidden='true' />
+                      </button>
+                    </div>
                   </div>
                 </TableHead>
               );
@@ -143,7 +191,11 @@ export function NutritionTable({
         <TableBody>
           {ROWS.map((row, i) => {
             const isActive = sort?.key === row.key;
-            const rowBg = isActive ? 'bg-primary/10' : i % 2 === 0 ? 'bg-muted/30' : '';
+            const rowBg = isActive
+              ? 'bg-primary/10'
+              : i % 2 === 0
+                ? 'bg-muted/30'
+                : '';
             return (
               <TableRow key={row.key} className={rowBg}>
                 {/* Nutrient label — sticky, clickable to sort */}

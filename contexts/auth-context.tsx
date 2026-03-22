@@ -38,8 +38,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               firebaseUser.displayName ??
               firebaseUser.email?.split('@')[0] ??
               'User',
-            products: [],
-            comparisons: [],
           };
           await setDoc(docRef, newUser);
           setUser(newUser);

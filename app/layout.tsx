@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 
 import { Navbar } from '@/components/navbar';
 import { Providers } from '@/app/providers';
+import { Toaster } from '@/components/ui/sonner';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -40,6 +41,7 @@ export default function RootLayout({
         <Providers>
           <Navbar />
           {children}
+          <Toaster />
         </Providers>
       </body>
     </html>

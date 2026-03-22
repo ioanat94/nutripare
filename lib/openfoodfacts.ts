@@ -1,7 +1,17 @@
 import type { OFFProductResponse, ProductNutrition } from '@/types/openfoodfacts';
 
-export function parseEanInput(raw: string): string[] {
-  return [...new Set(raw.split(',').map((s) => s.trim()).filter(Boolean))];
+export function parseEanInput(raw: string): { valid: string[]; invalid: string[] } {
+  const tokens = [...new Set(raw.split(',').map((s) => s.trim()).filter(Boolean))];
+  const valid: string[] = [];
+  const invalid: string[] = [];
+  for (const token of tokens) {
+    if (/^\d{8}(\d{5})?$/.test(token)) {
+      valid.push(token);
+    } else {
+      invalid.push(token);
+    }
+  }
+  return { valid, invalid };
 }
 
 export function mapProduct(raw: OFFProductResponse, code: string): ProductNutrition {

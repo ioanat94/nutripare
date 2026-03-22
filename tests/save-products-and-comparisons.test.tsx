@@ -13,6 +13,10 @@ vi.mock('@/contexts/auth-context', () => ({
 vi.mock('@/lib/firestore', () => ({
   saveProduct: vi.fn(),
   saveComparison: vi.fn(),
+  deleteProduct: vi.fn(),
+  deleteComparison: vi.fn(),
+  getSavedProductEans: vi.fn().mockResolvedValue(new Set()),
+  isComparisonSaved: vi.fn().mockResolvedValue(false),
 }));
 
 // Mock sonner

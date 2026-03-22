@@ -31,6 +31,15 @@ vi.mock('next/dynamic', () => ({
   default: (loader: () => Promise<{ default: React.ComponentType }>) => React.lazy(loader),
 }));
 
+vi.mock('@/contexts/auth-context', () => ({
+  useAuth: vi.fn(() => ({ user: null, loading: false })),
+}));
+
+vi.mock('@/lib/firestore', () => ({
+  saveProduct: vi.fn(),
+  saveComparison: vi.fn(),
+}));
+
 vi.mock('@/lib/openfoodfacts', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/openfoodfacts')>();
   return { ...actual, fetchProduct: vi.fn() };

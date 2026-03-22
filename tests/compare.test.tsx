@@ -4,6 +4,15 @@ import { vi } from 'vitest';
 import { mapProduct, parseEanInput } from '@/lib/openfoodfacts';
 import type { OFFProductResponse } from '@/types/openfoodfacts';
 
+vi.mock('@/contexts/auth-context', () => ({
+  useAuth: vi.fn(() => ({ user: null, loading: false })),
+}));
+
+vi.mock('@/lib/firestore', () => ({
+  saveProduct: vi.fn(),
+  saveComparison: vi.fn(),
+}));
+
 vi.mock('@/lib/openfoodfacts', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/openfoodfacts')>();
   return {

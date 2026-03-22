@@ -1,7 +1,11 @@
 'use client';
 
 import { Loader2, ScanBarcode, TriangleAlert } from 'lucide-react';
+import { toast } from 'sonner';
+
 import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
+import { saveComparison, saveProduct } from '@/lib/firestore';
+import { useAuth } from '@/contexts/auth-context';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +32,7 @@ function replaceOrAppend(
 }
 
 export default function ComparePage() {
+  const { user } = useAuth();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<ProductNutrition[]>([]);
@@ -68,6 +73,40 @@ export default function ComparePage() {
   function handleClearAll() {
     setProducts([]);
     setNotFoundCodes([]);
+  }
+
+  async function handleSaveProduct(code: string) {
+    if (!user) return;
+    const product = products.find((p) => p.code === code);
+    if (!product) return;
+    const name = product.product_name || code;
+    try {
+      await saveProduct(user.id, { name, ean: code });
+      toast.success('Product saved');
+    } catch (e) {
+      if (e instanceof Error && e.message === 'DUPLICATE') {
+        toast.info('Product already saved');
+      } else {
+        toast.error('Failed to save product');
+      }
+    }
+  }
+
+  async function handleSaveComparison() {
+    if (!user) return;
+    const firstName = products[0]?.product_name || products[0]?.code || '';
+    const name = `${firstName} + ${products.length - 1} others`;
+    const eans = products.map((p) => p.code);
+    try {
+      await saveComparison(user.id, { name, eans });
+      toast.success('Comparison saved');
+    } catch (e) {
+      if (e instanceof Error && e.message === 'DUPLICATE') {
+        toast.info('Comparison already saved');
+      } else {
+        toast.error('Failed to save comparison');
+      }
+    }
   }
 
   async function handleScan(code: string) {
@@ -165,6 +204,8 @@ export default function ComparePage() {
             products={products}
             onDismiss={handleDismiss}
             onClearAll={handleClearAll}
+            onSaveProduct={user ? handleSaveProduct : undefined}
+            onSaveComparison={user ? handleSaveComparison : undefined}
           />
           <p className='mt-4 text-xs text-muted-foreground'>
             Data sourced from{' '}

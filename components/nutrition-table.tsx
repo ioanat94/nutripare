@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { ArrowDown, ArrowUp, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Loader2, Save, X } from 'lucide-react';
 
 import {
   Table,
@@ -24,6 +24,8 @@ interface NutritionTableProps {
   products: ProductNutrition[];
   onDismiss: (code: string) => void;
   onClearAll: () => void;
+  onSaveProduct?: (code: string) => Promise<void>;
+  onSaveComparison?: () => Promise<void>;
 }
 
 const ROWS = [
@@ -57,8 +59,12 @@ export function NutritionTable({
   products,
   onDismiss,
   onClearAll,
+  onSaveProduct,
+  onSaveComparison,
 }: NutritionTableProps) {
   const [sort, setSort] = useState<SortState>(null);
+  const [savingProduct, setSavingProduct] = useState<string | null>(null);
+  const [savingComparison, setSavingComparison] = useState(false);
 
   if (products.length === 0) return null;
 
@@ -84,9 +90,29 @@ export function NutritionTable({
     <div>
       {/* Toolbar */}
       <div className='mb-3 flex items-center justify-between'>
-        <p className='text-sm text-muted-foreground'>
-          {products.length} {products.length === 1 ? 'product' : 'products'}
-        </p>
+        <div className='flex items-center gap-3'>
+          <p className='text-sm text-muted-foreground'>
+            {products.length} {products.length === 1 ? 'product' : 'products'}
+          </p>
+          {onSaveComparison && products.length >= 2 && (
+            <button
+              onClick={async () => {
+                setSavingComparison(true);
+                await onSaveComparison();
+                setSavingComparison(false);
+              }}
+              disabled={savingComparison}
+              className='flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50'
+            >
+              {savingComparison ? (
+                <Loader2 className='size-3.5 animate-spin' aria-hidden='true' />
+              ) : (
+                <Save className='size-3.5' aria-hidden='true' />
+              )}
+              Save Comparison
+            </button>
+          )}
+        </div>
         <button
           onClick={onClearAll}
           className='cursor-pointer text-sm text-muted-foreground transition-colors hover:text-destructive'
@@ -125,14 +151,35 @@ export function NutritionTable({
                         {p.code}
                       </span>
                     </div>
-                    {/* Dismiss button — generously sized for mobile taps */}
-                    <button
-                      onClick={() => onDismiss(p.code)}
-                      aria-label={`Dismiss ${name}`}
-                      className='flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
-                    >
-                      <X className='size-3.5' aria-hidden='true' />
-                    </button>
+                    <div className='flex shrink-0 items-center gap-0.5'>
+                      {/* Save button */}
+                      {onSaveProduct && (
+                        <button
+                          onClick={async () => {
+                            setSavingProduct(p.code);
+                            await onSaveProduct(p.code);
+                            setSavingProduct(null);
+                          }}
+                          disabled={savingProduct === p.code}
+                          aria-label={`Save ${name}`}
+                          className='flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50'
+                        >
+                          {savingProduct === p.code ? (
+                            <Loader2 className='size-3.5 animate-spin' aria-hidden='true' />
+                          ) : (
+                            <Save className='size-3.5' aria-hidden='true' />
+                          )}
+                        </button>
+                      )}
+                      {/* Dismiss button — generously sized for mobile taps */}
+                      <button
+                        onClick={() => onDismiss(p.code)}
+                        aria-label={`Dismiss ${name}`}
+                        className='flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+                      >
+                        <X className='size-3.5' aria-hidden='true' />
+                      </button>
+                    </div>
                   </div>
                 </TableHead>
               );

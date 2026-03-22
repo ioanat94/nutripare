@@ -8,6 +8,7 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase';
+import type { SavedComparison, SavedProduct } from '@/types/firestore';
 
 export async function saveProduct(
   uid: string,
@@ -79,4 +80,22 @@ export async function deleteComparison(
       await deleteDoc(doc.ref);
     }
   }
+}
+
+export async function getSavedProducts(uid: string): Promise<SavedProduct[]> {
+  const col = collection(db, 'users', uid, 'products');
+  const snapshot = await getDocs(col);
+  return snapshot.docs.map(
+    (d) => ({ id: d.id, ...d.data() }) as SavedProduct,
+  );
+}
+
+export async function getSavedComparisons(
+  uid: string,
+): Promise<SavedComparison[]> {
+  const col = collection(db, 'users', uid, 'comparisons');
+  const snapshot = await getDocs(col);
+  return snapshot.docs.map(
+    (d) => ({ id: d.id, ...d.data() }) as SavedComparison,
+  );
 }

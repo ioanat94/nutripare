@@ -2,7 +2,14 @@
 
 import { Loader2, ScanBarcode, TriangleAlert } from 'lucide-react';
 import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
-import { saveComparison, saveProduct } from '@/lib/firestore';
+import {
+  deleteComparison,
+  deleteProduct,
+  getSavedProductEans,
+  isComparisonSaved,
+  saveComparison,
+  saveProduct,
+} from '@/lib/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +18,7 @@ import type { ProductNutrition } from '@/types/openfoodfacts';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const BarcodeScanner = dynamic(() => import('@/components/barcode-scanner'), {
   ssr: false,
@@ -38,6 +45,24 @@ export default function ComparePage() {
   const [notFoundCodes, setNotFoundCodes] = useState<string[]>([]);
   const [invalidCodes, setInvalidCodes] = useState<string[]>([]);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [savedProductCodes, setSavedProductCodes] = useState<Set<string>>(
+    new Set(),
+  );
+  const [comparisonSaved, setComparisonSaved] = useState(false);
+
+  const productCodesKey = products.map((p) => p.code).join(',');
+  useEffect(() => {
+    if (!user || products.length === 0) return;
+    const codes = products.map((p) => p.code);
+    Promise.all([
+      getSavedProductEans(user.id, codes),
+      isComparisonSaved(user.id, codes),
+    ]).then(([savedEans, compSaved]) => {
+      setSavedProductCodes(savedEans);
+      setComparisonSaved(compSaved);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productCodesKey, user?.id]);
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -53,6 +78,7 @@ export default function ComparePage() {
           notFound.push(code);
         } else {
           setProducts((prev) => replaceOrAppend(prev, product));
+          setComparisonSaved(false);
         }
       } catch {
         notFound.push(code);
@@ -72,12 +98,20 @@ export default function ComparePage() {
       }
       return next;
     });
+    setSavedProductCodes((prev) => {
+      const next = new Set(prev);
+      next.delete(code);
+      return next;
+    });
+    setComparisonSaved(false);
   }
 
   function handleClearAll() {
     setProducts([]);
     setNotFoundCodes([]);
     setInvalidCodes([]);
+    setSavedProductCodes(new Set());
+    setComparisonSaved(false);
   }
 
   async function handleSaveProduct(code: string) {
@@ -87,13 +121,30 @@ export default function ComparePage() {
     const name = product.product_name || code;
     try {
       await saveProduct(user.id, { name, ean: code });
+      setSavedProductCodes((prev) => new Set(prev).add(code));
       toast.success('Product saved');
     } catch (e) {
       if (e instanceof Error && e.message === 'DUPLICATE') {
+        setSavedProductCodes((prev) => new Set(prev).add(code));
         toast.info('Product already saved');
       } else {
         toast.error('Failed to save product');
       }
+    }
+  }
+
+  async function handleUnsaveProduct(code: string) {
+    if (!user) return;
+    try {
+      await deleteProduct(user.id, code);
+      setSavedProductCodes((prev) => {
+        const next = new Set(prev);
+        next.delete(code);
+        return next;
+      });
+      toast.success('Product removed');
+    } catch {
+      toast.error('Failed to remove product');
     }
   }
 
@@ -104,13 +155,27 @@ export default function ComparePage() {
     const eans = products.map((p) => p.code);
     try {
       await saveComparison(user.id, { name, eans });
+      setComparisonSaved(true);
       toast.success('Comparison saved');
     } catch (e) {
       if (e instanceof Error && e.message === 'DUPLICATE') {
+        setComparisonSaved(true);
         toast.info('Comparison already saved');
       } else {
         toast.error('Failed to save comparison');
       }
+    }
+  }
+
+  async function handleUnsaveComparison() {
+    if (!user) return;
+    const eans = products.map((p) => p.code);
+    try {
+      await deleteComparison(user.id, eans);
+      setComparisonSaved(false);
+      toast.success('Comparison removed');
+    } catch {
+      toast.error('Failed to remove comparison');
     }
   }
 
@@ -124,6 +189,7 @@ export default function ComparePage() {
       } else {
         setProducts((prev) => replaceOrAppend(prev, product));
         setNotFoundCodes([]);
+        setComparisonSaved(false);
       }
     } catch {
       setNotFoundCodes([code]);
@@ -223,6 +289,10 @@ export default function ComparePage() {
             onClearAll={handleClearAll}
             onSaveProduct={user ? handleSaveProduct : undefined}
             onSaveComparison={user ? handleSaveComparison : undefined}
+            savedProductCodes={savedProductCodes}
+            comparisonSaved={comparisonSaved}
+            onUnsaveProduct={user ? handleUnsaveProduct : undefined}
+            onUnsaveComparison={user ? handleUnsaveComparison : undefined}
           />
           <p className='mt-4 text-xs text-muted-foreground'>
             Data sourced from{' '}

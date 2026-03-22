@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDown, ArrowUp, Loader2, Save, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Loader2, Save, SaveOff, X } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -24,6 +24,10 @@ interface NutritionTableProps {
   onClearAll: () => void;
   onSaveProduct?: (code: string) => Promise<void>;
   onSaveComparison?: () => Promise<void>;
+  savedProductCodes?: Set<string>;
+  comparisonSaved?: boolean;
+  onUnsaveProduct?: (code: string) => Promise<void>;
+  onUnsaveComparison?: () => Promise<void>;
 }
 
 const ROWS = [
@@ -59,6 +63,10 @@ export function NutritionTable({
   onClearAll,
   onSaveProduct,
   onSaveComparison,
+  savedProductCodes,
+  comparisonSaved,
+  onUnsaveProduct,
+  onUnsaveComparison,
 }: NutritionTableProps) {
   const [sort, setSort] = useState<SortState>(null);
   const [savingProduct, setSavingProduct] = useState<string | null>(null);
@@ -92,24 +100,50 @@ export function NutritionTable({
           <p className='text-sm text-muted-foreground'>
             {products.length} {products.length === 1 ? 'product' : 'products'}
           </p>
-          {onSaveComparison && products.length >= 2 && (
-            <button
-              onClick={async () => {
-                setSavingComparison(true);
-                await onSaveComparison();
-                setSavingComparison(false);
-              }}
-              disabled={savingComparison}
-              className='flex cursor-pointer items-center gap-1.5 text-sm text-positive transition-colors hover:text-positive/80 disabled:cursor-not-allowed disabled:opacity-50'
-            >
-              {savingComparison ? (
-                <Loader2 className='size-3.5 animate-spin' aria-hidden='true' />
-              ) : (
-                <Save className='size-3.5' aria-hidden='true' />
-              )}
-              Save Comparison
-            </button>
-          )}
+          {products.length >= 2 &&
+            (comparisonSaved
+              ? onUnsaveComparison && (
+                  <button
+                    onClick={async () => {
+                      setSavingComparison(true);
+                      await onUnsaveComparison();
+                      setSavingComparison(false);
+                    }}
+                    disabled={savingComparison}
+                    className='flex cursor-pointer items-center gap-1.5 text-sm text-destructive transition-colors hover:text-destructive/80 disabled:cursor-not-allowed disabled:opacity-50'
+                  >
+                    {savingComparison ? (
+                      <Loader2
+                        className='size-3.5 animate-spin'
+                        aria-hidden='true'
+                      />
+                    ) : (
+                      <SaveOff className='size-3.5' aria-hidden='true' />
+                    )}
+                    Unsave Comparison
+                  </button>
+                )
+              : onSaveComparison && (
+                  <button
+                    onClick={async () => {
+                      setSavingComparison(true);
+                      await onSaveComparison();
+                      setSavingComparison(false);
+                    }}
+                    disabled={savingComparison}
+                    className='flex cursor-pointer items-center gap-1.5 text-sm text-positive transition-colors hover:text-positive/80 disabled:cursor-not-allowed disabled:opacity-50'
+                  >
+                    {savingComparison ? (
+                      <Loader2
+                        className='size-3.5 animate-spin'
+                        aria-hidden='true'
+                      />
+                    ) : (
+                      <Save className='size-3.5' aria-hidden='true' />
+                    )}
+                    Save Comparison
+                  </button>
+                ))}
         </div>
         <button
           onClick={onClearAll}
@@ -150,28 +184,53 @@ export function NutritionTable({
                       </span>
                     </div>
                     <div className='flex shrink-0 items-center gap-0.5'>
-                      {/* Save button */}
-                      {onSaveProduct && (
-                        <button
-                          onClick={async () => {
-                            setSavingProduct(p.code);
-                            await onSaveProduct(p.code);
-                            setSavingProduct(null);
-                          }}
-                          disabled={savingProduct === p.code}
-                          aria-label={`Save ${name}`}
-                          className='flex size-7 cursor-pointer items-center justify-center rounded-md text-positive transition-colors hover:bg-positive/10 disabled:cursor-not-allowed disabled:opacity-50'
-                        >
-                          {savingProduct === p.code ? (
-                            <Loader2
-                              className='size-3.5 animate-spin'
-                              aria-hidden='true'
-                            />
-                          ) : (
-                            <Save className='size-3.5' aria-hidden='true' />
+                      {/* Save/unsave button */}
+                      {savedProductCodes?.has(p.code)
+                        ? onUnsaveProduct && (
+                            <button
+                              onClick={async () => {
+                                setSavingProduct(p.code);
+                                await onUnsaveProduct(p.code);
+                                setSavingProduct(null);
+                              }}
+                              disabled={savingProduct === p.code}
+                              aria-label={`Unsave ${name}`}
+                              className='flex size-7 cursor-pointer items-center justify-center rounded-md text-destructive transition-colors hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50'
+                            >
+                              {savingProduct === p.code ? (
+                                <Loader2
+                                  className='size-3.5 animate-spin'
+                                  aria-hidden='true'
+                                />
+                              ) : (
+                                <SaveOff
+                                  className='size-3.5'
+                                  aria-hidden='true'
+                                />
+                              )}
+                            </button>
+                          )
+                        : onSaveProduct && (
+                            <button
+                              onClick={async () => {
+                                setSavingProduct(p.code);
+                                await onSaveProduct(p.code);
+                                setSavingProduct(null);
+                              }}
+                              disabled={savingProduct === p.code}
+                              aria-label={`Save ${name}`}
+                              className='flex size-7 cursor-pointer items-center justify-center rounded-md text-positive transition-colors hover:bg-positive/10 disabled:cursor-not-allowed disabled:opacity-50'
+                            >
+                              {savingProduct === p.code ? (
+                                <Loader2
+                                  className='size-3.5 animate-spin'
+                                  aria-hidden='true'
+                                />
+                              ) : (
+                                <Save className='size-3.5' aria-hidden='true' />
+                              )}
+                            </button>
                           )}
-                        </button>
-                      )}
                       {/* Dismiss button — generously sized for mobile taps */}
                       <button
                         onClick={() => onDismiss(p.code)}

@@ -25,28 +25,32 @@ const { fetchProduct } = await import('@/lib/openfoodfacts');
 const mockFetchProduct = vi.mocked(fetchProduct);
 
 describe('parseEanInput', () => {
-  it('returns [] for empty string', () => {
-    expect(parseEanInput('')).toEqual([]);
+  it('returns empty arrays for empty string', () => {
+    expect(parseEanInput('')).toEqual({ valid: [], invalid: [] });
   });
 
-  it('returns [] for only commas and spaces', () => {
-    expect(parseEanInput(' , , ')).toEqual([]);
+  it('returns empty arrays for only commas and spaces', () => {
+    expect(parseEanInput(' , , ')).toEqual({ valid: [], invalid: [] });
   });
 
   it('trims whitespace from codes', () => {
-    expect(parseEanInput(' 123 , 456 ')).toEqual(['123', '456']);
+    expect(parseEanInput(' 12345678 , 87654321 ')).toEqual({ valid: ['12345678', '87654321'], invalid: [] });
   });
 
   it('deduplicates repeated codes', () => {
-    expect(parseEanInput('123,123,456')).toEqual(['123', '456']);
+    expect(parseEanInput('12345678,12345678,87654321')).toEqual({ valid: ['12345678', '87654321'], invalid: [] });
   });
 
   it('handles a single code without comma', () => {
-    expect(parseEanInput('1234567890123')).toEqual(['1234567890123']);
+    expect(parseEanInput('1234567890123')).toEqual({ valid: ['1234567890123'], invalid: [] });
   });
 
   it('handles multiple codes with irregular spacing', () => {
-    expect(parseEanInput('111 ,222,  333  ')).toEqual(['111', '222', '333']);
+    expect(parseEanInput('12345678 ,87654321,  11223344  ')).toEqual({ valid: ['12345678', '87654321', '11223344'], invalid: [] });
+  });
+
+  it('separates valid EANs from invalid tokens', () => {
+    expect(parseEanInput('12345678,abc,87654321')).toEqual({ valid: ['12345678', '87654321'], invalid: ['abc'] });
   });
 });
 
@@ -184,12 +188,12 @@ describe('ComparePage', () => {
     mockFetchProduct.mockResolvedValue(null);
     await renderPage();
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
-      target: { value: '111,222' },
+      target: { value: '12345678,87654321' },
     });
     fireEvent.click(screen.getByRole('button', { name: /look up/i }));
     await waitFor(() => {
-      expect(mockFetchProduct).toHaveBeenCalledWith('111');
-      expect(mockFetchProduct).toHaveBeenCalledWith('222');
+      expect(mockFetchProduct).toHaveBeenCalledWith('12345678');
+      expect(mockFetchProduct).toHaveBeenCalledWith('87654321');
     });
   });
 
@@ -197,11 +201,11 @@ describe('ComparePage', () => {
     mockFetchProduct.mockResolvedValue(null);
     await renderPage();
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
-      target: { value: '000' },
+      target: { value: '12345678' },
     });
     fireEvent.click(screen.getByRole('button', { name: /look up/i }));
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('000');
+      expect(screen.getByRole('alert')).toHaveTextContent('12345678');
     });
   });
 
@@ -209,11 +213,11 @@ describe('ComparePage', () => {
     mockFetchProduct.mockRejectedValue(new Error('Network error'));
     await renderPage();
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
-      target: { value: '999' },
+      target: { value: '87654321' },
     });
     fireEvent.click(screen.getByRole('button', { name: /look up/i }));
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('999');
+      expect(screen.getByRole('alert')).toHaveTextContent('87654321');
     });
   });
 });

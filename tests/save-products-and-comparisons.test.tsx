@@ -214,29 +214,29 @@ describe('Compare page — save handlers', () => {
 
   it('shows "Product already saved" info toast on duplicate', async () => {
     mockSaveProduct.mockRejectedValueOnce(new Error('DUPLICATE'));
-    await renderCompareWithProducts([{ code: '111', product_name: 'Nutella' }]);
+    await renderCompareWithProducts([{ code: '11111111', product_name: 'Nutella' }]);
     fireEvent.click(screen.getByRole('button', { name: /save nutella/i }));
     await waitFor(() => expect(toast.info).toHaveBeenCalledWith('Product already saved'));
   });
 
   it('shows error toast when saveProduct fails with unknown error', async () => {
     mockSaveProduct.mockRejectedValueOnce(new Error('network'));
-    await renderCompareWithProducts([{ code: '111', product_name: 'Nutella' }]);
+    await renderCompareWithProducts([{ code: '11111111', product_name: 'Nutella' }]);
     fireEvent.click(screen.getByRole('button', { name: /save nutella/i }));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Failed to save product'));
   });
 
   it('calls saveComparison with correctly formatted name and eans', async () => {
     await renderCompareWithProducts([
-      { code: '111', product_name: 'Nutella' },
-      { code: '222', product_name: 'Skippy' },
-      { code: '333', product_name: 'Jif' },
+      { code: '11111111', product_name: 'Nutella' },
+      { code: '22222222', product_name: 'Skippy' },
+      { code: '33333333', product_name: 'Jif' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: /save comparison/i }));
     await waitFor(() =>
       expect(mockSaveComparison).toHaveBeenCalledWith('uid-123', {
         name: 'Nutella + 2 others',
-        eans: ['111', '222', '333'],
+        eans: ['11111111', '22222222', '33333333'],
       }),
     );
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Comparison saved'));
@@ -245,8 +245,8 @@ describe('Compare page — save handlers', () => {
   it('shows "Comparison already saved" info toast on duplicate', async () => {
     mockSaveComparison.mockRejectedValueOnce(new Error('DUPLICATE'));
     await renderCompareWithProducts([
-      { code: '111', product_name: 'Nutella' },
-      { code: '222', product_name: 'Skippy' },
+      { code: '11111111', product_name: 'Nutella' },
+      { code: '22222222', product_name: 'Skippy' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: /save comparison/i }));
     await waitFor(() => expect(toast.info).toHaveBeenCalledWith('Comparison already saved'));
@@ -254,7 +254,7 @@ describe('Compare page — save handlers', () => {
 
   it('does not render save buttons when user is not authenticated', async () => {
     mockUseAuth.mockReturnValue({ user: null, loading: false });
-    await renderCompareWithProducts([{ code: '111', product_name: 'Nutella' }]);
+    await renderCompareWithProducts([{ code: '11111111', product_name: 'Nutella' }]);
     expect(screen.queryByRole('button', { name: /save nutella/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /save comparison/i })).toBeNull();
   });

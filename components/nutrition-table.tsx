@@ -1,9 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-
 import { ArrowDown, ArrowUp, Loader2, Save, X } from 'lucide-react';
-
 import {
   Table,
   TableBody,
@@ -16,6 +13,7 @@ import { getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
 
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import type { ThresholdColor } from '@/utils/thresholds';
+import { useState } from 'react';
 
 type SortDir = 'desc' | 'asc';
 type SortState = { key: string; dir: SortDir } | null;
@@ -87,7 +85,7 @@ export function NutritionTable({
     : products;
 
   return (
-    <div>
+    <div className='overflow-x-auto'>
       {/* Toolbar */}
       <div className='mb-3 flex items-center justify-between'>
         <div className='flex items-center gap-3'>
@@ -102,7 +100,7 @@ export function NutritionTable({
                 setSavingComparison(false);
               }}
               disabled={savingComparison}
-              className='flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50'
+              className='flex cursor-pointer items-center gap-1.5 text-sm text-positive transition-colors hover:text-positive/80 disabled:cursor-not-allowed disabled:opacity-50'
             >
               {savingComparison ? (
                 <Loader2 className='size-3.5 animate-spin' aria-hidden='true' />
@@ -115,7 +113,7 @@ export function NutritionTable({
         </div>
         <button
           onClick={onClearAll}
-          className='cursor-pointer text-sm text-muted-foreground transition-colors hover:text-destructive'
+          className='cursor-pointer text-sm text-destructive transition-colors hover:text-destructive/80'
         >
           Clear all
         </button>
@@ -123,7 +121,7 @@ export function NutritionTable({
 
       <Table
         className='table-fixed'
-        style={{ width: `calc(10rem + ${sortedProducts.length} * 12rem)` }}
+        style={{ width: `calc(10rem + ${sortedProducts.length} * 14rem)` }}
       >
         <TableHeader>
           <TableRow className='hover:bg-transparent'>
@@ -162,10 +160,13 @@ export function NutritionTable({
                           }}
                           disabled={savingProduct === p.code}
                           aria-label={`Save ${name}`}
-                          className='flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50'
+                          className='flex size-7 cursor-pointer items-center justify-center rounded-md text-positive transition-colors hover:bg-positive/10 disabled:cursor-not-allowed disabled:opacity-50'
                         >
                           {savingProduct === p.code ? (
-                            <Loader2 className='size-3.5 animate-spin' aria-hidden='true' />
+                            <Loader2
+                              className='size-3.5 animate-spin'
+                              aria-hidden='true'
+                            />
                           ) : (
                             <Save className='size-3.5' aria-hidden='true' />
                           )}
@@ -175,7 +176,7 @@ export function NutritionTable({
                       <button
                         onClick={() => onDismiss(p.code)}
                         aria-label={`Dismiss ${name}`}
-                        className='flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+                        className='flex size-7 cursor-pointer items-center justify-center rounded-md text-destructive transition-colors hover:bg-destructive/10'
                       >
                         <X className='size-3.5' aria-hidden='true' />
                       </button>
@@ -190,7 +191,11 @@ export function NutritionTable({
         <TableBody>
           {ROWS.map((row, i) => {
             const isActive = sort?.key === row.key;
-            const rowBg = isActive ? 'bg-primary/10' : i % 2 === 0 ? 'bg-muted/30' : '';
+            const rowBg = isActive
+              ? 'bg-primary/10'
+              : i % 2 === 0
+                ? 'bg-muted/30'
+                : '';
             return (
               <TableRow key={row.key} className={rowBg}>
                 {/* Nutrient label — sticky, clickable to sort */}

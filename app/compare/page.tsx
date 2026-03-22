@@ -1,17 +1,16 @@
 'use client';
 
 import { Loader2, ScanBarcode, TriangleAlert } from 'lucide-react';
-import { toast } from 'sonner';
-
 import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
 import { saveComparison, saveProduct } from '@/lib/firestore';
-import { useAuth } from '@/contexts/auth-context';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NutritionTable } from '@/components/nutrition-table';
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import dynamic from 'next/dynamic';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/auth-context';
 import { useState } from 'react';
 
 const BarcodeScanner = dynamic(() => import('@/components/barcode-scanner'), {
@@ -37,15 +36,17 @@ export default function ComparePage() {
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<ProductNutrition[]>([]);
   const [notFoundCodes, setNotFoundCodes] = useState<string[]>([]);
+  const [invalidCodes, setInvalidCodes] = useState<string[]>([]);
   const [scannerOpen, setScannerOpen] = useState(false);
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    const codes = parseEanInput(input);
-    if (codes.length === 0) return;
+    const { valid, invalid } = parseEanInput(input);
+    setInvalidCodes(invalid);
+    if (valid.length === 0) return;
     setLoading(true);
     const notFound: string[] = [];
-    for (const code of codes) {
+    for (const code of valid) {
       try {
         const product = await fetchProduct(code);
         if (product === null) {
@@ -65,7 +66,10 @@ export default function ComparePage() {
   function handleDismiss(code: string) {
     setProducts((prev) => {
       const next = prev.filter((p) => p.code !== code);
-      if (next.length === 0) setNotFoundCodes([]);
+      if (next.length === 0) {
+        setNotFoundCodes([]);
+        setInvalidCodes([]);
+      }
       return next;
     });
   }
@@ -73,6 +77,7 @@ export default function ComparePage() {
   function handleClearAll() {
     setProducts([]);
     setNotFoundCodes([]);
+    setInvalidCodes([]);
   }
 
   async function handleSaveProduct(code: string) {
@@ -127,7 +132,7 @@ export default function ComparePage() {
   }
 
   return (
-    <main className='mx-auto max-w-5xl px-6 py-12'>
+    <main className='mx-auto w-full max-w-5xl px-6 py-12'>
       {/* Header */}
       <div className='mb-8'>
         <h1 className='text-3xl font-bold tracking-tight'>Compare products</h1>
@@ -178,7 +183,19 @@ export default function ComparePage() {
         />
       )}
 
-      {/* Not-found notice — subtle, non-alarming */}
+      {/* Invalid format notice */}
+      {invalidCodes.length > 0 && (
+        <p
+          role='alert'
+          className='mt-3 flex items-center gap-1.5 text-sm text-warning'
+        >
+          <TriangleAlert className='size-4 shrink-0' aria-hidden='true' />
+          Invalid EAN format:{' '}
+          <span className='font-mono'>{invalidCodes.join(', ')}</span>
+        </p>
+      )}
+
+      {/* Not-found notice */}
       {notFoundCodes.length > 0 && (
         <p
           role='alert'

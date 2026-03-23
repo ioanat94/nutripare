@@ -2,13 +2,18 @@ import {
   addDoc,
   collection,
   deleteDoc,
+  doc,
+  getDoc,
   getDocs,
   query,
+  setDoc,
   where,
 } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase';
-import type { SavedComparison, SavedProduct } from '@/types/firestore';
+import type { NutritionSettings, SavedComparison, SavedProduct } from '@/types/firestore';
+
+const VALID_RATINGS = new Set(['positive', 'info', 'warning', 'negative']);
 
 export async function saveProduct(
   uid: string,
@@ -98,4 +103,25 @@ export async function getSavedComparisons(
   return snapshot.docs.map(
     (d) => ({ id: d.id, ...d.data() }) as SavedComparison,
   );
+}
+
+export async function getNutritionSettings(
+  uid: string,
+): Promise<NutritionSettings | null> {
+  const ref = doc(db, 'users', uid, 'settings', 'nutrition');
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+  const data = snap.data() as NutritionSettings;
+  return {
+    ...data,
+    rules: (data.rules ?? []).filter((r) => VALID_RATINGS.has(r.rating)),
+  };
+}
+
+export async function saveNutritionSettings(
+  uid: string,
+  settings: NutritionSettings,
+): Promise<void> {
+  const ref = doc(db, 'users', uid, 'settings', 'nutrition');
+  await setDoc(ref, settings);
 }

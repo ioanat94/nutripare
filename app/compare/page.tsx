@@ -5,11 +5,13 @@ import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
 import {
   deleteComparison,
   deleteProduct,
+  getNutritionSettings,
   getSavedProductEans,
   isComparisonSaved,
   saveComparison,
   saveProduct,
 } from '@/lib/firestore';
+import type { NutritionSettings } from '@/types/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,7 +41,7 @@ function replaceOrAppend(
 }
 
 function ComparePageContent() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -51,6 +53,17 @@ function ComparePageContent() {
     new Set(),
   );
   const [comparisonSaved, setComparisonSaved] = useState(false);
+  const [nutritionSettings, setNutritionSettings] = useState<NutritionSettings | null | undefined>(undefined);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setNutritionSettings(null);
+      return;
+    }
+    getNutritionSettings(user.id).then(setNutritionSettings);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, authLoading]);
 
   const productCodesKey = products.map((p) => p.code).join(',');
   useEffect(() => {
@@ -316,7 +329,7 @@ function ComparePageContent() {
       )}
 
       {/* Results */}
-      {!loading && products.length > 0 && (
+      {!loading && !authLoading && nutritionSettings !== undefined && products.length > 0 && (
         <div className='mt-10'>
           <NutritionTable
             products={products}
@@ -328,6 +341,7 @@ function ComparePageContent() {
             comparisonSaved={comparisonSaved}
             onUnsaveProduct={user ? handleUnsaveProduct : undefined}
             onUnsaveComparison={user ? handleUnsaveComparison : undefined}
+            settings={nutritionSettings}
           />
           <p className='mt-4 text-xs text-muted-foreground'>
             Data sourced from{' '}

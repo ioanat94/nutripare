@@ -1,4 +1,6 @@
-export type ThresholdColor = 'positive' | 'warning' | 'negative';
+import type { NutritionRule, ThresholdColor } from '@/types/firestore';
+
+export type { ThresholdColor };
 export type ThresholdDirection = 'above' | 'below';
 
 export interface ThresholdCondition {
@@ -26,16 +28,36 @@ export const THRESHOLDS: NutrientThresholds = {
   ],
 };
 
+export function getDefaultRules(): NutritionRule[] {
+  const rules: NutritionRule[] = [];
+  for (const [nutrient, conditions] of Object.entries(THRESHOLDS)) {
+    for (const cond of conditions) {
+      rules.push({
+        nutrient,
+        direction: cond.when,
+        value: cond.value,
+        rating: cond.color,
+      });
+    }
+  }
+  return rules;
+}
+
 export function getThresholdColor(
   nutrient: string,
   value: number | undefined,
+  rules: NutritionRule[],
 ): ThresholdColor | null {
   if (value === undefined || isNaN(value)) return null;
-  const conditions = THRESHOLDS[nutrient];
-  if (!conditions) return null;
-  for (const cond of conditions) {
-    if (cond.when === 'above' && value > cond.value) return cond.color;
-    if (cond.when === 'below' && value < cond.value) return cond.color;
+  const sorted = rules
+    .filter((r) => r.nutrient === nutrient)
+    .sort((a, b) => {
+      if (a.direction !== b.direction) return 0;
+      return a.direction === 'above' ? b.value - a.value : a.value - b.value;
+    });
+  for (const rule of sorted) {
+    if (rule.direction === 'above' && value > rule.value) return rule.rating;
+    if (rule.direction === 'below' && value < rule.value) return rule.rating;
   }
   return null;
 }
@@ -46,25 +68,32 @@ export function getExtremeEmoji(
   nutrient: string,
   values: (number | undefined)[],
   index: number,
+  rules: NutritionRule[],
+  visibleNutrients: string[],
 ): '👑' | '🚩' | null {
   if (values.length < 2) return null;
+  if (!visibleNutrients.includes(nutrient)) return null;
   const value = values[index];
   if (value === undefined || isNaN(value)) return null;
-  const conditions = THRESHOLDS[nutrient];
-  if (!conditions) return null;
 
-  for (const cond of conditions) {
+  const sorted = rules
+    .filter((r) => r.nutrient === nutrient && (r.rating === 'positive' || r.rating === 'negative'))
+    .sort((a, b) => {
+      if (a.direction !== b.direction) return 0;
+      return a.direction === 'above' ? b.value - a.value : a.value - b.value;
+    });
+  for (const rule of sorted) {
     const passes = (v: number) =>
-      cond.when === 'above' ? v > cond.value : v < cond.value;
+      rule.direction === 'above' ? v > rule.value : v < rule.value;
     if (!passes(value)) continue;
     const passing = values
       .filter((v): v is number => v !== undefined && !isNaN(v) && passes(v))
       .map(round1);
     if (passing.length === 0) continue;
     const extreme =
-      cond.when === 'above' ? Math.max(...passing) : Math.min(...passing);
+      rule.direction === 'above' ? Math.max(...passing) : Math.min(...passing);
     if (round1(value) === extreme) {
-      return cond.color === 'positive' ? '👑' : '🚩';
+      return rule.rating === 'positive' ? '👑' : '🚩';
     }
   }
 

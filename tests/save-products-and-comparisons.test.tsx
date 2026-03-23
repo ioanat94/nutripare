@@ -17,6 +17,7 @@ vi.mock('@/lib/firestore', () => ({
   deleteComparison: vi.fn(),
   getSavedProductEans: vi.fn().mockResolvedValue(new Set()),
   isComparisonSaved: vi.fn().mockResolvedValue(false),
+  getNutritionSettings: vi.fn().mockResolvedValue(null),
 }));
 
 // Mock sonner

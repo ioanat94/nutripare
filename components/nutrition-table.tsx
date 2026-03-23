@@ -26,8 +26,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
+import { getDefaultRules, getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
 
+import type { NutritionSettings } from '@/types/firestore';
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import type { ThresholdColor } from '@/utils/thresholds';
 import { toast } from 'sonner';
@@ -46,9 +47,10 @@ interface NutritionTableProps {
   comparisonSaved?: boolean;
   onUnsaveProduct?: (code: string) => Promise<void>;
   onUnsaveComparison?: () => Promise<void>;
+  settings?: NutritionSettings | null;
 }
 
-const ROWS = [
+export const ROWS = [
   { label: 'Calories (kcal)', key: 'kcals' },
   { label: 'Protein (g)', key: 'protein' },
   { label: 'Carbohydrates (g)', key: 'carbohydrates' },
@@ -61,14 +63,19 @@ const ROWS = [
 
 const COLOR_CLASS: Record<ThresholdColor, string> = {
   positive: 'text-positive',
+  info: 'text-info',
   warning: 'text-warning',
   negative: 'text-destructive',
 };
 
-function renderCell(nutrient: string, value: number | undefined) {
+function renderCell(
+  nutrient: string,
+  value: number | undefined,
+  rules: ReturnType<typeof getDefaultRules>,
+) {
   if (value === undefined || isNaN(value))
     return { text: '—', className: 'text-muted-foreground' };
-  const color = getThresholdColor(nutrient, value);
+  const color = getThresholdColor(nutrient, value, rules);
   return {
     text: Number.isInteger(value) ? String(value) : value.toFixed(1),
     className: color ? COLOR_CLASS[color] : '',
@@ -85,7 +92,15 @@ export function NutritionTable({
   comparisonSaved,
   onUnsaveProduct,
   onUnsaveComparison,
+  settings,
 }: NutritionTableProps) {
+  const defaultRules = getDefaultRules();
+  const visibleNutrients = settings?.visibleNutrients ?? ROWS.map((r) => r.key);
+  const rules = settings?.rules ?? defaultRules;
+  // undefined = not yet fetched, suppress emojis; null = fetched (no doc), use defaults
+  const showCrown = settings !== undefined ? (settings?.showCrown ?? true) : false;
+  const showFlag = settings !== undefined ? (settings?.showFlag ?? true) : false;
+
   const [sort, setSort] = useState<SortState>(null);
   const [savingProduct, setSavingProduct] = useState<string | null>(null);
   const [savingComparison, setSavingComparison] = useState(false);
@@ -296,59 +311,78 @@ export function NutritionTable({
         </TableHeader>
 
         <TableBody>
-          {ROWS.map((row, i) => {
-            const isActive = sort?.key === row.key;
-            const rowBg = isActive
-              ? 'bg-primary/10'
-              : i % 2 === 0
-                ? 'bg-muted/30'
-                : '';
-            return (
-              <TableRow key={row.key} className={rowBg}>
-                {/* Nutrient label — sticky, clickable to sort */}
-                <TableCell
-                  scope='row'
-                  className={`sticky left-0 z-10 w-40 py-3 ${isActive ? 'bg-primary/10' : 'bg-background'}`}
-                >
-                  <button
-                    onClick={() => handleRowClick(row.key)}
-                    className={`flex w-full cursor-pointer items-center gap-1 text-left text-sm transition-colors ${isActive ? 'font-semibold text-foreground' : 'font-medium text-muted-foreground hover:text-foreground'}`}
+          {visibleNutrients.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={sortedProducts.length + 1}
+                className='py-6 text-center text-sm text-muted-foreground'
+              >
+                No nutrients visible. Enable some in Settings → Nutrition.
+              </TableCell>
+            </TableRow>
+          ) : (
+            ROWS.filter((row) => visibleNutrients.includes(row.key)).map((row, i) => {
+              const isActive = sort?.key === row.key;
+              const rowBg = isActive
+                ? 'bg-primary/10'
+                : i % 2 === 0
+                  ? 'bg-muted/30'
+                  : '';
+              return (
+                <TableRow key={row.key} className={rowBg}>
+                  {/* Nutrient label — sticky, clickable to sort */}
+                  <TableCell
+                    scope='row'
+                    className={`sticky left-0 z-10 w-40 py-3 ${isActive ? 'bg-primary/10' : 'bg-background'}`}
                   >
-                    {row.label}
-                    {isActive &&
-                      (sort!.dir === 'desc' ? (
-                        <ArrowDown className='size-3 shrink-0' />
-                      ) : (
-                        <ArrowUp className='size-3 shrink-0' />
-                      ))}
-                  </button>
-                </TableCell>
-
-                {/* Value cells — right-aligned, tabular figures */}
-                {sortedProducts.map((p, j) => {
-                  const { text, className } = renderCell(row.key, p[row.key]);
-                  const emoji = getExtremeEmoji(
-                    row.key,
-                    sortedProducts.map((q) => q[row.key]),
-                    j,
-                  );
-                  return (
-                    <TableCell
-                      key={p.code}
-                      className={`py-3 tabular-nums text-sm font-medium ${className}`}
+                    <button
+                      onClick={() => handleRowClick(row.key)}
+                      className={`flex w-full cursor-pointer items-center gap-1 text-left text-sm transition-colors ${isActive ? 'font-semibold text-foreground' : 'font-medium text-muted-foreground hover:text-foreground'}`}
                     >
-                      <div className='flex items-center justify-end'>
-                        <span className='w-5 shrink-0 text-center text-base leading-none'>
-                          {emoji}
-                        </span>
-                        <span className='w-12 text-right'>{text}</span>
-                      </div>
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            );
-          })}
+                      {row.label}
+                      {isActive &&
+                        (sort!.dir === 'desc' ? (
+                          <ArrowDown className='size-3 shrink-0' />
+                        ) : (
+                          <ArrowUp className='size-3 shrink-0' />
+                        ))}
+                    </button>
+                  </TableCell>
+
+                  {/* Value cells — right-aligned, tabular figures */}
+                  {sortedProducts.map((p, j) => {
+                    const { text, className } = renderCell(row.key, p[row.key as keyof ProductNutrition] as number | undefined, rules);
+                    const rawEmoji = getExtremeEmoji(
+                      row.key,
+                      sortedProducts.map((q) => q[row.key as keyof ProductNutrition] as number | undefined),
+                      j,
+                      rules,
+                      visibleNutrients,
+                    );
+                    const emoji =
+                      rawEmoji === '👑' && !showCrown
+                        ? null
+                        : rawEmoji === '🚩' && !showFlag
+                          ? null
+                          : rawEmoji;
+                    return (
+                      <TableCell
+                        key={p.code}
+                        className={`py-3 tabular-nums text-sm font-medium ${className}`}
+                      >
+                        <div className='flex items-center justify-end'>
+                          <span className='w-5 shrink-0 text-center text-base leading-none'>
+                            {emoji}
+                          </span>
+                          <span className='w-12 text-right'>{text}</span>
+                        </div>
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
     </div>

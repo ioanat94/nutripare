@@ -106,7 +106,7 @@ describe('Settings page — layout', () => {
       screen.getByRole('heading', { name: /^settings$/i, level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^account$/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^nutrients$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^nutrition$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^products$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^comparisons$/i })).toBeInTheDocument();
   });

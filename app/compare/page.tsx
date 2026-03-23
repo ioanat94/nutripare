@@ -74,23 +74,35 @@ function ComparePageContent() {
 
   async function runSearch(rawInput: string) {
     const { valid, invalid } = parseEanInput(rawInput);
-    setInvalidCodes(invalid);
-    if (valid.length === 0) return;
-    setLoading(true);
-    const notFound: string[] = [];
-    for (const code of valid) {
-      try {
-        const product = await fetchProduct(code);
-        if (product === null) {
-          notFound.push(code);
-        } else {
-          setProducts((prev) => replaceOrAppend(prev, product));
-          setComparisonSaved(false);
-        }
-      } catch {
-        notFound.push(code);
-      }
+    if (valid.length === 0) {
+      setInvalidCodes(invalid);
+      return;
     }
+    setLoading(true);
+    setInvalidCodes([]);
+    setNotFoundCodes([]);
+    const notFound: string[] = [];
+    const fetched: ProductNutrition[] = [];
+    await Promise.all(
+      valid.map(async (code) => {
+        try {
+          const product = await fetchProduct(code);
+          if (product === null) notFound.push(code);
+          else fetched.push(product);
+        } catch {
+          notFound.push(code);
+        }
+      }),
+    );
+    if (fetched.length > 0) {
+      setProducts((prev) => {
+        let next = [...prev];
+        for (const p of fetched) next = replaceOrAppend(next, p);
+        return next;
+      });
+      setComparisonSaved(false);
+    }
+    setInvalidCodes(invalid);
     setNotFoundCodes(notFound);
     setInput('');
     setLoading(false);
@@ -261,39 +273,50 @@ function ComparePageContent() {
         />
       )}
 
-      {/* Invalid format notice */}
-      {invalidCodes.length > 0 && (
-        <p
-          role='alert'
-          className='mt-3 flex items-center gap-1.5 text-sm text-warning'
-        >
-          <TriangleAlert className='size-4 shrink-0' aria-hidden='true' />
-          Invalid EAN format:{' '}
-          <span className='font-mono'>{invalidCodes.join(', ')}</span>
-        </p>
+      {/* Loading spinner */}
+      {loading && (
+        <div className='mt-10 flex justify-center'>
+          <Loader2 className='size-6 animate-spin text-muted-foreground' />
+        </div>
       )}
 
-      {/* Not-found notice */}
-      {notFoundCodes.length > 0 && (
-        <p
-          role='alert'
-          className='mt-3 flex items-center gap-1.5 text-sm text-warning'
-        >
-          <TriangleAlert className='size-4 shrink-0' aria-hidden='true' />
-          No product found for:{' '}
-          <span className='font-mono'>{notFoundCodes.join(', ')}</span>
-        </p>
-      )}
+      {!loading && (
+        <>
+          {/* Invalid format notice */}
+          {invalidCodes.length > 0 && (
+            <p
+              role='alert'
+              className='mt-3 flex items-center gap-1.5 text-sm text-warning'
+            >
+              <TriangleAlert className='size-4 shrink-0' aria-hidden='true' />
+              Invalid EAN format:{' '}
+              <span className='font-mono'>{invalidCodes.join(', ')}</span>
+            </p>
+          )}
 
-      {/* One-time hint to keep adding */}
-      {products.length > 0 && (
-        <p className='mt-3 text-sm text-muted-foreground'>
-          Enter another barcode above to add a column.
-        </p>
+          {/* Not-found notice */}
+          {notFoundCodes.length > 0 && (
+            <p
+              role='alert'
+              className='mt-3 flex items-center gap-1.5 text-sm text-warning'
+            >
+              <TriangleAlert className='size-4 shrink-0' aria-hidden='true' />
+              No product found for:{' '}
+              <span className='font-mono'>{notFoundCodes.join(', ')}</span>
+            </p>
+          )}
+
+          {/* One-time hint to keep adding */}
+          {products.length > 0 && (
+            <p className='mt-3 text-sm text-muted-foreground'>
+              Enter another barcode above to add a column.
+            </p>
+          )}
+        </>
       )}
 
       {/* Results */}
-      {products.length > 0 && (
+      {!loading && products.length > 0 && (
         <div className='mt-10'>
           <NutritionTable
             products={products}

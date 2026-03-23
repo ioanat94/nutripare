@@ -1,6 +1,23 @@
 'use client';
 
-import { ArrowDown, ArrowUp, Loader2, Save, SaveOff, X } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  Loader2,
+  MoreHorizontal,
+  Save,
+  SaveOff,
+  Share2,
+  Trash2,
+  X,
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -13,6 +30,7 @@ import { getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
 
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import type { ThresholdColor } from '@/utils/thresholds';
+import { toast } from 'sonner';
 import { useState } from 'react';
 
 type SortDir = 'desc' | 'asc';
@@ -92,65 +110,87 @@ export function NutritionTable({
       })
     : products;
 
+  function handleShare() {
+    const codes = products.map((p) => p.code).join(',');
+    const url = `${window.location.origin}/compare?codes=${encodeURIComponent(codes)}`;
+    navigator.clipboard.writeText(url).then(
+      () => toast.success('Link copied to clipboard'),
+      () => toast.error('Failed to copy link'),
+    );
+  }
+
   return (
     <div className='overflow-x-auto'>
       {/* Toolbar */}
       <div className='mb-3 flex items-center justify-between'>
-        <div className='flex items-center gap-3'>
-          <p className='text-sm text-muted-foreground'>
-            {products.length} {products.length === 1 ? 'product' : 'products'}
-          </p>
-          {products.length >= 2 &&
-            (comparisonSaved
-              ? onUnsaveComparison && (
-                  <button
-                    onClick={async () => {
-                      setSavingComparison(true);
-                      await onUnsaveComparison();
-                      setSavingComparison(false);
-                    }}
-                    disabled={savingComparison}
-                    className='flex cursor-pointer items-center gap-1.5 text-sm text-destructive transition-colors hover:text-destructive/80 disabled:cursor-not-allowed disabled:opacity-50'
-                  >
-                    {savingComparison ? (
-                      <Loader2
-                        className='size-3.5 animate-spin'
-                        aria-hidden='true'
-                      />
-                    ) : (
-                      <SaveOff className='size-3.5' aria-hidden='true' />
-                    )}
-                    Unsave Comparison
-                  </button>
-                )
-              : onSaveComparison && (
-                  <button
-                    onClick={async () => {
-                      setSavingComparison(true);
-                      await onSaveComparison();
-                      setSavingComparison(false);
-                    }}
-                    disabled={savingComparison}
-                    className='flex cursor-pointer items-center gap-1.5 text-sm text-positive transition-colors hover:text-positive/80 disabled:cursor-not-allowed disabled:opacity-50'
-                  >
-                    {savingComparison ? (
-                      <Loader2
-                        className='size-3.5 animate-spin'
-                        aria-hidden='true'
-                      />
-                    ) : (
-                      <Save className='size-3.5' aria-hidden='true' />
-                    )}
-                    Save Comparison
-                  </button>
-                ))}
-        </div>
-        <button
-          onClick={onClearAll}
-          className='cursor-pointer text-sm text-destructive transition-colors hover:text-destructive/80'
-        >
-          Clear all
-        </button>
+        <p className='text-sm text-muted-foreground'>
+          {products.length} {products.length === 1 ? 'product' : 'products'}
+        </p>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label='More options'
+            className='flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+          >
+            <MoreHorizontal className='size-4' aria-hidden='true' />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align='end'>
+            {products.length >= 2 &&
+              (comparisonSaved
+                ? onUnsaveComparison && (
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        setSavingComparison(true);
+                        await onUnsaveComparison();
+                        setSavingComparison(false);
+                      }}
+                      disabled={savingComparison}
+                    >
+                      {savingComparison ? (
+                        <Loader2
+                          className='size-4 animate-spin'
+                          aria-hidden='true'
+                        />
+                      ) : (
+                        <SaveOff className='size-4' aria-hidden='true' />
+                      )}
+                      Unsave
+                    </DropdownMenuItem>
+                  )
+                : onSaveComparison && (
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        setSavingComparison(true);
+                        await onSaveComparison();
+                        setSavingComparison(false);
+                      }}
+                      disabled={savingComparison}
+                    >
+                      {savingComparison ? (
+                        <Loader2
+                          className='size-4 animate-spin'
+                          aria-hidden='true'
+                        />
+                      ) : (
+                        <Save className='size-4' aria-hidden='true' />
+                      )}
+                      Save
+                    </DropdownMenuItem>
+                  ))}
+            <DropdownMenuItem onClick={handleShare}>
+              <Share2 className='size-4' aria-hidden='true' />
+              Share
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={onClearAll}
+              className='text-destructive focus:text-destructive'
+            >
+              <Trash2 className='size-4' aria-hidden='true' />
+              Clear all
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Table
@@ -183,63 +223,71 @@ export function NutritionTable({
                         {p.code}
                       </span>
                     </div>
-                    <div className='flex shrink-0 items-center gap-0.5'>
-                      {/* Save/unsave button */}
-                      {savedProductCodes?.has(p.code)
-                        ? onUnsaveProduct && (
-                            <button
-                              onClick={async () => {
-                                setSavingProduct(p.code);
-                                await onUnsaveProduct(p.code);
-                                setSavingProduct(null);
-                              }}
-                              disabled={savingProduct === p.code}
-                              aria-label={`Unsave ${name}`}
-                              className='flex size-7 cursor-pointer items-center justify-center rounded-md text-destructive transition-colors hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50'
-                            >
-                              {savingProduct === p.code ? (
-                                <Loader2
-                                  className='size-3.5 animate-spin'
-                                  aria-hidden='true'
-                                />
-                              ) : (
-                                <SaveOff
-                                  className='size-3.5'
-                                  aria-hidden='true'
-                                />
-                              )}
-                            </button>
-                          )
-                        : onSaveProduct && (
-                            <button
-                              onClick={async () => {
-                                setSavingProduct(p.code);
-                                await onSaveProduct(p.code);
-                                setSavingProduct(null);
-                              }}
-                              disabled={savingProduct === p.code}
-                              aria-label={`Save ${name}`}
-                              className='flex size-7 cursor-pointer items-center justify-center rounded-md text-positive transition-colors hover:bg-positive/10 disabled:cursor-not-allowed disabled:opacity-50'
-                            >
-                              {savingProduct === p.code ? (
-                                <Loader2
-                                  className='size-3.5 animate-spin'
-                                  aria-hidden='true'
-                                />
-                              ) : (
-                                <Save className='size-3.5' aria-hidden='true' />
-                              )}
-                            </button>
-                          )}
-                      {/* Dismiss button — generously sized for mobile taps */}
-                      <button
-                        onClick={() => onDismiss(p.code)}
-                        aria-label={`Dismiss ${name}`}
-                        className='flex size-7 cursor-pointer items-center justify-center rounded-md text-destructive transition-colors hover:bg-destructive/10'
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        aria-label={`Options for ${name}`}
+                        className='flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
                       >
-                        <X className='size-3.5' aria-hidden='true' />
-                      </button>
-                    </div>
+                        <MoreHorizontal className='size-4' aria-hidden='true' />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align='end'>
+                        {savedProductCodes?.has(p.code)
+                          ? onUnsaveProduct && (
+                              <DropdownMenuItem
+                                onClick={async () => {
+                                  setSavingProduct(p.code);
+                                  await onUnsaveProduct(p.code);
+                                  setSavingProduct(null);
+                                }}
+                                disabled={savingProduct === p.code}
+                              >
+                                {savingProduct === p.code ? (
+                                  <Loader2 className='size-4 animate-spin' aria-hidden='true' />
+                                ) : (
+                                  <SaveOff className='size-4' aria-hidden='true' />
+                                )}
+                                Unsave
+                              </DropdownMenuItem>
+                            )
+                          : onSaveProduct && (
+                              <DropdownMenuItem
+                                onClick={async () => {
+                                  setSavingProduct(p.code);
+                                  await onSaveProduct(p.code);
+                                  setSavingProduct(null);
+                                }}
+                                disabled={savingProduct === p.code}
+                              >
+                                {savingProduct === p.code ? (
+                                  <Loader2 className='size-4 animate-spin' aria-hidden='true' />
+                                ) : (
+                                  <Save className='size-4' aria-hidden='true' />
+                                )}
+                                Save
+                              </DropdownMenuItem>
+                            )}
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const url = `${window.location.origin}/compare?codes=${encodeURIComponent(p.code)}`;
+                            navigator.clipboard.writeText(url).then(
+                              () => toast.success('Link copied to clipboard'),
+                              () => toast.error('Failed to copy link'),
+                            );
+                          }}
+                        >
+                          <Share2 className='size-4' aria-hidden='true' />
+                          Share
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => onDismiss(p.code)}
+                          className='text-destructive focus:text-destructive'
+                        >
+                          <X className='size-4' aria-hidden='true' />
+                          Remove
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </TableHead>
               );

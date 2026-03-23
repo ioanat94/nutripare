@@ -6,16 +6,16 @@ import { AccountTab } from '@/components/settings/account-tab';
 import { Button } from '@/components/ui/button';
 import { ComparisonsTab } from '@/components/settings/comparisons-tab';
 import { LogOut } from 'lucide-react';
-import { NutrientsTab } from '@/components/settings/nutrients-tab';
+import { NutritionTab } from '@/components/settings/nutrition-tab';
 import { ProductsTab } from '@/components/settings/products-tab';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 
-type Tab = 'account' | 'nutrients' | 'products' | 'comparisons';
+type Tab = 'account' | 'nutrition' | 'products' | 'comparisons';
 
-const TABS: Tab[] = ['account', 'nutrients', 'products', 'comparisons'];
+const TABS: Tab[] = ['account', 'nutrition', 'products', 'comparisons'];
 
 export default function SettingsPage() {
   const { user, loading } = useAuth();
@@ -74,7 +74,7 @@ export default function SettingsPage() {
           {activeTab === 'account' && (
             <AccountTab userId={user.id} displayName={user.displayName} />
           )}
-          {activeTab === 'nutrients' && <NutrientsTab />}
+          {activeTab === 'nutrition' && <NutritionTab />}
           {activeTab === 'products' && <ProductsTab userId={user.id} />}
           {activeTab === 'comparisons' && <ComparisonsTab userId={user.id} />}
         </section>

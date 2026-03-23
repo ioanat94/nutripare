@@ -144,7 +144,8 @@ describe('NutritionTable', () => {
         onClearAll={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /dismiss test product/i }));
+    fireEvent.click(screen.getByRole('button', { name: /options for test product/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^remove$/i }));
     expect(onDismiss).toHaveBeenCalledWith('111');
   });
 

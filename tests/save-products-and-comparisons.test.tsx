@@ -70,7 +70,8 @@ describe('NutritionTable — save buttons', () => {
         onClearAll={vi.fn()}
       />,
     );
-    expect(screen.queryByRole('button', { name: /save test product/i })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /options for test product/i }));
+    expect(screen.queryByRole('menuitem', { name: /^save$/i })).toBeNull();
   });
 
   it('renders save product button when onSaveProduct is provided', () => {
@@ -82,7 +83,8 @@ describe('NutritionTable — save buttons', () => {
         onSaveProduct={vi.fn()}
       />,
     );
-    expect(screen.getByRole('button', { name: /save test product/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /options for test product/i }));
+    expect(screen.getByRole('menuitem', { name: /^save$/i })).toBeInTheDocument();
   });
 
   it('does not render save comparison button for fewer than 2 products', () => {
@@ -94,7 +96,8 @@ describe('NutritionTable — save buttons', () => {
         onSaveComparison={vi.fn()}
       />,
     );
-    expect(screen.queryByRole('button', { name: /save comparison/i })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    expect(screen.queryByRole('menuitem', { name: /^save$/i })).toBeNull();
   });
 
   it('renders save comparison button when 2+ products and onSaveComparison is provided', () => {
@@ -110,7 +113,8 @@ describe('NutritionTable — save buttons', () => {
         onSaveComparison={vi.fn()}
       />,
     );
-    expect(screen.getByRole('button', { name: /save comparison/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    expect(screen.getByRole('menuitem', { name: /^save$/i })).toBeInTheDocument();
   });
 
   it('calls onSaveProduct with the correct product code when clicked', async () => {
@@ -123,7 +127,8 @@ describe('NutritionTable — save buttons', () => {
         onSaveProduct={onSaveProduct}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /save test product/i }));
+    fireEvent.click(screen.getByRole('button', { name: /options for test product/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^save$/i }));
     await waitFor(() => expect(onSaveProduct).toHaveBeenCalledWith('999'));
   });
 
@@ -141,11 +146,12 @@ describe('NutritionTable — save buttons', () => {
         onSaveComparison={onSaveComparison}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /save comparison/i }));
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^save$/i }));
     await waitFor(() => expect(onSaveComparison).toHaveBeenCalledTimes(1));
   });
 
-  it('shows spinner while save product is in progress', async () => {
+  it('item is disabled while save product is in progress', async () => {
     let resolve!: () => void;
     const onSaveProduct = vi.fn(
       () => new Promise<void>((res) => { resolve = res; }),
@@ -158,12 +164,17 @@ describe('NutritionTable — save buttons', () => {
         onSaveProduct={onSaveProduct}
       />,
     );
-    const btn = screen.getByRole('button', { name: /save test product/i });
-    fireEvent.click(btn);
-    // button should be disabled while saving
-    await waitFor(() => expect(btn).toBeDisabled());
+    fireEvent.click(screen.getByRole('button', { name: /options for test product/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^save$/i }));
+    // Re-open dropdown to inspect disabled state
+    fireEvent.click(screen.getByRole('button', { name: /options for test product/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: /^save$/i })).toHaveAttribute('data-disabled'),
+    );
     resolve();
-    await waitFor(() => expect(btn).not.toBeDisabled());
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: /^save$/i })).not.toHaveAttribute('data-disabled'),
+    );
   });
 });
 
@@ -206,7 +217,8 @@ describe('Compare page — save handlers', () => {
 
   it('calls saveProduct with correct name and ean, then shows success toast', async () => {
     await renderCompareWithProducts([{ code: '5000112637922', product_name: 'Nutella' }]);
-    fireEvent.click(screen.getByRole('button', { name: /save nutella/i }));
+    fireEvent.click(screen.getByRole('button', { name: /options for nutella/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^save$/i }));
     await waitFor(() =>
       expect(mockSaveProduct).toHaveBeenCalledWith('uid-123', {
         name: 'Nutella',
@@ -219,14 +231,16 @@ describe('Compare page — save handlers', () => {
   it('shows "Product already saved" info toast on duplicate', async () => {
     mockSaveProduct.mockRejectedValueOnce(new Error('DUPLICATE'));
     await renderCompareWithProducts([{ code: '11111111', product_name: 'Nutella' }]);
-    fireEvent.click(screen.getByRole('button', { name: /save nutella/i }));
+    fireEvent.click(screen.getByRole('button', { name: /options for nutella/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^save$/i }));
     await waitFor(() => expect(toast.info).toHaveBeenCalledWith('Product already saved'));
   });
 
   it('shows error toast when saveProduct fails with unknown error', async () => {
     mockSaveProduct.mockRejectedValueOnce(new Error('network'));
     await renderCompareWithProducts([{ code: '11111111', product_name: 'Nutella' }]);
-    fireEvent.click(screen.getByRole('button', { name: /save nutella/i }));
+    fireEvent.click(screen.getByRole('button', { name: /options for nutella/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^save$/i }));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Failed to save product'));
   });
 
@@ -236,7 +250,8 @@ describe('Compare page — save handlers', () => {
       { code: '22222222', product_name: 'Skippy' },
       { code: '33333333', product_name: 'Jif' },
     ]);
-    fireEvent.click(screen.getByRole('button', { name: /save comparison/i }));
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^save$/i }));
     await waitFor(() =>
       expect(mockSaveComparison).toHaveBeenCalledWith('uid-123', {
         name: 'Nutella + 2 others',
@@ -252,14 +267,15 @@ describe('Compare page — save handlers', () => {
       { code: '11111111', product_name: 'Nutella' },
       { code: '22222222', product_name: 'Skippy' },
     ]);
-    fireEvent.click(screen.getByRole('button', { name: /save comparison/i }));
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^save$/i }));
     await waitFor(() => expect(toast.info).toHaveBeenCalledWith('Comparison already saved'));
   });
 
   it('does not render save buttons when user is not authenticated', async () => {
     mockUseAuth.mockReturnValue({ user: null, loading: false });
     await renderCompareWithProducts([{ code: '11111111', product_name: 'Nutella' }]);
-    expect(screen.queryByRole('button', { name: /save nutella/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /save comparison/i })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /options for nutella/i }));
+    expect(screen.queryByRole('menuitem', { name: /^save$/i })).toBeNull();
   });
 });

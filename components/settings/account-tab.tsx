@@ -146,7 +146,7 @@ export function AccountTab({
           aria-label='Display name'
         />
         <div>
-          <Button type='submit'>Save name</Button>
+          <Button type='submit' disabled={newName.trim() === displayName.trim() || !newName.trim()}>Save name</Button>
         </div>
       </form>
 
@@ -181,7 +181,7 @@ export function AccountTab({
               </p>
             )}
             <div>
-              <Button type='submit'>Change password</Button>
+              <Button type='submit' disabled={!currentPw || !newPw || !confirmPw}>Change password</Button>
             </div>
           </form>
 

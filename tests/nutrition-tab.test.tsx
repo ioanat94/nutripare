@@ -136,7 +136,7 @@ describe('NutritionTab', () => {
     );
   });
 
-  it('duplicate nutrient+rating shows inline error and disables Save', async () => {
+  it('duplicate nutrient+rating shows inline error on save attempt and does not save', async () => {
     mockGetNutritionSettings.mockResolvedValue({
       visibleNutrients: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'],
       showCrown: true,
@@ -150,10 +150,22 @@ describe('NutritionTab', () => {
     const { NutritionTab } = await import('@/components/settings/nutrition-tab');
     render(<NutritionTab userId='uid-456' />);
 
+    // Wait for settings to load
+    await waitFor(() => expect(screen.queryByText(/visible nutrients/i)).toBeInTheDocument());
+
+    // Make a change to enable Save, then attempt to save
+    const [crownSwitch] = screen.getAllByRole('switch');
+    fireEvent.click(crownSwitch);
+
+    const saveBtn = screen.getByRole('button', { name: /^save$/i });
+    await waitFor(() => expect(saveBtn).not.toBeDisabled());
+    fireEvent.click(saveBtn);
+
+    // Error should now appear and settings should not have been saved
     await waitFor(() =>
       expect(screen.getAllByText(/already exists/i).length).toBeGreaterThan(0),
     );
-    expect(screen.getByRole('button', { name: /^save$/i })).toBeDisabled();
+    expect(mockSaveNutritionSettings).not.toHaveBeenCalled();
   });
 
   it('calls saveNutritionSettings with correct payload on Save', async () => {

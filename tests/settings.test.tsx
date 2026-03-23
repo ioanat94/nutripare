@@ -17,6 +17,8 @@ vi.mock('@/lib/firestore', () => ({
   getSavedComparisons: vi.fn(),
   deleteProduct: vi.fn(),
   deleteComparison: vi.fn(),
+  getNutritionSettings: vi.fn().mockResolvedValue(null),
+  saveNutritionSettings: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Mock firebase/auth

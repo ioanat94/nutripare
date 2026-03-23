@@ -14,3 +14,19 @@ export interface SavedComparison {
   name: string;
   eans: string[];
 }
+
+export type ThresholdColor = 'positive' | 'info' | 'warning' | 'negative';
+
+export interface NutritionRule {
+  nutrient: string;
+  direction: 'above' | 'below';
+  value: number;
+  rating: ThresholdColor;
+}
+
+export interface NutritionSettings {
+  visibleNutrients: string[];
+  showCrown: boolean;
+  showFlag: boolean;
+  rules: NutritionRule[];
+}

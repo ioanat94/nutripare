@@ -74,7 +74,7 @@ export default function SettingsPage() {
           {activeTab === 'account' && (
             <AccountTab userId={user.id} displayName={user.displayName} />
           )}
-          {activeTab === 'nutrition' && <NutritionTab />}
+          {activeTab === 'nutrition' && <NutritionTab userId={user.id} />}
           {activeTab === 'products' && <ProductsTab userId={user.id} />}
           {activeTab === 'comparisons' && <ComparisonsTab userId={user.id} />}
         </section>

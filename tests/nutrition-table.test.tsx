@@ -155,7 +155,7 @@ describe('NutritionTable', () => {
       makeProduct({ code: '111', product_name: 'A', protein: 25 }),
       makeProduct({ code: '222', product_name: 'B', protein: 30 }),
     ];
-    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} />);
+    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} settings={null} />);
     const proteinRow = screen.getByText('Protein (g)').closest('tr')!;
     const cells = proteinRow.querySelectorAll('td');
     expect(cells[2]).toHaveTextContent('👑');
@@ -167,7 +167,7 @@ describe('NutritionTable', () => {
       makeProduct({ code: '111', product_name: 'A', protein: 30 }),
       makeProduct({ code: '222', product_name: 'B', protein: 30 }),
     ];
-    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} />);
+    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} settings={null} />);
     const proteinRow = screen.getByText('Protein (g)').closest('tr')!;
     const cells = proteinRow.querySelectorAll('td');
     expect(cells[1]).toHaveTextContent('👑');
@@ -180,7 +180,7 @@ describe('NutritionTable', () => {
       makeProduct({ code: '111', product_name: 'A', sugar: 25 }),
       makeProduct({ code: '222', product_name: 'B', sugar: 30 }),
     ];
-    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} />);
+    render(<NutritionTable products={products} onDismiss={vi.fn()} onClearAll={vi.fn()} settings={null} />);
     const sugarRow = screen.getByText('Sugar (g)').closest('tr')!;
     const cells = sugarRow.querySelectorAll('td');
     expect(cells[2]).toHaveTextContent('🚩');
@@ -271,6 +271,69 @@ describe('NutritionTable', () => {
     const cells = proteinRow.querySelectorAll('td');
     expect(cells[1]).toHaveTextContent('30');
     expect(cells[2]).toHaveTextContent('—');
+  });
+
+  it('hides a nutrient row when it is not in visibleNutrients', () => {
+    render(
+      <NutritionTable
+        products={[makeProduct()]}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+        settings={{
+          visibleNutrients: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'fiber'],
+          showCrown: true,
+          showFlag: true,
+          rules: [],
+        }}
+      />,
+    );
+    expect(screen.queryByText('Saturated Fat (g)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Salt (g)')).not.toBeInTheDocument();
+    expect(screen.getByText('Protein (g)')).toBeInTheDocument();
+  });
+
+  it('suppresses crown emoji when showCrown is false', () => {
+    const products = [
+      makeProduct({ code: '111', product_name: 'A', protein: 25 }),
+      makeProduct({ code: '222', product_name: 'B', protein: 30 }),
+    ];
+    render(
+      <NutritionTable
+        products={products}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+        settings={{
+          visibleNutrients: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'],
+          showCrown: false,
+          showFlag: true,
+          rules: [{ nutrient: 'protein', direction: 'above', value: 20, rating: 'positive' }],
+        }}
+      />,
+    );
+    const proteinRow = screen.getByText('Protein (g)').closest('tr')!;
+    expect(proteinRow).not.toHaveTextContent('👑');
+  });
+
+  it('suppresses flag emoji when showFlag is false', () => {
+    const products = [
+      makeProduct({ code: '111', product_name: 'A', sugar: 25 }),
+      makeProduct({ code: '222', product_name: 'B', sugar: 30 }),
+    ];
+    render(
+      <NutritionTable
+        products={products}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+        settings={{
+          visibleNutrients: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'],
+          showCrown: true,
+          showFlag: false,
+          rules: [{ nutrient: 'sugar', direction: 'above', value: 22.5, rating: 'negative' }],
+        }}
+      />,
+    );
+    const sugarRow = screen.getByText('Sugar (g)').closest('tr')!;
+    expect(sugarRow).not.toHaveTextContent('🚩');
   });
 
   it('hides table when products become empty after dismissing the last column', () => {

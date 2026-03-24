@@ -33,22 +33,22 @@ async function renderTab() {
   render(<NutritionTab userId='uid-123' />);
   // Wait for loading to finish
   await waitFor(() =>
-    expect(screen.queryByText(/visible nutrients/i)).toBeInTheDocument(),
+    expect(screen.queryByText(/visible rows/i)).toBeInTheDocument(),
   );
 }
 
 describe('NutritionTab', () => {
   it('renders all three sections', async () => {
     await renderTab();
-    expect(screen.getByRole('heading', { name: /visible nutrients/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /visible rows/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /^highlights$/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /^rules$/i })).toBeInTheDocument();
   });
 
-  it('renders all 8 nutrient checkboxes checked by default', async () => {
+  it('renders all 9 row checkboxes checked by default', async () => {
     await renderTab();
     const checkboxes = screen.getAllByRole('checkbox');
-    expect(checkboxes).toHaveLength(8);
+    expect(checkboxes).toHaveLength(9); // 8 nutrients + computed_score
     checkboxes.forEach((cb) => {
       expect(cb).toHaveAttribute('aria-checked', 'true');
     });
@@ -138,7 +138,7 @@ describe('NutritionTab', () => {
 
   it('duplicate nutrient+rating shows inline error on save attempt and does not save', async () => {
     mockGetNutritionSettings.mockResolvedValue({
-      visibleNutrients: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'],
+      visibleRows: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt', 'computed_score'],
       showCrown: true,
       showFlag: true,
       rules: [
@@ -151,7 +151,7 @@ describe('NutritionTab', () => {
     render(<NutritionTab userId='uid-456' />);
 
     // Wait for settings to load
-    await waitFor(() => expect(screen.queryByText(/visible nutrients/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(/visible rows/i)).toBeInTheDocument());
 
     // Make a change to enable Save, then attempt to save
     const [crownSwitch] = screen.getAllByRole('switch');
@@ -192,7 +192,7 @@ describe('NutritionTab', () => {
 
   it('restores previously saved settings on load', async () => {
     mockGetNutritionSettings.mockResolvedValue({
-      visibleNutrients: ['kcals', 'protein'],
+      visibleRows: ['kcals', 'protein'],
       showCrown: false,
       showFlag: true,
       rules: [],

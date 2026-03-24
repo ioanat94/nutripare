@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   EmailAuthProvider,
   GoogleAuthProvider,
@@ -11,18 +9,21 @@ import {
   updatePassword,
   updateProfile,
 } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
-import { toast } from 'sonner';
-
 import { auth, db } from '@/lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 function isGoogleUser() {
-  return auth.currentUser?.providerData.some(
-    (p) => p.providerId === 'google.com',
-  ) ?? false;
+  return (
+    auth.currentUser?.providerData.some((p) => p.providerId === 'google.com') ??
+    false
+  );
 }
 
 export function AccountTab({
@@ -44,7 +45,9 @@ export function AccountTab({
 
   const googleUser = isGoogleUser();
 
-  async function handleUpdateDisplayName(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleUpdateDisplayName(
+    e: React.SyntheticEvent<HTMLFormElement>,
+  ) {
     e.preventDefault();
     const trimmed = newName.trim();
     if (!trimmed) {
@@ -62,7 +65,9 @@ export function AccountTab({
     }
   }
 
-  async function handleChangePassword(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleChangePassword(
+    e: React.SyntheticEvent<HTMLFormElement>,
+  ) {
     e.preventDefault();
     setPwError('');
     if (newPw !== confirmPw) {
@@ -76,7 +81,10 @@ export function AccountTab({
     const currentUser = auth.currentUser;
     if (!currentUser || !currentUser.email) return;
     try {
-      const credential = EmailAuthProvider.credential(currentUser.email, currentPw);
+      const credential = EmailAuthProvider.credential(
+        currentUser.email,
+        currentPw,
+      );
       await reauthenticateWithCredential(currentUser, credential);
       await updatePassword(currentUser, newPw);
       setCurrentPw('');
@@ -86,7 +94,8 @@ export function AccountTab({
     } catch (e) {
       if (
         e instanceof Error &&
-        (e.message.includes('wrong-password') || e.message.includes('invalid-credential'))
+        (e.message.includes('wrong-password') ||
+          e.message.includes('invalid-credential'))
       ) {
         setPwError('Current password is incorrect');
       } else {
@@ -104,7 +113,10 @@ export function AccountTab({
         await reauthenticateWithPopup(currentUser, new GoogleAuthProvider());
       } else {
         if (!currentUser.email) return;
-        const credential = EmailAuthProvider.credential(currentUser.email, deletePw);
+        const credential = EmailAuthProvider.credential(
+          currentUser.email,
+          deletePw,
+        );
         await reauthenticateWithCredential(currentUser, credential);
       }
       await deleteUser(currentUser);
@@ -112,10 +124,14 @@ export function AccountTab({
     } catch (e) {
       if (
         e instanceof Error &&
-        (e.message.includes('wrong-password') || e.message.includes('invalid-credential'))
+        (e.message.includes('wrong-password') ||
+          e.message.includes('invalid-credential'))
       ) {
         setDeleteError('Incorrect password');
-      } else if (e instanceof Error && e.message.includes('popup-closed-by-user')) {
+      } else if (
+        e instanceof Error &&
+        e.message.includes('popup-closed-by-user')
+      ) {
         // user cancelled the Google popup — do nothing
       } else {
         setDeleteError('Failed to delete account');
@@ -131,14 +147,20 @@ export function AccountTab({
       {email && (
         <div className='flex flex-col gap-3 sm:max-w-sm'>
           <h3 className='font-medium'>Email</h3>
-          <Input value={email} readOnly aria-label='Email' className='cursor-not-allowed text-muted-foreground focus-visible:ring-0 focus-visible:border-input' />
+          <Input
+            value={email}
+            readOnly
+            aria-label='Email'
+            className='cursor-not-allowed text-muted-foreground focus-visible:ring-0 focus-visible:border-input'
+          />
         </div>
       )}
 
-      <div className='border-t' />
-
       {/* Display name */}
-      <form onSubmit={handleUpdateDisplayName} className='flex flex-col gap-3 sm:max-w-sm'>
+      <form
+        onSubmit={handleUpdateDisplayName}
+        className='flex flex-col gap-3 sm:max-w-sm'
+      >
         <h3 className='font-medium'>Display name</h3>
         <Input
           value={newName}
@@ -146,47 +168,51 @@ export function AccountTab({
           aria-label='Display name'
         />
         <div>
-          <Button type='submit' disabled={newName.trim() === displayName.trim() || !newName.trim()}>Save name</Button>
+          <Button
+            type='submit'
+            disabled={newName.trim() === displayName.trim() || !newName.trim()}
+          >
+            Save name
+          </Button>
         </div>
       </form>
 
-      <div className='border-t' />
-
       {/* Change password — email users only */}
       {!googleUser && (
-        <>
-          <form onSubmit={handleChangePassword} className='flex flex-col gap-3 sm:max-w-sm'>
-            <h3 className='font-medium'>Change password</h3>
-            <PasswordInput
-              placeholder='Current password'
-              value={currentPw}
-              onChange={(e) => setCurrentPw(e.target.value)}
-              aria-label='Current password'
-            />
-            <PasswordInput
-              placeholder='New password'
-              value={newPw}
-              onChange={(e) => setNewPw(e.target.value)}
-              aria-label='New password'
-            />
-            <PasswordInput
-              placeholder='Confirm new password'
-              value={confirmPw}
-              onChange={(e) => setConfirmPw(e.target.value)}
-              aria-label='Confirm new password'
-            />
-            {pwError && (
-              <p role='alert' className='text-sm text-destructive'>
-                {pwError}
-              </p>
-            )}
-            <div>
-              <Button type='submit' disabled={!currentPw || !newPw || !confirmPw}>Change password</Button>
-            </div>
-          </form>
-
-          <div className='border-t' />
-        </>
+        <form
+          onSubmit={handleChangePassword}
+          className='flex flex-col gap-3 sm:max-w-sm'
+        >
+          <h3 className='font-medium'>Change password</h3>
+          <PasswordInput
+            placeholder='Current password'
+            value={currentPw}
+            onChange={(e) => setCurrentPw(e.target.value)}
+            aria-label='Current password'
+          />
+          <PasswordInput
+            placeholder='New password'
+            value={newPw}
+            onChange={(e) => setNewPw(e.target.value)}
+            aria-label='New password'
+          />
+          <PasswordInput
+            placeholder='Confirm new password'
+            value={confirmPw}
+            onChange={(e) => setConfirmPw(e.target.value)}
+            aria-label='Confirm new password'
+          />
+          {pwError && (
+            <p role='alert' className='text-sm text-destructive'>
+              {pwError}
+            </p>
+          )}
+          <div>
+            <Button type='submit' disabled={!currentPw || !newPw || !confirmPw}>
+              Change password
+            </Button>
+          </div>
+        </form>
       )}
 
       {/* Delete account */}
@@ -197,7 +223,10 @@ export function AccountTab({
         </p>
         {!showDeleteConfirm ? (
           <div>
-            <Button variant='destructive' onClick={() => setShowDeleteConfirm(true)}>
+            <Button
+              variant='destructive'
+              onClick={() => setShowDeleteConfirm(true)}
+            >
               Delete account
             </Button>
           </div>
@@ -209,7 +238,9 @@ export function AccountTab({
               </p>
             ) : (
               <>
-                <p className='text-sm font-medium'>Enter your password to confirm</p>
+                <p className='text-sm font-medium'>
+                  Enter your password to confirm
+                </p>
                 <div className='sm:max-w-sm'>
                   <PasswordInput
                     placeholder='Your password'

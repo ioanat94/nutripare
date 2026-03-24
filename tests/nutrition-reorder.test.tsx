@@ -66,11 +66,11 @@ import type { ProductNutrition } from '@/types/openfoodfacts';
 
 function makeSettings(overrides: Partial<NutritionSettings> = {}): NutritionSettings {
   return {
-    visibleNutrients: ROWS.map((r) => r.key),
+    visibleRows: [...ROWS.map((r) => r.key), 'computed_score'],
     showCrown: true,
     showFlag: true,
     rules: [],
-    nutrientOrder: ROWS.map((r) => r.key),
+    rowOrder: [...ROWS.map((r) => r.key), 'computed_score'],
     ...overrides,
   };
 }
@@ -101,20 +101,20 @@ beforeEach(() => {
 async function renderTab() {
   const { NutritionTab } = await import('@/components/settings/nutrition-tab');
   render(<NutritionTab userId='uid-123' />);
-  await waitFor(() => expect(screen.queryByText(/visible nutrients/i)).toBeInTheDocument());
+  await waitFor(() => expect(screen.queryByText(/visible rows/i)).toBeInTheDocument());
 }
 
 describe('NutritionTab reorder', () => {
-  it('renders visible nutrients as a single-column list (no grid-cols-2)', async () => {
+  it('renders visible rows as a single-column list (no grid-cols-2)', async () => {
     await renderTab();
-    const section = screen.getByRole('heading', { name: /visible nutrients/i }).closest('section')!;
+    const section = screen.getByRole('heading', { name: /visible rows/i }).closest('section')!;
     expect(section.querySelector('.grid-cols-2')).not.toBeInTheDocument();
   });
 
   it('renders a drag handle for each nutrient row', async () => {
     await renderTab();
     const handles = screen.getAllByTestId('nutrient-drag-handle');
-    expect(handles).toHaveLength(ROWS.length);
+    expect(handles).toHaveLength(ROWS.length + 1); // +1 for computed_score
   });
 
   it('renders a drag handle for each rule row', async () => {
@@ -132,8 +132,8 @@ describe('NutritionTab reorder', () => {
   });
 
   it('renders nutrients in the order from saved settings', async () => {
-    const customOrder = ['protein', 'kcals', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'];
-    mockGetNutritionSettings.mockResolvedValue(makeSettings({ nutrientOrder: customOrder }));
+    const customOrder = ['protein', 'kcals', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt', 'computed_score'];
+    mockGetNutritionSettings.mockResolvedValue(makeSettings({ rowOrder: customOrder }));
     await renderTab();
 
     const labels = screen.getAllByRole('checkbox').map(
@@ -198,7 +198,7 @@ describe('NutritionTab reorder', () => {
     await waitFor(() => expect(saveBtn).not.toBeDisabled());
   });
 
-  it('saves nutrientOrder in new order after nutrient reorder', async () => {
+  it('saves rowOrder in new order after nutrient reorder', async () => {
     mockGetNutritionSettings.mockResolvedValue(makeSettings());
     await renderTab();
 
@@ -214,9 +214,9 @@ describe('NutritionTab reorder', () => {
 
     await waitFor(() => expect(mockSaveNutritionSettings).toHaveBeenCalled());
     const [, savedSettings] = mockSaveNutritionSettings.mock.calls[0];
-    expect(savedSettings.nutrientOrder).toBeDefined();
-    expect(savedSettings.nutrientOrder![0]).toBe('protein');
-    expect(savedSettings.nutrientOrder![1]).toBe('kcals');
+    expect(savedSettings.rowOrder).toBeDefined();
+    expect(savedSettings.rowOrder![0]).toBe('protein');
+    expect(savedSettings.rowOrder![1]).toBe('kcals');
   });
 
   it('saves rules in new order after rule reorder', async () => {
@@ -247,15 +247,15 @@ describe('NutritionTab reorder', () => {
   });
 });
 
-describe('NutritionTable nutrientOrder', () => {
-  it('renders rows in the order specified by nutrientOrder', () => {
-    const customOrder = ['protein', 'kcals', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'];
+describe('NutritionTable rowOrder', () => {
+  it('renders rows in the order specified by rowOrder', () => {
+    const customOrder = ['protein', 'kcals', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt', 'computed_score'];
     render(
       <NutritionTable
         products={[makeProduct()]}
         onDismiss={vi.fn()}
         onClearAll={vi.fn()}
-        settings={makeSettings({ nutrientOrder: customOrder })}
+        settings={makeSettings({ rowOrder: customOrder })}
       />,
     );
 

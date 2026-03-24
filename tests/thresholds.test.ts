@@ -142,7 +142,7 @@ describe('getExtremeEmoji', () => {
       expect(getExtremeEmoji('protein', [25], 0, defaultRules, allVisible)).toBeNull();
     });
 
-    it('returns null when the nutrient is not in visibleNutrients', () => {
+    it('returns null when the nutrient is not in visibleRows', () => {
       expect(getExtremeEmoji('protein', [25, 30], 1, defaultRules, [])).toBeNull();
     });
 

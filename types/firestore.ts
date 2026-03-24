@@ -25,9 +25,9 @@ export interface NutritionRule {
 }
 
 export interface NutritionSettings {
-  visibleNutrients: string[];
+  visibleRows: string[];
   showCrown: boolean;
   showFlag: boolean;
   rules: NutritionRule[];
-  nutrientOrder?: string[];
+  rowOrder?: string[];
 }

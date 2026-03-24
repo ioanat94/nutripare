@@ -3,6 +3,7 @@
 import {
   ArrowDown,
   ArrowUp,
+  HelpCircle,
   Loader2,
   MoreHorizontal,
   Save,
@@ -26,13 +27,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { COMPUTED_SCORE_KEY, computeScore } from '@/utils/score';
 import { getDefaultRules, getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
 
 import type { NutritionSettings } from '@/types/firestore';
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import type { ThresholdColor } from '@/utils/thresholds';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 type SortDir = 'desc' | 'asc';
 type SortState = { key: string; dir: SortDir } | null;
@@ -60,6 +63,8 @@ export const ROWS = [
   { label: 'Fiber (g)', key: 'fiber' },
   { label: 'Salt (g)', key: 'salt' },
 ] as const;
+
+export const SCORE_ROW = { label: 'Computed Score', key: COMPUTED_SCORE_KEY } as const;
 
 const COLOR_CLASS: Record<ThresholdColor, string> = {
   positive: 'text-positive',
@@ -95,7 +100,7 @@ export function NutritionTable({
   settings,
 }: NutritionTableProps) {
   const defaultRules = getDefaultRules();
-  const visibleNutrients = settings?.visibleNutrients ?? ROWS.map((r) => r.key);
+  const visibleRows = settings?.visibleRows ?? ROWS.map((r) => r.key);
   const rules = settings?.rules ?? defaultRules;
   // undefined = not yet fetched, suppress emojis; null = fetched (no doc), use defaults
   const showCrown = settings !== undefined ? (settings?.showCrown ?? true) : false;
@@ -104,6 +109,11 @@ export function NutritionTable({
   const [sort, setSort] = useState<SortState>(null);
   const [savingProduct, setSavingProduct] = useState<string | null>(null);
   const [savingComparison, setSavingComparison] = useState(false);
+
+  const scores = useMemo(
+    () => new Map(products.map((p) => [p.code, computeScore(p, rules)])),
+    [products, rules],
+  );
 
   if (products.length === 0) return null;
 
@@ -117,6 +127,13 @@ export function NutritionTable({
 
   const sortedProducts = sort
     ? [...products].sort((a, b) => {
+        if (sort.key === COMPUTED_SCORE_KEY) {
+          const av = scores.get(a.code) ?? undefined;
+          const bv = scores.get(b.code) ?? undefined;
+          if (av === undefined || isNaN(av)) return 1;
+          if (bv === undefined || isNaN(bv)) return -1;
+          return sort.dir === 'desc' ? bv - av : av - bv;
+        }
         const av = a[sort.key as keyof ProductNutrition] as number | undefined;
         const bv = b[sort.key as keyof ProductNutrition] as number | undefined;
         if (av === undefined || isNaN(av)) return 1;
@@ -125,11 +142,14 @@ export function NutritionTable({
       })
     : products;
 
-  const allKeysOrdered = settings?.nutrientOrder ?? ROWS.map((r) => r.key);
+  const allKeysOrdered = settings?.rowOrder ?? [
+    ...ROWS.map((r) => r.key),
+    COMPUTED_SCORE_KEY,
+  ];
   const displayRows = allKeysOrdered
-    .filter((key) => visibleNutrients.includes(key))
-    .map((key) => ROWS.find((r) => r.key === key)!)
-    .filter(Boolean);
+    .filter((key) => visibleRows.includes(key))
+    .map((key) => (key === COMPUTED_SCORE_KEY ? SCORE_ROW : ROWS.find((r) => r.key === key)))
+    .filter(Boolean) as Array<{ label: string; key: string }>;
 
   function handleShare() {
     const codes = products.map((p) => p.code).join(',');
@@ -317,7 +337,7 @@ export function NutritionTable({
         </TableHeader>
 
         <TableBody>
-          {visibleNutrients.length === 0 ? (
+          {visibleRows.length === 0 ? (
             <TableRow>
               <TableCell
                 colSpan={sortedProducts.length + 1}
@@ -334,36 +354,88 @@ export function NutritionTable({
                 : i % 2 === 0
                   ? 'bg-muted/30'
                   : '';
+              const isScoreRow = row.key === COMPUTED_SCORE_KEY;
+              const allScoreValues = sortedProducts.map((p) => scores.get(p.code) ?? undefined);
+
               return (
                 <TableRow key={row.key} className={rowBg}>
-                  {/* Nutrient label — sticky, clickable to sort */}
+                  {/* Row label — sticky, clickable to sort */}
                   <TableCell
                     scope='row'
                     className={`sticky left-0 z-10 w-40 py-3 ${isActive ? 'bg-primary/10' : 'bg-background'}`}
                   >
-                    <button
-                      onClick={() => handleRowClick(row.key)}
-                      className={`flex w-full cursor-pointer items-center gap-1 text-left text-sm transition-colors ${isActive ? 'font-semibold text-foreground' : 'font-medium text-muted-foreground hover:text-foreground'}`}
-                    >
-                      {row.label}
-                      {isActive &&
-                        (sort!.dir === 'desc' ? (
-                          <ArrowDown className='size-3 shrink-0' />
-                        ) : (
-                          <ArrowUp className='size-3 shrink-0' />
-                        ))}
-                    </button>
+                    <div className='flex items-center gap-1'>
+                      <button
+                        onClick={() => handleRowClick(row.key)}
+                        className={`flex cursor-pointer items-center gap-1 text-left text-sm transition-colors ${isActive ? 'font-semibold text-foreground' : 'font-medium text-muted-foreground hover:text-foreground'}`}
+                      >
+                        {row.label}
+                        {isActive &&
+                          (sort!.dir === 'desc' ? (
+                            <ArrowDown className='size-3 shrink-0' />
+                          ) : (
+                            <ArrowUp className='size-3 shrink-0' />
+                          ))}
+                      </button>
+                      {isScoreRow && (
+                        <Tooltip>
+                          <TooltipTrigger className='inline-flex cursor-default'>
+                            <HelpCircle className='size-4 shrink-0 text-muted-foreground' />
+                          </TooltipTrigger>
+                          <TooltipContent>Score from 0–100 based on your nutrition rules.</TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
                   </TableCell>
 
                   {/* Value cells — right-aligned, tabular figures */}
                   {sortedProducts.map((p, j) => {
+                    if (isScoreRow) {
+                      const scoreVal = scores.get(p.code) ?? null;
+                      const color = scoreVal !== null
+                        ? getThresholdColor(COMPUTED_SCORE_KEY, scoreVal, rules)
+                        : null;
+                      const emoji = getExtremeEmoji(
+                        COMPUTED_SCORE_KEY,
+                        allScoreValues,
+                        j,
+                        rules,
+                        visibleRows,
+                      );
+                      const displayEmoji =
+                        emoji === '👑' && !showCrown
+                          ? null
+                          : emoji === '🚩' && !showFlag
+                            ? null
+                            : emoji;
+                      const text = scoreVal === null ? '—' : String(scoreVal);
+                      const className = scoreVal === null
+                        ? 'text-muted-foreground'
+                        : color
+                          ? COLOR_CLASS[color]
+                          : '';
+                      return (
+                        <TableCell
+                          key={p.code}
+                          className={`py-3 tabular-nums text-sm font-medium ${className}`}
+                        >
+                          <div className='flex items-center justify-end'>
+                            <span className='w-5 shrink-0 text-center text-base leading-none'>
+                              {displayEmoji}
+                            </span>
+                            <span className='w-12 text-right'>{text}</span>
+                          </div>
+                        </TableCell>
+                      );
+                    }
+
                     const { text, className } = renderCell(row.key, p[row.key as keyof ProductNutrition] as number | undefined, rules);
                     const rawEmoji = getExtremeEmoji(
                       row.key,
                       sortedProducts.map((q) => q[row.key as keyof ProductNutrition] as number | undefined),
                       j,
                       rules,
-                      visibleNutrients,
+                      visibleRows,
                     );
                     const emoji =
                       rawEmoji === '👑' && !showCrown

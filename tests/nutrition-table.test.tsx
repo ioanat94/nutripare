@@ -273,14 +273,14 @@ describe('NutritionTable', () => {
     expect(cells[2]).toHaveTextContent('—');
   });
 
-  it('hides a nutrient row when it is not in visibleNutrients', () => {
+  it('hides a nutrient row when it is not in visibleRows', () => {
     render(
       <NutritionTable
         products={[makeProduct()]}
         onDismiss={vi.fn()}
         onClearAll={vi.fn()}
         settings={{
-          visibleNutrients: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'fiber'],
+          visibleRows: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'fiber'],
           showCrown: true,
           showFlag: true,
           rules: [],
@@ -303,7 +303,7 @@ describe('NutritionTable', () => {
         onDismiss={vi.fn()}
         onClearAll={vi.fn()}
         settings={{
-          visibleNutrients: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'],
+          visibleRows: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'],
           showCrown: false,
           showFlag: true,
           rules: [{ nutrient: 'protein', direction: 'above', value: 20, rating: 'positive' }],
@@ -325,7 +325,7 @@ describe('NutritionTable', () => {
         onDismiss={vi.fn()}
         onClearAll={vi.fn()}
         settings={{
-          visibleNutrients: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'],
+          visibleRows: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'],
           showCrown: true,
           showFlag: false,
           rules: [{ nutrient: 'sugar', direction: 'above', value: 22.5, rating: 'negative' }],

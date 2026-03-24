@@ -105,16 +105,45 @@ export async function getSavedComparisons(
   );
 }
 
+const DEFAULT_ROW_KEYS = [
+  'kcals',
+  'protein',
+  'carbohydrates',
+  'sugar',
+  'fat',
+  'saturated_fat',
+  'fiber',
+  'salt',
+];
+
 export async function getNutritionSettings(
   uid: string,
 ): Promise<NutritionSettings | null> {
   const ref = doc(db, 'users', uid, 'settings', 'nutrition');
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
-  const data = snap.data() as NutritionSettings;
+  const raw = snap.data() as Record<string, unknown> & { rules?: NutritionSettings['rules'] };
+
+  const visibleRows: string[] =
+    (raw.visibleRows as string[] | undefined) ??
+    (raw.visibleNutrients as string[] | undefined) ??
+    [...DEFAULT_ROW_KEYS];
+  const rowOrder: string[] =
+    (raw.rowOrder as string[] | undefined) ??
+    (raw.nutrientOrder as string[] | undefined) ??
+    [...DEFAULT_ROW_KEYS];
+
+  if (!visibleRows.includes('computed_score')) visibleRows.push('computed_score');
+  if (!rowOrder.includes('computed_score')) rowOrder.push('computed_score');
+
   return {
-    ...data,
-    rules: (data.rules ?? []).filter((r) => VALID_RATINGS.has(r.rating)),
+    visibleRows,
+    showCrown: (raw.showCrown as boolean | undefined) ?? true,
+    showFlag: (raw.showFlag as boolean | undefined) ?? true,
+    rules: ((raw.rules ?? []) as NutritionSettings['rules']).filter((r) =>
+      VALID_RATINGS.has(r.rating),
+    ),
+    rowOrder,
   };
 }
 

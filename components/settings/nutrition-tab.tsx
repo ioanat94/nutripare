@@ -33,7 +33,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ROWS } from '@/components/nutrition-table';
+import { ROWS, SCORE_ROW } from '@/components/nutrition-table';
 import { Switch } from '@/components/ui/switch';
 import { getDefaultRules } from '@/utils/thresholds';
 import { toast } from 'sonner';
@@ -63,11 +63,11 @@ const DIRECTION_OPTIONS: { value: 'above' | 'below'; label: string }[] = [
 
 function buildDefault(): NutritionSettings {
   return {
-    visibleNutrients: ROWS.map((r) => r.key),
+    visibleRows: [...ROWS.map((r) => r.key), SCORE_ROW.key],
     showCrown: true,
     showFlag: true,
     rules: getDefaultRules(),
-    nutrientOrder: ROWS.map((r) => r.key),
+    rowOrder: [...ROWS.map((r) => r.key), SCORE_ROW.key],
   };
 }
 
@@ -146,7 +146,7 @@ function SortableRuleRow({ rule, index, error, showError, onUpdate, onRemove }: 
         >
           <SelectTrigger className='w-40'>
             <span className='flex flex-1 text-left'>
-              {ROWS.find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient}
+              {[...ROWS, SCORE_ROW].find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient}
             </span>
           </SelectTrigger>
           <SelectContent className='min-w-0' alignItemWithTrigger={false}>
@@ -155,6 +155,9 @@ function SortableRuleRow({ rule, index, error, showError, onUpdate, onRemove }: 
                 {row.label}
               </SelectItem>
             ))}
+            <SelectItem key={SCORE_ROW.key} value={SCORE_ROW.key}>
+              {SCORE_ROW.label}
+            </SelectItem>
           </SelectContent>
         </Select>
 
@@ -252,11 +255,11 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   const [saved, setSaved] = useState<NutritionSettings | null>(null);
   const [saveAttempted, setSaveAttempted] = useState(false);
 
-  const [visibleNutrients, setVisibleNutrients] = useState<string[]>([]);
+  const [visibleRows, setVisibleRows] = useState<string[]>([]);
   const [showCrown, setShowCrown] = useState(true);
   const [showFlag, setShowFlag] = useState(true);
   const [rules, setRules] = useState<DraftRule[]>([]);
-  const [nutrientOrder, setNutrientOrder] = useState<string[]>(ROWS.map((r) => r.key));
+  const [rowOrder, setRowOrder] = useState<string[]>([...ROWS.map((r) => r.key), SCORE_ROW.key]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -266,22 +269,27 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   useEffect(() => {
     getNutritionSettings(userId).then((fetched) => {
       const s = fetched ?? buildDefault();
-      setSaved(s);
-      setVisibleNutrients(s.visibleNutrients);
+      const normalizedRowOrder = s.rowOrder ?? [...ROWS.map((r) => r.key), SCORE_ROW.key];
+      setSaved({
+        ...s,
+        rules: s.rules.map((r) => ({ nutrient: r.nutrient, direction: r.direction, value: r.value, rating: r.rating })),
+        rowOrder: normalizedRowOrder,
+      });
+      setVisibleRows(s.visibleRows);
       setShowCrown(s.showCrown);
       setShowFlag(s.showFlag);
       setRules(s.rules.map((r, i) => ({ ...r, id: `rule-${i}` })));
-      setNutrientOrder(s.nutrientOrder ?? ROWS.map((r) => r.key));
+      setRowOrder(normalizedRowOrder);
       setLoading(false);
     });
   }, [userId]);
 
   const current: NutritionSettings = {
-    visibleNutrients,
+    visibleRows,
     showCrown,
     showFlag,
     rules: rules.map((r) => ({ nutrient: r.nutrient, direction: r.direction, value: r.value!, rating: r.rating })),
-    nutrientOrder,
+    rowOrder,
   };
   const isDirty = saved !== null && !settingsEqual(current, saved);
 
@@ -295,7 +303,8 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       }
       const key = `${rule.nutrient}:${rule.rating}`;
       if (seen.has(key)) {
-        const nutrientLabel = ROWS.find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient;
+        const allRows = [...ROWS, SCORE_ROW];
+        const nutrientLabel = allRows.find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient;
         const ratingLabel = RATING_OPTIONS.find((o) => o.value === rule.rating)?.label ?? rule.rating;
         const msg = `A rule for ${nutrientLabel} / ${ratingLabel} already exists`;
         errors[i] = msg;
@@ -322,7 +331,7 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   const saveDisabled = !isDirty || saving;
 
   function toggleNutrient(key: string, checked: boolean) {
-    setVisibleNutrients((prev) => (checked ? [...prev, key] : prev.filter((k) => k !== key)));
+    setVisibleRows((prev) => (checked ? [...prev, key] : prev.filter((k) => k !== key)));
   }
 
   function updateRule(index: number, field: keyof NutritionRule, value: string | number | undefined) {
@@ -351,7 +360,7 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   function handleNutrientDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      setNutrientOrder((prev) => {
+      setRowOrder((prev) => {
         const oldIndex = prev.indexOf(active.id as string);
         const newIndex = prev.indexOf(over.id as string);
         return arrayMove(prev, oldIndex, newIndex);
@@ -397,21 +406,22 @@ export function NutritionTab({ userId }: NutritionTabProps) {
 
   return (
     <div className='space-y-8'>
-      {/* Visible nutrients */}
+      {/* Visible rows */}
       <section className='space-y-3'>
-        <h3 className='text-base font-semibold'>Visible nutrients</h3>
+        <h3 className='text-base font-semibold'>Visible rows</h3>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleNutrientDragEnd}>
-          <SortableContext items={nutrientOrder} strategy={verticalListSortingStrategy}>
+          <SortableContext items={rowOrder} strategy={verticalListSortingStrategy}>
             <div className='space-y-2'>
-              {nutrientOrder.map((key) => {
-                const row = ROWS.find((r) => r.key === key);
+              {rowOrder.map((key) => {
+                const allRows = [...ROWS, SCORE_ROW];
+                const row = allRows.find((r) => r.key === key);
                 if (!row) return null;
                 return (
                   <SortableNutrientRow
                     key={key}
                     rowKey={key}
                     label={row.label}
-                    checked={visibleNutrients.includes(key)}
+                    checked={visibleRows.includes(key)}
                     onToggle={toggleNutrient}
                   />
                 );

@@ -69,10 +69,10 @@ export function getExtremeEmoji(
   values: (number | undefined)[],
   index: number,
   rules: NutritionRule[],
-  visibleNutrients: string[],
+  visibleRows: string[],
 ): '👑' | '🚩' | null {
   if (values.length < 2) return null;
-  if (!visibleNutrients.includes(nutrient)) return null;
+  if (!visibleRows.includes(nutrient)) return null;
   const value = values[index];
   if (value === undefined || isNaN(value)) return null;
 

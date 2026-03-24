@@ -12,13 +12,20 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
+import { COMPUTED_SCORE_KEY, computeScore } from '@/utils/score';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import type { NutritionRuleset, NutritionSettings } from '@/types/firestore';
 import {
   Table,
   TableBody,
@@ -27,15 +34,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { COMPUTED_SCORE_KEY, computeScore } from '@/utils/score';
-import { getDefaultRules, getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  getDefaultRules,
+  getExtremeEmoji,
+  getThresholdColor,
+} from '@/utils/thresholds';
+import { useMemo, useState } from 'react';
 
-import type { NutritionSettings } from '@/types/firestore';
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import type { ThresholdColor } from '@/utils/thresholds';
 import { toast } from 'sonner';
-import { useMemo, useState } from 'react';
 
 type SortDir = 'desc' | 'asc';
 type SortState = { key: string; dir: SortDir } | null;
@@ -51,6 +64,9 @@ interface NutritionTableProps {
   onUnsaveProduct?: (code: string) => Promise<void>;
   onUnsaveComparison?: () => Promise<void>;
   settings?: NutritionSettings | null;
+  rulesets?: NutritionRuleset[];
+  selectedRulesetId?: string | null;
+  onRulesetChange?: (id: string) => void;
 }
 
 export const ROWS = [
@@ -64,7 +80,10 @@ export const ROWS = [
   { label: 'Salt (g)', key: 'salt' },
 ] as const;
 
-export const SCORE_ROW = { label: 'Computed Score', key: COMPUTED_SCORE_KEY } as const;
+export const SCORE_ROW = {
+  label: 'Computed Score',
+  key: COMPUTED_SCORE_KEY,
+} as const;
 
 const COLOR_CLASS: Record<ThresholdColor, string> = {
   positive: 'text-positive',
@@ -98,13 +117,20 @@ export function NutritionTable({
   onUnsaveProduct,
   onUnsaveComparison,
   settings,
+  rulesets,
+  selectedRulesetId,
+  onRulesetChange,
 }: NutritionTableProps) {
   const defaultRules = getDefaultRules();
   const visibleRows = settings?.visibleRows ?? ROWS.map((r) => r.key);
-  const rules = settings?.rules ?? defaultRules;
+  const activeRuleset =
+    rulesets?.find((rs) => rs.id === selectedRulesetId) ?? null;
+  const rules = activeRuleset?.rules ?? defaultRules;
   // undefined = not yet fetched, suppress emojis; null = fetched (no doc), use defaults
-  const showCrown = settings !== undefined ? (settings?.showCrown ?? true) : false;
-  const showFlag = settings !== undefined ? (settings?.showFlag ?? true) : false;
+  const showCrown =
+    settings !== undefined ? (settings?.showCrown ?? true) : false;
+  const showFlag =
+    settings !== undefined ? (settings?.showFlag ?? true) : false;
 
   const [sort, setSort] = useState<SortState>(null);
   const [savingProduct, setSavingProduct] = useState<string | null>(null);
@@ -148,7 +174,9 @@ export function NutritionTable({
   ];
   const displayRows = allKeysOrdered
     .filter((key) => visibleRows.includes(key))
-    .map((key) => (key === COMPUTED_SCORE_KEY ? SCORE_ROW : ROWS.find((r) => r.key === key)))
+    .map((key) =>
+      key === COMPUTED_SCORE_KEY ? SCORE_ROW : ROWS.find((r) => r.key === key),
+    )
     .filter(Boolean) as Array<{ label: string; key: string }>;
 
   function handleShare() {
@@ -175,7 +203,36 @@ export function NutritionTable({
           >
             <MoreHorizontal className='size-4' aria-hidden='true' />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
+          <DropdownMenuContent align='end' className='w-48'>
+            {rulesets && rulesets.length > 0 && (
+              <>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className='flex max-w-full gap-1'>
+                    <span className='shrink-0'>Ruleset:</span>
+                    <span className='truncate'>
+                      {rulesets.find((rs) => rs.id === selectedRulesetId)?.name ?? 'None'}
+                    </span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className='max-w-48'>
+                    <DropdownMenuRadioGroup
+                      value={selectedRulesetId ?? ''}
+                      onValueChange={onRulesetChange}
+                    >
+                      {rulesets.map((rs) => (
+                        <DropdownMenuRadioItem
+                          key={rs.id}
+                          value={rs.id}
+                          disabled={!onRulesetChange}
+                        >
+                          <span className='truncate'>{rs.name}</span>
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSeparator />
+              </>
+            )}
             {products.length >= 2 &&
               (comparisonSaved
                 ? onUnsaveComparison && (
@@ -188,14 +245,11 @@ export function NutritionTable({
                       disabled={savingComparison}
                     >
                       {savingComparison ? (
-                        <Loader2
-                          className='size-4 animate-spin'
-                          aria-hidden='true'
-                        />
+                        <Loader2 className='size-4 animate-spin' aria-hidden='true' />
                       ) : (
                         <SaveOff className='size-4' aria-hidden='true' />
                       )}
-                      Unsave
+                      Unsave comparison
                     </DropdownMenuItem>
                   )
                 : onSaveComparison && (
@@ -208,14 +262,11 @@ export function NutritionTable({
                       disabled={savingComparison}
                     >
                       {savingComparison ? (
-                        <Loader2
-                          className='size-4 animate-spin'
-                          aria-hidden='true'
-                        />
+                        <Loader2 className='size-4 animate-spin' aria-hidden='true' />
                       ) : (
                         <Save className='size-4' aria-hidden='true' />
                       )}
-                      Save
+                      Save comparison
                     </DropdownMenuItem>
                   ))}
             <DropdownMenuItem onClick={handleShare}>
@@ -271,7 +322,7 @@ export function NutritionTable({
                       >
                         <MoreHorizontal className='size-4' aria-hidden='true' />
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align='end'>
+                      <DropdownMenuContent align='end' className='w-36'>
                         {savedProductCodes?.has(p.code)
                           ? onUnsaveProduct && (
                               <DropdownMenuItem
@@ -283,11 +334,17 @@ export function NutritionTable({
                                 disabled={savingProduct === p.code}
                               >
                                 {savingProduct === p.code ? (
-                                  <Loader2 className='size-4 animate-spin' aria-hidden='true' />
+                                  <Loader2
+                                    className='size-4 animate-spin'
+                                    aria-hidden='true'
+                                  />
                                 ) : (
-                                  <SaveOff className='size-4' aria-hidden='true' />
+                                  <SaveOff
+                                    className='size-4'
+                                    aria-hidden='true'
+                                  />
                                 )}
-                                Unsave
+                                Unsave product
                               </DropdownMenuItem>
                             )
                           : onSaveProduct && (
@@ -300,11 +357,14 @@ export function NutritionTable({
                                 disabled={savingProduct === p.code}
                               >
                                 {savingProduct === p.code ? (
-                                  <Loader2 className='size-4 animate-spin' aria-hidden='true' />
+                                  <Loader2
+                                    className='size-4 animate-spin'
+                                    aria-hidden='true'
+                                  />
                                 ) : (
                                   <Save className='size-4' aria-hidden='true' />
                                 )}
-                                Save
+                                Save product
                               </DropdownMenuItem>
                             )}
                         <DropdownMenuItem
@@ -355,7 +415,9 @@ export function NutritionTable({
                   ? 'bg-muted/30'
                   : '';
               const isScoreRow = row.key === COMPUTED_SCORE_KEY;
-              const allScoreValues = sortedProducts.map((p) => scores.get(p.code) ?? undefined);
+              const allScoreValues = sortedProducts.map(
+                (p) => scores.get(p.code) ?? undefined,
+              );
 
               return (
                 <TableRow key={row.key} className={rowBg}>
@@ -382,7 +444,9 @@ export function NutritionTable({
                           <TooltipTrigger className='inline-flex cursor-default'>
                             <HelpCircle className='size-4 shrink-0 text-muted-foreground' />
                           </TooltipTrigger>
-                          <TooltipContent>Score from 0–100 based on your nutrition rules.</TooltipContent>
+                          <TooltipContent>
+                            Score from 0–100 based on your nutrition rules.
+                          </TooltipContent>
                         </Tooltip>
                       )}
                     </div>
@@ -392,9 +456,14 @@ export function NutritionTable({
                   {sortedProducts.map((p, j) => {
                     if (isScoreRow) {
                       const scoreVal = scores.get(p.code) ?? null;
-                      const color = scoreVal !== null
-                        ? getThresholdColor(COMPUTED_SCORE_KEY, scoreVal, rules)
-                        : null;
+                      const color =
+                        scoreVal !== null
+                          ? getThresholdColor(
+                              COMPUTED_SCORE_KEY,
+                              scoreVal,
+                              rules,
+                            )
+                          : null;
                       const emoji = getExtremeEmoji(
                         COMPUTED_SCORE_KEY,
                         allScoreValues,
@@ -409,11 +478,12 @@ export function NutritionTable({
                             ? null
                             : emoji;
                       const text = scoreVal === null ? '—' : String(scoreVal);
-                      const className = scoreVal === null
-                        ? 'text-muted-foreground'
-                        : color
-                          ? COLOR_CLASS[color]
-                          : '';
+                      const className =
+                        scoreVal === null
+                          ? 'text-muted-foreground'
+                          : color
+                            ? COLOR_CLASS[color]
+                            : '';
                       return (
                         <TableCell
                           key={p.code}
@@ -429,10 +499,21 @@ export function NutritionTable({
                       );
                     }
 
-                    const { text, className } = renderCell(row.key, p[row.key as keyof ProductNutrition] as number | undefined, rules);
+                    const { text, className } = renderCell(
+                      row.key,
+                      p[row.key as keyof ProductNutrition] as
+                        | number
+                        | undefined,
+                      rules,
+                    );
                     const rawEmoji = getExtremeEmoji(
                       row.key,
-                      sortedProducts.map((q) => q[row.key as keyof ProductNutrition] as number | undefined),
+                      sortedProducts.map(
+                        (q) =>
+                          q[row.key as keyof ProductNutrition] as
+                            | number
+                            | undefined,
+                      ),
                       j,
                       rules,
                       visibleRows,

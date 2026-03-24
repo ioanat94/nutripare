@@ -69,7 +69,7 @@ function makeSettings(overrides: Partial<NutritionSettings> = {}): NutritionSett
     visibleRows: [...ROWS.map((r) => r.key), 'computed_score'],
     showCrown: true,
     showFlag: true,
-    rules: [],
+    rulesets: [],
     rowOrder: [...ROWS.map((r) => r.key), 'computed_score'],
     ...overrides,
   };
@@ -117,23 +117,26 @@ describe('NutritionTab reorder', () => {
     expect(handles).toHaveLength(ROWS.length + 1); // +1 for computed_score
   });
 
-  it('renders a drag handle for each rule row', async () => {
+  it('renders a drag handle for each rule row in detail view', async () => {
     mockGetNutritionSettings.mockResolvedValue(
       makeSettings({
-        rules: [
+        rulesets: [{ id: 'default', name: 'Default', rules: [
           { nutrient: 'protein', direction: 'above', value: 20, rating: 'positive' },
           { nutrient: 'salt', direction: 'above', value: 1.5, rating: 'negative' },
-        ],
+        ]}],
       }),
     );
     await renderTab();
-    const handles = screen.getAllByTestId('rule-drag-handle');
-    expect(handles).toHaveLength(2);
+    fireEvent.click(screen.getByRole('button', { name: /view ruleset/i }));
+    await waitFor(() => {
+      const handles = screen.getAllByTestId('rule-drag-handle');
+      expect(handles).toHaveLength(2);
+    });
   });
 
   it('renders nutrients in the order from saved settings', async () => {
     const customOrder = ['protein', 'kcals', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt', 'computed_score'];
-    mockGetNutritionSettings.mockResolvedValue(makeSettings({ rowOrder: customOrder }));
+    mockGetNutritionSettings.mockResolvedValue(makeSettings({ rowOrder: customOrder, rulesets: [] }));
     await renderTab();
 
     const labels = screen.getAllByRole('checkbox').map(
@@ -143,20 +146,23 @@ describe('NutritionTab reorder', () => {
     expect(labels[1]).toMatch(/calories/i);
   });
 
-  it('renders rules in the order from saved settings', async () => {
+  it('renders rules in the order from saved settings (in detail view)', async () => {
     mockGetNutritionSettings.mockResolvedValue(
       makeSettings({
-        rules: [
+        rulesets: [{ id: 'default', name: 'Default', rules: [
           { nutrient: 'salt', direction: 'above', value: 1.5, rating: 'negative' },
           { nutrient: 'protein', direction: 'above', value: 20, rating: 'positive' },
-        ],
+        ]}],
       }),
     );
     await renderTab();
+    fireEvent.click(screen.getByRole('button', { name: /view ruleset/i }));
 
     // The first rule's nutrient combobox should show Salt
-    const comboboxes = screen.getAllByRole('combobox');
-    expect(comboboxes[0]).toHaveTextContent(/salt/i);
+    await waitFor(() => {
+      const comboboxes = screen.getAllByRole('combobox');
+      expect(comboboxes[0]).toHaveTextContent(/salt/i);
+    });
   });
 
   it('reordering nutrients enables the Save button', async () => {
@@ -175,12 +181,12 @@ describe('NutritionTab reorder', () => {
     await waitFor(() => expect(saveBtn).not.toBeDisabled());
   });
 
-  it('reordering rules enables the Save button', async () => {
+  it('reordering rulesets enables the Save button', async () => {
     mockGetNutritionSettings.mockResolvedValue(
       makeSettings({
-        rules: [
-          { nutrient: 'protein', direction: 'above', value: 20, rating: 'positive' },
-          { nutrient: 'salt', direction: 'above', value: 1.5, rating: 'negative' },
+        rulesets: [
+          { id: 'r1', name: 'Ruleset 1', rules: [] },
+          { id: 'r2', name: 'Ruleset 2', rules: [] },
         ],
       }),
     );
@@ -189,10 +195,9 @@ describe('NutritionTab reorder', () => {
     const saveBtn = screen.getByRole('button', { name: /^save$/i });
     expect(saveBtn).toBeDisabled();
 
-    // rules get ids 'rule-0', 'rule-1'
-    const ruleDragEnd = dragEndHandlers[dragEndHandlers.length - 1];
+    const rulesetDragEnd = dragEndHandlers[dragEndHandlers.length - 1];
     act(() => {
-      ruleDragEnd({ active: { id: 'rule-0' }, over: { id: 'rule-1' } });
+      rulesetDragEnd({ active: { id: 'r1' }, over: { id: 'r2' } });
     });
 
     await waitFor(() => expect(saveBtn).not.toBeDisabled());
@@ -219,16 +224,20 @@ describe('NutritionTab reorder', () => {
     expect(savedSettings.rowOrder![1]).toBe('kcals');
   });
 
-  it('saves rules in new order after rule reorder', async () => {
+  it('saves rules in new order after rule reorder in detail view', async () => {
     mockGetNutritionSettings.mockResolvedValue(
       makeSettings({
-        rules: [
+        rulesets: [{ id: 'default', name: 'Default', rules: [
           { nutrient: 'protein', direction: 'above', value: 20, rating: 'positive' },
           { nutrient: 'salt', direction: 'above', value: 1.5, rating: 'negative' },
-        ],
+        ]}],
       }),
     );
     await renderTab();
+
+    // Navigate to detail view
+    fireEvent.click(screen.getByRole('button', { name: /view ruleset/i }));
+    await waitFor(() => screen.getAllByTestId('rule-drag-handle'));
 
     const ruleDragEnd = dragEndHandlers[dragEndHandlers.length - 1];
     act(() => {
@@ -236,14 +245,14 @@ describe('NutritionTab reorder', () => {
       ruleDragEnd({ active: { id: 'rule-0' }, over: { id: 'rule-1' } });
     });
 
+    // Click the detail view Save button
     const saveBtn = screen.getByRole('button', { name: /^save$/i });
-    await waitFor(() => expect(saveBtn).not.toBeDisabled());
     fireEvent.click(saveBtn);
 
     await waitFor(() => expect(mockSaveNutritionSettings).toHaveBeenCalled());
     const [, savedSettings] = mockSaveNutritionSettings.mock.calls[0];
-    expect(savedSettings.rules[0].nutrient).toBe('salt');
-    expect(savedSettings.rules[1].nutrient).toBe('protein');
+    expect(savedSettings.rulesets[0].rules[0].nutrient).toBe('salt');
+    expect(savedSettings.rulesets[0].rules[1].nutrient).toBe('protein');
   });
 });
 

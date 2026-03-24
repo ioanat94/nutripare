@@ -283,7 +283,7 @@ describe('NutritionTable', () => {
           visibleRows: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'fiber'],
           showCrown: true,
           showFlag: true,
-          rules: [],
+          rulesets: [],
         }}
       />,
     );
@@ -306,8 +306,10 @@ describe('NutritionTable', () => {
           visibleRows: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'],
           showCrown: false,
           showFlag: true,
-          rules: [{ nutrient: 'protein', direction: 'above', value: 20, rating: 'positive' }],
+          rulesets: [],
         }}
+        rulesets={[{ id: 'r1', name: 'Test', rules: [{ nutrient: 'protein', direction: 'above', value: 20, rating: 'positive' }] }]}
+        selectedRulesetId='r1'
       />,
     );
     const proteinRow = screen.getByText('Protein (g)').closest('tr')!;
@@ -328,8 +330,10 @@ describe('NutritionTable', () => {
           visibleRows: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'],
           showCrown: true,
           showFlag: false,
-          rules: [{ nutrient: 'sugar', direction: 'above', value: 22.5, rating: 'negative' }],
+          rulesets: [],
         }}
+        rulesets={[{ id: 'r1', name: 'Test', rules: [{ nutrient: 'sugar', direction: 'above', value: 22.5, rating: 'negative' }] }]}
+        selectedRulesetId='r1'
       />,
     );
     const sugarRow = screen.getByText('Sugar (g)').closest('tr')!;

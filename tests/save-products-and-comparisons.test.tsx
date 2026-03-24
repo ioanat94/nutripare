@@ -16,7 +16,8 @@ vi.mock('@/lib/firestore', () => ({
   deleteProduct: vi.fn(),
   deleteComparison: vi.fn(),
   getSavedProductEans: vi.fn().mockResolvedValue(new Set()),
-  isComparisonSaved: vi.fn().mockResolvedValue(false),
+  findSavedComparison: vi.fn().mockResolvedValue(null),
+  updateComparisonRuleset: vi.fn().mockResolvedValue(undefined),
   getNutritionSettings: vi.fn().mockResolvedValue(null),
 }));
 
@@ -213,7 +214,7 @@ describe('Compare page — save handlers', () => {
   beforeEach(() => {
     mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
     mockSaveProduct.mockResolvedValue(undefined);
-    mockSaveComparison.mockResolvedValue(undefined);
+    mockSaveComparison.mockResolvedValue('comparison-id-abc');
   });
 
   it('calls saveProduct with correct name and ean, then shows success toast', async () => {

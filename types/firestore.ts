@@ -29,4 +29,5 @@ export interface NutritionSettings {
   showCrown: boolean;
   showFlag: boolean;
   rules: NutritionRule[];
+  nutrientOrder?: string[];
 }

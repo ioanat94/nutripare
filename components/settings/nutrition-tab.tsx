@@ -5,7 +5,7 @@ import type {
   NutritionSettings,
   ThresholdColor,
 } from '@/types/firestore';
-import { Plus, Trash2 } from 'lucide-react';
+import { GripVertical, Plus, Trash2 } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -14,6 +14,22 @@ import {
 } from '@/components/ui/select';
 import { getNutritionSettings, saveNutritionSettings } from '@/lib/firestore';
 import { useEffect, useMemo, useState } from 'react';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,8 +37,9 @@ import { ROWS } from '@/components/nutrition-table';
 import { Switch } from '@/components/ui/switch';
 import { getDefaultRules } from '@/utils/thresholds';
 import { toast } from 'sonner';
+import type { DragEndEvent } from '@dnd-kit/core';
 
-type DraftRule = Omit<NutritionRule, 'value'> & { value: number | undefined };
+type DraftRule = Omit<NutritionRule, 'value'> & { value: number | undefined; id: string };
 
 interface NutritionTabProps {
   userId: string;
@@ -50,11 +67,183 @@ function buildDefault(): NutritionSettings {
     showCrown: true,
     showFlag: true,
     rules: getDefaultRules(),
+    nutrientOrder: ROWS.map((r) => r.key),
   };
 }
 
 function settingsEqual(a: NutritionSettings, b: NutritionSettings): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
+}
+
+interface SortableNutrientRowProps {
+  rowKey: string;
+  label: string;
+  checked: boolean;
+  onToggle: (key: string, checked: boolean) => void;
+}
+
+function SortableNutrientRow({ rowKey, label, checked, onToggle }: SortableNutrientRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: rowKey });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={style} className='flex items-center gap-2'>
+      <button
+        {...attributes}
+        {...listeners}
+        aria-label='Drag to reorder'
+        className='cursor-grab text-muted-foreground active:cursor-grabbing'
+        data-testid='nutrient-drag-handle'
+      >
+        <GripVertical className='size-4' />
+      </button>
+      <label className='flex cursor-pointer items-center gap-2 text-sm'>
+        <Checkbox
+          checked={checked}
+          onCheckedChange={(c) => onToggle(rowKey, !!c)}
+        />
+        {label}
+      </label>
+    </div>
+  );
+}
+
+interface SortableRuleRowProps {
+  rule: DraftRule;
+  index: number;
+  error: string | undefined;
+  showError: boolean;
+  onUpdate: (index: number, field: keyof NutritionRule, value: string | number | undefined) => void;
+  onRemove: (index: number) => void;
+}
+
+function SortableRuleRow({ rule, index, error, showError, onUpdate, onRemove }: SortableRuleRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: rule.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={style}>
+      <div className='flex flex-wrap items-center gap-2'>
+        <button
+          {...attributes}
+          {...listeners}
+          aria-label='Drag to reorder'
+          className='cursor-grab text-muted-foreground active:cursor-grabbing'
+          data-testid='rule-drag-handle'
+        >
+          <GripVertical className='size-4' />
+        </button>
+
+        <Select
+          value={rule.nutrient}
+          onValueChange={(v) => v && onUpdate(index, 'nutrient', v)}
+        >
+          <SelectTrigger className='w-40'>
+            <span className='flex flex-1 text-left'>
+              {ROWS.find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient}
+            </span>
+          </SelectTrigger>
+          <SelectContent className='min-w-0' alignItemWithTrigger={false}>
+            {ROWS.map((row) => (
+              <SelectItem key={row.key} value={row.key}>
+                {row.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={rule.direction}
+          onValueChange={(v) => v && onUpdate(index, 'direction', v as 'above' | 'below')}
+        >
+          <SelectTrigger className='w-24'>
+            <span className='flex flex-1 text-left'>{rule.direction}</span>
+          </SelectTrigger>
+          <SelectContent className='min-w-0' alignItemWithTrigger={false}>
+            {DIRECTION_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <span className='text-sm text-muted-foreground'>or equal to</span>
+
+        <input
+          type='number'
+          min={0}
+          max={99.9}
+          step={0.1}
+          value={rule.value ?? ''}
+          onChange={(e) => {
+            if (e.target.value === '') {
+              onUpdate(index, 'value', undefined);
+              return;
+            }
+            const raw = parseFloat(e.target.value);
+            if (!isNaN(raw)) {
+              const clamped = Math.min(99.9, Math.max(0, parseFloat(raw.toFixed(1))));
+              onUpdate(index, 'value', clamped);
+            }
+          }}
+          className='h-8 w-20 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
+        />
+
+        <span className='text-sm text-muted-foreground'>is</span>
+
+        <Select
+          value={rule.rating}
+          onValueChange={(v) => v && onUpdate(index, 'rating', v as ThresholdColor)}
+        >
+          <SelectTrigger className='w-32'>
+            <span className='flex flex-1 items-center gap-2 text-left'>
+              {(() => {
+                const opt = RATING_OPTIONS.find((o) => o.value === rule.rating);
+                return opt ? (
+                  <>
+                    <span className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`} />
+                    {opt.label}
+                  </>
+                ) : (
+                  rule.rating
+                );
+              })()}
+            </span>
+          </SelectTrigger>
+          <SelectContent className='min-w-0' alignItemWithTrigger={false}>
+            {RATING_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                <span className='flex w-full items-center gap-2'>
+                  <span className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`} />
+                  {opt.label}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button
+          variant='ghost'
+          size='icon'
+          onClick={() => onRemove(index)}
+          aria-label='Remove rule'
+          className='hover:text-destructive'
+        >
+          <Trash2 className='size-4' />
+        </Button>
+      </div>
+      {showError && error && (
+        <p className='mt-1 text-xs text-destructive'>{error}</p>
+      )}
+    </div>
+  );
 }
 
 export function NutritionTab({ userId }: NutritionTabProps) {
@@ -67,6 +256,12 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   const [showCrown, setShowCrown] = useState(true);
   const [showFlag, setShowFlag] = useState(true);
   const [rules, setRules] = useState<DraftRule[]>([]);
+  const [nutrientOrder, setNutrientOrder] = useState<string[]>(ROWS.map((r) => r.key));
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   useEffect(() => {
     getNutritionSettings(userId).then((fetched) => {
@@ -75,7 +270,8 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       setVisibleNutrients(s.visibleNutrients);
       setShowCrown(s.showCrown);
       setShowFlag(s.showFlag);
-      setRules(s.rules);
+      setRules(s.rules.map((r, i) => ({ ...r, id: `rule-${i}` })));
+      setNutrientOrder(s.nutrientOrder ?? ROWS.map((r) => r.key));
       setLoading(false);
     });
   }, [userId]);
@@ -84,7 +280,8 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     visibleNutrients,
     showCrown,
     showFlag,
-    rules: rules.map((r) => ({ ...r, value: r.value! })),
+    rules: rules.map((r) => ({ nutrient: r.nutrient, direction: r.direction, value: r.value!, rating: r.rating })),
+    nutrientOrder,
   };
   const isDirty = saved !== null && !settingsEqual(current, saved);
 
@@ -98,11 +295,8 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       }
       const key = `${rule.nutrient}:${rule.rating}`;
       if (seen.has(key)) {
-        const nutrientLabel =
-          ROWS.find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient;
-        const ratingLabel =
-          RATING_OPTIONS.find((o) => o.value === rule.rating)?.label ??
-          rule.rating;
+        const nutrientLabel = ROWS.find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient;
+        const ratingLabel = RATING_OPTIONS.find((o) => o.value === rule.rating)?.label ?? rule.rating;
         const msg = `A rule for ${nutrientLabel} / ${ratingLabel} already exists`;
         errors[i] = msg;
         const firstIdx = seen.get(key)!;
@@ -128,20 +322,12 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   const saveDisabled = !isDirty || saving;
 
   function toggleNutrient(key: string, checked: boolean) {
-    setVisibleNutrients((prev) =>
-      checked ? [...prev, key] : prev.filter((k) => k !== key),
-    );
+    setVisibleNutrients((prev) => (checked ? [...prev, key] : prev.filter((k) => k !== key)));
   }
 
-  function updateRule(
-    index: number,
-    field: keyof NutritionRule,
-    value: string | number | undefined,
-  ) {
+  function updateRule(index: number, field: keyof NutritionRule, value: string | number | undefined) {
     setSaveAttempted(false);
-    setRules((prev) =>
-      prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)),
-    );
+    setRules((prev) => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
   }
 
   function addRule() {
@@ -153,12 +339,35 @@ export function NutritionTab({ userId }: NutritionTabProps) {
         direction: 'above' as const,
         value: undefined,
         rating: 'positive' as const,
+        id: crypto.randomUUID(),
       },
     ]);
   }
 
   function removeRule(index: number) {
     setRules((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function handleNutrientDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setNutrientOrder((prev) => {
+        const oldIndex = prev.indexOf(active.id as string);
+        const newIndex = prev.indexOf(over.id as string);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+  }
+
+  function handleRuleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setRules((prev) => {
+        const oldIndex = prev.findIndex((r) => r.id === active.id);
+        const newIndex = prev.findIndex((r) => r.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
   }
 
   async function handleSave() {
@@ -191,22 +400,25 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       {/* Visible nutrients */}
       <section className='space-y-3'>
         <h3 className='text-base font-semibold'>Visible nutrients</h3>
-        <div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
-          {ROWS.map((row) => (
-            <label
-              key={row.key}
-              className='flex cursor-pointer items-center gap-2 text-sm'
-            >
-              <Checkbox
-                checked={visibleNutrients.includes(row.key)}
-                onCheckedChange={(checked) =>
-                  toggleNutrient(row.key, !!checked)
-                }
-              />
-              {row.label}
-            </label>
-          ))}
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleNutrientDragEnd}>
+          <SortableContext items={nutrientOrder} strategy={verticalListSortingStrategy}>
+            <div className='space-y-2'>
+              {nutrientOrder.map((key) => {
+                const row = ROWS.find((r) => r.key === key);
+                if (!row) return null;
+                return (
+                  <SortableNutrientRow
+                    key={key}
+                    rowKey={key}
+                    label={row.label}
+                    checked={visibleNutrients.includes(key)}
+                    onToggle={toggleNutrient}
+                  />
+                );
+              })}
+            </div>
+          </SortableContext>
+        </DndContext>
       </section>
 
       {/* Highlights */}
@@ -214,28 +426,20 @@ export function NutritionTab({ userId }: NutritionTabProps) {
         <h3 className='text-base font-semibold'>Highlights</h3>
         <div className='space-y-4'>
           <div className='flex items-center gap-4'>
-            <Switch
-              checked={showCrown}
-              onCheckedChange={(v) => setShowCrown(v)}
-            />
+            <Switch checked={showCrown} onCheckedChange={(v) => setShowCrown(v)} />
             <div>
               <p className='text-sm font-medium'>Show crown (👑)</p>
               <p className='text-xs text-muted-foreground'>
-                Marks the top result for nutrients with a &apos;Great&apos;
-                rule.
+                Marks the top result for nutrients with a &apos;Great&apos; rule.
               </p>
             </div>
           </div>
           <div className='flex items-center gap-4'>
-            <Switch
-              checked={showFlag}
-              onCheckedChange={(v) => setShowFlag(v)}
-            />
+            <Switch checked={showFlag} onCheckedChange={(v) => setShowFlag(v)} />
             <div>
               <p className='text-sm font-medium'>Show flag (🚩)</p>
               <p className='text-xs text-muted-foreground'>
-                Marks the worst result for nutrients with a &apos;Bad&apos;
-                rule.
+                Marks the worst result for nutrients with a &apos;Bad&apos; rule.
               </p>
             </div>
           </div>
@@ -245,144 +449,23 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       {/* Rules */}
       <section className='space-y-3'>
         <h3 className='text-base font-semibold'>Rules</h3>
-        <div className='space-y-2'>
-          {rules.map((rule, i) => (
-            <div key={i}>
-              <div className='flex flex-wrap items-center gap-2'>
-                <Select
-                  value={rule.nutrient}
-                  onValueChange={(v) => v && updateRule(i, 'nutrient', v)}
-                >
-                  <SelectTrigger className='w-40'>
-                    <span className='flex flex-1 text-left'>
-                      {ROWS.find((r) => r.key === rule.nutrient)?.label ??
-                        rule.nutrient}
-                    </span>
-                  </SelectTrigger>
-                  <SelectContent
-                    className='min-w-0'
-                    alignItemWithTrigger={false}
-                  >
-                    {ROWS.map((row) => (
-                      <SelectItem key={row.key} value={row.key}>
-                        {row.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={rule.direction}
-                  onValueChange={(v) =>
-                    v && updateRule(i, 'direction', v as 'above' | 'below')
-                  }
-                >
-                  <SelectTrigger className='w-24'>
-                    <span className='flex flex-1 text-left'>
-                      {rule.direction}
-                    </span>
-                  </SelectTrigger>
-                  <SelectContent
-                    className='min-w-0'
-                    alignItemWithTrigger={false}
-                  >
-                    {DIRECTION_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <span className='text-sm text-muted-foreground'>
-                  or equal to
-                </span>
-
-                <input
-                  type='number'
-                  min={0}
-                  max={99.9}
-                  step={0.1}
-                  value={rule.value ?? ''}
-                  onChange={(e) => {
-                    if (e.target.value === '') {
-                      updateRule(i, 'value', undefined);
-                      return;
-                    }
-                    const raw = parseFloat(e.target.value);
-                    if (!isNaN(raw)) {
-                      const clamped = Math.min(
-                        99.9,
-                        Math.max(0, parseFloat(raw.toFixed(1))),
-                      );
-                      updateRule(i, 'value', clamped);
-                    }
-                  }}
-                  className='h-8 w-20 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleRuleDragEnd}>
+          <SortableContext items={rules.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+            <div className='space-y-2'>
+              {rules.map((rule, i) => (
+                <SortableRuleRow
+                  key={rule.id}
+                  rule={rule}
+                  index={i}
+                  error={validationErrors[i]}
+                  showError={saveAttempted}
+                  onUpdate={updateRule}
+                  onRemove={removeRule}
                 />
-
-                <span className='text-sm text-muted-foreground'>is</span>
-
-                <Select
-                  value={rule.rating}
-                  onValueChange={(v) =>
-                    v && updateRule(i, 'rating', v as ThresholdColor)
-                  }
-                >
-                  <SelectTrigger className='w-32'>
-                    <span className='flex flex-1 items-center gap-2 text-left'>
-                      {(() => {
-                        const opt = RATING_OPTIONS.find(
-                          (o) => o.value === rule.rating,
-                        );
-                        return opt ? (
-                          <>
-                            <span
-                              className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`}
-                            />
-                            {opt.label}
-                          </>
-                        ) : (
-                          rule.rating
-                        );
-                      })()}
-                    </span>
-                  </SelectTrigger>
-                  <SelectContent
-                    className='min-w-0'
-                    alignItemWithTrigger={false}
-                  >
-                    {RATING_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        <span className='flex w-full items-center gap-2'>
-                          <span
-                            className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`}
-                          />
-                          {opt.label}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  onClick={() => removeRule(i)}
-                  aria-label='Remove rule'
-                  className='hover:text-destructive'
-                >
-                  <Trash2 className='size-4' />
-                </Button>
-              </div>
-              {saveAttempted && validationErrors[i] && (
-                <p className='mt-1 text-xs text-destructive'>
-                  {validationErrors[i]}
-                </p>
-              )}
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
 
         <div className='flex gap-2'>
           <Button variant='outline' size='sm' onClick={addRule}>
@@ -392,7 +475,7 @@ export function NutritionTab({ userId }: NutritionTabProps) {
           <Button
             variant='outline'
             size='sm'
-            onClick={() => setRules(getDefaultRules())}
+            onClick={() => setRules(getDefaultRules().map((r, i) => ({ ...r, id: `rule-reset-${i}` })))}
             disabled={resetDisabled}
           >
             Reset to defaults

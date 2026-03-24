@@ -28,8 +28,6 @@ beforeEach(() => {
 const mockUser: FirestoreUser = {
   id: '123',
   displayName: 'Test User',
-  products: [],
-  comparisons: [],
 };
 
 describe('Navbar', () => {
@@ -79,44 +77,50 @@ describe('Navbar', () => {
     expect(localStorage.getItem('nutripare-theme')).toBe('light');
   });
 
-  it('renders a user icon button', () => {
+  it('renders a user icon link', () => {
     render(<Navbar />);
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /sign in/i })).toBeInTheDocument();
   });
 
   it('user icon has text-foreground class when logged out', () => {
     mockUseAuth.mockReturnValue({ user: null, loading: false });
     render(<Navbar />);
-    const btn = screen.getByRole('button', { name: /sign in/i });
-    expect(btn.querySelector('svg')).toHaveClass('text-foreground');
+    const link = screen.getByRole('link', { name: /sign in/i });
+    expect(link.querySelector('svg')).toHaveClass('text-foreground');
   });
 
   it('user icon has text-primary class when logged in', () => {
     mockUseAuth.mockReturnValue({ user: mockUser, loading: false });
     render(<Navbar />);
-    const btn = screen.getByRole('button', { name: /account settings/i });
-    expect(btn.querySelector('svg')).toHaveClass('text-primary');
+    const link = screen.getByRole('link', { name: /account settings/i });
+    expect(link.querySelector('svg')).toHaveClass('text-primary');
   });
 
-  it('clicking user icon while logged out navigates to /login with redirect param', () => {
+  it('user icon while logged out links to /login with redirect param', () => {
     mockUseAuth.mockReturnValue({ user: null, loading: false });
     render(<Navbar />);
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
-    expect(mockPush).toHaveBeenCalledWith('/login?redirect=%2F');
+    expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute(
+      'href',
+      '/login?redirect=%2F',
+    );
   });
 
-  it('clicking user icon while logged out on /login redirects to / after sign-in', () => {
+  it('user icon while logged out on /login links to /login?redirect=/', () => {
     mockPathname = '/login';
     mockUseAuth.mockReturnValue({ user: null, loading: false });
     render(<Navbar />);
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
-    expect(mockPush).toHaveBeenCalledWith('/login?redirect=%2F');
+    expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute(
+      'href',
+      '/login?redirect=%2F',
+    );
   });
 
-  it('clicking user icon while logged in navigates to /settings', () => {
+  it('user icon while logged in links to /settings/account', () => {
     mockUseAuth.mockReturnValue({ user: mockUser, loading: false });
     render(<Navbar />);
-    fireEvent.click(screen.getByRole('button', { name: /account settings/i }));
-    expect(mockPush).toHaveBeenCalledWith('/settings');
+    expect(screen.getByRole('link', { name: /account settings/i })).toHaveAttribute(
+      'href',
+      '/settings/account',
+    );
   });
 });

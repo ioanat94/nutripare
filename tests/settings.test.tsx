@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 
@@ -74,9 +75,14 @@ beforeEach(() => {
   mockGetSavedComparisons.mockResolvedValue([]);
 });
 
-async function renderSettings() {
-  const { default: SettingsPage } = await import('@/app/settings/page');
-  render(<SettingsPage />);
+async function renderSettings(tab?: string) {
+  const { default: SettingsPage } = await import('@/app/settings/[[...tab]]/page');
+  const params = Promise.resolve(tab ? { tab: [tab] } : {});
+  render(
+    <Suspense fallback={null}>
+      <SettingsPage params={params} />
+    </Suspense>
+  );
 }
 
 // ─── Auth guard ───────────────────────────────────────────────────────────────
@@ -106,29 +112,33 @@ describe('Settings page — layout', () => {
 
   it('renders "Settings" header and all four sidebar tabs when authenticated', async () => {
     await renderSettings();
-    expect(
-      screen.getByRole('heading', { name: /^settings$/i, level: 1 }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^account$/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^nutrition$/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^products$/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^comparisons$/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: /^settings$/i, level: 1 })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('link', { name: /^account$/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^nutrition$/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^products$/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^comparisons$/i })).toBeInTheDocument();
   });
 
   it('renders the logout button', async () => {
     await renderSettings();
-    expect(screen.getByRole('button', { name: /log out/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /log out/i })).toBeInTheDocument(),
+    );
   });
 
-  it('switching tabs renders the correct section subheader', async () => {
-    await renderSettings();
-    fireEvent.click(screen.getByRole('button', { name: /^products$/i }));
+  it('renders the correct section subheader for the products tab', async () => {
+    await renderSettings('products');
     await waitFor(() =>
       expect(
         screen.getByRole('heading', { name: /products/i, level: 2 }),
       ).toBeInTheDocument(),
     );
-    fireEvent.click(screen.getByRole('button', { name: /^comparisons$/i }));
+  });
+
+  it('renders the correct section subheader for the comparisons tab', async () => {
+    await renderSettings('comparisons');
     await waitFor(() =>
       expect(
         screen.getByRole('heading', { name: /comparisons/i, level: 2 }),
@@ -146,7 +156,9 @@ describe('Settings page — Account tab', () => {
 
   it('renders display name input, password section, and delete account button', async () => {
     await renderSettings();
-    expect(screen.getByRole('textbox', { name: /display name/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('textbox', { name: /display name/i })).toBeInTheDocument(),
+    );
     expect(screen.getByRole('button', { name: /save name/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /change password/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /delete account/i })).toBeInTheDocument();
@@ -154,6 +166,9 @@ describe('Settings page — Account tab', () => {
 
   it('shows inline confirmation when delete account is clicked', async () => {
     await renderSettings();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /delete account/i })).toBeInTheDocument(),
+    );
     fireEvent.click(screen.getByRole('button', { name: /delete account/i }));
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /yes, delete/i })).toBeInTheDocument(),
@@ -171,8 +186,7 @@ describe('Settings page — Products tab', () => {
 
   it('shows empty state when there are no saved products', async () => {
     mockGetSavedProducts.mockResolvedValue([]);
-    await renderSettings();
-    fireEvent.click(screen.getByRole('button', { name: /^products$/i }));
+    await renderSettings('products');
     await waitFor(() =>
       expect(screen.getByText(/no saved products yet/i)).toBeInTheDocument(),
     );
@@ -182,13 +196,12 @@ describe('Settings page — Products tab', () => {
     mockGetSavedProducts.mockResolvedValue([
       { id: 'p1', name: 'Nutella', ean: '5000112637922' },
     ]);
-    await renderSettings();
-    fireEvent.click(screen.getByRole('button', { name: /^products$/i }));
+    await renderSettings('products');
     await waitFor(() =>
       expect(screen.getByText('Nutella')).toBeInTheDocument(),
     );
     expect(screen.getByText('5000112637922')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /view nutella/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /view nutella/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /unsave nutella/i })).toBeInTheDocument();
   });
 
@@ -197,8 +210,7 @@ describe('Settings page — Products tab', () => {
       { id: 'p1', name: 'Nutella', ean: '5000112637922' },
     ]);
     mockDeleteProduct.mockResolvedValue(undefined);
-    await renderSettings();
-    fireEvent.click(screen.getByRole('button', { name: /^products$/i }));
+    await renderSettings('products');
     await waitFor(() =>
       expect(screen.getByText('Nutella')).toBeInTheDocument(),
     );
@@ -221,8 +233,7 @@ describe('Settings page — Comparisons tab', () => {
 
   it('shows empty state when there are no saved comparisons', async () => {
     mockGetSavedComparisons.mockResolvedValue([]);
-    await renderSettings();
-    fireEvent.click(screen.getByRole('button', { name: /^comparisons$/i }));
+    await renderSettings('comparisons');
     await waitFor(() =>
       expect(screen.getByText(/no saved comparisons yet/i)).toBeInTheDocument(),
     );
@@ -236,8 +247,7 @@ describe('Settings page — Comparisons tab', () => {
         eans: ['5000112637922', '8076809513388'],
       },
     ]);
-    await renderSettings();
-    fireEvent.click(screen.getByRole('button', { name: /^comparisons$/i }));
+    await renderSettings('comparisons');
     await waitFor(() =>
       expect(screen.getByText('Nutella + 1 others')).toBeInTheDocument(),
     );
@@ -252,8 +262,7 @@ describe('Settings page — Comparisons tab', () => {
       { id: 'c1', name: 'Nutella + 1 others', eans },
     ]);
     mockDeleteComparison.mockResolvedValue(undefined);
-    await renderSettings();
-    fireEvent.click(screen.getByRole('button', { name: /^comparisons$/i }));
+    await renderSettings('comparisons');
     await waitFor(() =>
       expect(screen.getByText('Nutella + 1 others')).toBeInTheDocument(),
     );
@@ -272,8 +281,7 @@ describe('Settings page — Comparisons tab', () => {
     mockGetSavedComparisons.mockResolvedValue([
       { id: 'c1', name: 'Nutella + 1 others', eans: ['111', '222'] },
     ]);
-    await renderSettings();
-    fireEvent.click(screen.getByRole('button', { name: /^comparisons$/i }));
+    await renderSettings('comparisons');
     await waitFor(() =>
       expect(screen.getByText('Nutella + 1 others')).toBeInTheDocument(),
     );
@@ -288,8 +296,7 @@ describe('Settings page — Comparisons tab', () => {
     mockGetSavedComparisons.mockResolvedValue([
       { id: 'c1', name: 'Nutella + 1 others', eans: ['111', '222'] },
     ]);
-    await renderSettings();
-    fireEvent.click(screen.getByRole('button', { name: /^comparisons$/i }));
+    await renderSettings('comparisons');
     await waitFor(() =>
       expect(screen.getByText('Nutella + 1 others')).toBeInTheDocument(),
     );
@@ -305,8 +312,7 @@ describe('Settings page — Comparisons tab', () => {
       { id: 'c1', name: 'Nutella + 1 others', eans: ['111', '222'] },
     ]);
     mockRenameComparison.mockResolvedValue(undefined);
-    await renderSettings();
-    fireEvent.click(screen.getByRole('button', { name: /^comparisons$/i }));
+    await renderSettings('comparisons');
     await waitFor(() =>
       expect(screen.getByText('Nutella + 1 others')).toBeInTheDocument(),
     );

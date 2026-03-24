@@ -156,6 +156,7 @@ function SortableRulesetRow({ ruleset, onView, onDelete }: SortableRulesetRowPro
         size='icon'
         onClick={() => onView(ruleset)}
         aria-label='View ruleset'
+        className='hover:text-info hover:bg-info/10'
       >
         <Eye className='size-4' />
       </Button>

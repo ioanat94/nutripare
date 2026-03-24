@@ -65,7 +65,7 @@ export function ProductsTab({ userId }: { userId: string }) {
                   variant='ghost'
                   size='icon'
                   aria-label={`View ${product.name}`}
-                  className='text-info hover:text-info hover:bg-info/10'
+                  className='hover:text-info hover:bg-info/10'
                   onClick={() =>
                     window.open(`/compare?codes=${product.ean}`, '_blank')
                   }
@@ -76,7 +76,7 @@ export function ProductsTab({ userId }: { userId: string }) {
                   variant='ghost'
                   size='icon'
                   aria-label={`Unsave ${product.name}`}
-                  className='text-destructive hover:text-destructive hover:bg-destructive/10'
+                  className='hover:text-destructive hover:bg-destructive/10'
                   onClick={() => handleUnsave(product.ean)}
                 >
                   <SaveOff className='size-4' />

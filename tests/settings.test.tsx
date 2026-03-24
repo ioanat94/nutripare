@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 
 // Mock next/navigation
@@ -78,11 +78,13 @@ beforeEach(() => {
 async function renderSettings(tab?: string) {
   const { default: SettingsPage } = await import('@/app/settings/[[...tab]]/page');
   const params = Promise.resolve(tab ? { tab: [tab] } : {});
-  render(
-    <Suspense fallback={null}>
-      <SettingsPage params={params} />
-    </Suspense>
-  );
+  await act(async () => {
+    render(
+      <Suspense fallback={null}>
+        <SettingsPage params={params} />
+      </Suspense>
+    );
+  });
 }
 
 // ─── Auth guard ───────────────────────────────────────────────────────────────

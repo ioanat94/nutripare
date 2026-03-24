@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Eye, SaveOff } from 'lucide-react';
+import { Eye, Loader2, SaveOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { deleteProduct, getSavedProducts } from '@/lib/firestore';
@@ -18,9 +18,13 @@ import type { SavedProduct } from '@/types/firestore';
 
 export function ProductsTab({ userId }: { userId: string }) {
   const [products, setProducts] = useState<SavedProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getSavedProducts(userId).then(setProducts);
+    getSavedProducts(userId).then((data) => {
+      setProducts(data);
+      setLoading(false);
+    });
   }, [userId]);
 
   async function handleUnsave(ean: string) {
@@ -31,6 +35,10 @@ export function ProductsTab({ userId }: { userId: string }) {
     } catch {
       toast.error('Failed to remove product');
     }
+  }
+
+  if (loading) {
+    return <Loader2 className='size-5 animate-spin text-muted-foreground' />;
   }
 
   if (products.length === 0) {

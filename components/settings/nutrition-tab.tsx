@@ -5,7 +5,7 @@ import type {
   NutritionSettings,
   ThresholdColor,
 } from '@/types/firestore';
-import { GripVertical, Plus, Trash2 } from 'lucide-react';
+import { GripVertical, Loader2, Plus, Trash2 } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -395,13 +395,7 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   }
 
   if (loading) {
-    return (
-      <div className='space-y-4'>
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className='h-8 animate-pulse rounded-md bg-muted' />
-        ))}
-      </div>
-    );
+    return <Loader2 className='size-5 animate-spin text-muted-foreground' />;
   }
 
   return (

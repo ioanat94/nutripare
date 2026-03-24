@@ -17,6 +17,7 @@ vi.mock('@/lib/firestore', () => ({
   getSavedComparisons: vi.fn(),
   deleteProduct: vi.fn(),
   deleteComparison: vi.fn(),
+  renameComparison: vi.fn(),
   getNutritionSettings: vi.fn().mockResolvedValue(null),
   saveNutritionSettings: vi.fn().mockResolvedValue(undefined),
 }));
@@ -55,12 +56,13 @@ const mockUseAuth = vi.mocked(useAuth);
 const { useRouter } = await import('next/navigation');
 const mockUseRouter = vi.mocked(useRouter);
 
-const { getSavedProducts, getSavedComparisons, deleteProduct, deleteComparison } =
+const { getSavedProducts, getSavedComparisons, deleteProduct, deleteComparison, renameComparison } =
   await import('@/lib/firestore');
 const mockGetSavedProducts = vi.mocked(getSavedProducts);
 const mockGetSavedComparisons = vi.mocked(getSavedComparisons);
 const mockDeleteProduct = vi.mocked(deleteProduct);
 const mockDeleteComparison = vi.mocked(deleteComparison);
+const mockRenameComparison = vi.mocked(renameComparison);
 
 const mockUser = { id: 'uid-123', displayName: 'Test User' };
 const mockPush = vi.fn();
@@ -264,5 +266,59 @@ describe('Settings page — Comparisons tab', () => {
     await waitFor(() =>
       expect(screen.queryByText('Nutella + 1 others')).toBeNull(),
     );
+  });
+
+  it('clicking the pencil shows an input pre-filled with the current name', async () => {
+    mockGetSavedComparisons.mockResolvedValue([
+      { id: 'c1', name: 'Nutella + 1 others', eans: ['111', '222'] },
+    ]);
+    await renderSettings();
+    fireEvent.click(screen.getByRole('button', { name: /^comparisons$/i }));
+    await waitFor(() =>
+      expect(screen.getByText('Nutella + 1 others')).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /rename nutella \+ 1 others/i }));
+    const input = screen.getByRole('textbox') as HTMLInputElement;
+    expect(input.value).toBe('Nutella + 1 others');
+    expect(screen.getByRole('button', { name: /save name/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+  });
+
+  it('clicking cancel restores the original name without calling renameComparison', async () => {
+    mockGetSavedComparisons.mockResolvedValue([
+      { id: 'c1', name: 'Nutella + 1 others', eans: ['111', '222'] },
+    ]);
+    await renderSettings();
+    fireEvent.click(screen.getByRole('button', { name: /^comparisons$/i }));
+    await waitFor(() =>
+      expect(screen.getByText('Nutella + 1 others')).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /rename nutella \+ 1 others/i }));
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Changed name' } });
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(screen.getByText('Nutella + 1 others')).toBeInTheDocument();
+    expect(mockRenameComparison).not.toHaveBeenCalled();
+  });
+
+  it('saving a new name calls renameComparison and updates the displayed name', async () => {
+    mockGetSavedComparisons.mockResolvedValue([
+      { id: 'c1', name: 'Nutella + 1 others', eans: ['111', '222'] },
+    ]);
+    mockRenameComparison.mockResolvedValue(undefined);
+    await renderSettings();
+    fireEvent.click(screen.getByRole('button', { name: /^comparisons$/i }));
+    await waitFor(() =>
+      expect(screen.getByText('Nutella + 1 others')).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /rename nutella \+ 1 others/i }));
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'My comparison' } });
+    fireEvent.click(screen.getByRole('button', { name: /save name/i }));
+    await waitFor(() =>
+      expect(mockRenameComparison).toHaveBeenCalledWith('uid-123', 'c1', 'My comparison'),
+    );
+    await waitFor(() =>
+      expect(screen.getByText('My comparison')).toBeInTheDocument(),
+    );
+    expect(screen.queryByRole('textbox')).toBeNull();
   });
 });

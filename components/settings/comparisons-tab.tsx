@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Eye, SaveOff } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Check, Eye, Loader2, Pencil, SaveOff, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { deleteComparison, getSavedComparisons } from '@/lib/firestore';
+import { deleteComparison, getSavedComparisons, renameComparison } from '@/lib/firestore';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -18,10 +19,46 @@ import type { SavedComparison } from '@/types/firestore';
 
 export function ComparisonsTab({ userId }: { userId: string }) {
   const [comparisons, setComparisons] = useState<SavedComparison[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    getSavedComparisons(userId).then(setComparisons);
+    getSavedComparisons(userId).then((data) => {
+      setComparisons(data);
+      setLoading(false);
+    });
   }, [userId]);
+
+  useEffect(() => {
+    if (editingId) inputRef.current?.focus();
+  }, [editingId]);
+
+  function startEditing(comparison: SavedComparison) {
+    setEditingId(comparison.id);
+    setEditingName(comparison.name);
+  }
+
+  function cancelEditing() {
+    setEditingId(null);
+    setEditingName('');
+  }
+
+  async function handleRename(id: string) {
+    const trimmed = editingName.trim();
+    if (!trimmed) return;
+    try {
+      await renameComparison(userId, id, trimmed);
+      setComparisons((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, name: trimmed } : c)),
+      );
+      cancelEditing();
+      toast.success('Comparison renamed');
+    } catch {
+      toast.error('Failed to rename comparison');
+    }
+  }
 
   async function handleUnsave(eans: string[]) {
     try {
@@ -35,6 +72,10 @@ export function ComparisonsTab({ userId }: { userId: string }) {
     } catch {
       toast.error('Failed to remove comparison');
     }
+  }
+
+  if (loading) {
+    return <Loader2 className='size-5 animate-spin text-muted-foreground' />;
   }
 
   if (comparisons.length === 0) {
@@ -53,7 +94,56 @@ export function ComparisonsTab({ userId }: { userId: string }) {
       <TableBody>
         {comparisons.map((comparison) => (
           <TableRow key={comparison.id}>
-            <TableCell>{comparison.name}</TableCell>
+            <TableCell>
+              {editingId === comparison.id ? (
+                <form
+                  className='flex items-center gap-1'
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleRename(comparison.id);
+                  }}
+                >
+                  <Input
+                    ref={inputRef}
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    className='h-7 text-sm'
+                  />
+                  <Button
+                    type='submit'
+                    variant='ghost'
+                    size='icon'
+                    aria-label='Save name'
+                    className='size-7 shrink-0 text-positive hover:text-positive hover:bg-positive/10'
+                  >
+                    <Check className='size-3.5' />
+                  </Button>
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    size='icon'
+                    aria-label='Cancel'
+                    className='size-7 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10'
+                    onClick={cancelEditing}
+                  >
+                    <X className='size-3.5' />
+                  </Button>
+                </form>
+              ) : (
+                <span className='flex items-center gap-1.5'>
+                  {comparison.name}
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    aria-label={`Rename ${comparison.name}`}
+                    className='size-6 shrink-0 text-muted-foreground hover:text-foreground'
+                    onClick={() => startEditing(comparison)}
+                  >
+                    <Pencil className='size-3' />
+                  </Button>
+                </span>
+              )}
+            </TableCell>
             <TableCell className='max-w-48 whitespace-normal font-mono'>
               {comparison.eans.join(', ')}
             </TableCell>

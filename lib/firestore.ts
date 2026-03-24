@@ -7,6 +7,7 @@ import {
   getDocs,
   query,
   setDoc,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 
@@ -85,6 +86,15 @@ export async function deleteComparison(
       await deleteDoc(doc.ref);
     }
   }
+}
+
+export async function renameComparison(
+  uid: string,
+  id: string,
+  name: string,
+): Promise<void> {
+  const ref = doc(db, 'users', uid, 'comparisons', id);
+  await updateDoc(ref, { name });
 }
 
 export async function getSavedProducts(uid: string): Promise<SavedProduct[]> {

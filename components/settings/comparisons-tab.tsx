@@ -5,7 +5,8 @@ import { Check, Eye, Loader2, Pencil, SaveOff, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { deleteComparison, getSavedComparisons, renameComparison } from '@/lib/firestore';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -149,20 +150,14 @@ export function ComparisonsTab({ userId }: { userId: string }) {
             </TableCell>
             <TableCell>
               <div className='flex gap-1'>
-                <Button
-                  variant='ghost'
-                  size='icon'
+                <Link
+                  href={`/compare?codes=${comparison.eans.join(',')}`}
+                  target='_blank'
                   aria-label={`View ${comparison.name}`}
-                  className='hover:text-info hover:bg-info/10'
-                  onClick={() =>
-                    window.open(
-                      `/compare?codes=${comparison.eans.join(',')}`,
-                      '_blank',
-                    )
-                  }
+                  className={buttonVariants({ variant: 'ghost', size: 'icon' }) + ' hover:text-info hover:bg-info/10'}
                 >
                   <Eye className='size-4' />
-                </Button>
+                </Link>
                 <Button
                   variant='ghost'
                   size='icon'

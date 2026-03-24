@@ -1,26 +1,22 @@
 'use client';
 
 import { House, Moon, Sun, User } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/hooks/use-theme';
+import { cn } from '@/utils/tailwind';
 
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { user, loading } = useAuth();
-  const router = useRouter();
   const pathname = usePathname();
 
-  function handleUserIconClick() {
-    if (user) {
-      router.push('/settings');
-    } else {
-      const redirect = pathname === '/login' ? '/' : pathname;
-      router.push('/login?redirect=' + encodeURIComponent(redirect));
-    }
-  }
+  const userHref = user
+    ? '/settings/account'
+    : '/login?redirect=' + encodeURIComponent(pathname === '/login' ? '/' : pathname);
 
   const userIconClass = loading
     ? 'text-muted-foreground'
@@ -30,14 +26,14 @@ export function Navbar() {
 
   return (
     <nav className='flex items-center justify-end border-b px-4 py-2'>
-      <Button variant='ghost' size='icon' className='mr-auto' onClick={() => router.push('/')}>
+      <Link href='/' className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'mr-auto')}>
         <House />
         <span className='sr-only'>Home</span>
-      </Button>
-      <Button variant='ghost' size='icon' onClick={handleUserIconClick}>
+      </Link>
+      <Link href={userHref} className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
         <User className={userIconClass} />
         <span className='sr-only'>{user ? 'Account settings' : 'Sign in'}</span>
-      </Button>
+      </Link>
       <Button variant='ghost' size='icon' onClick={toggleTheme}>
         {theme === 'dark' ? <Moon /> : <Sun />}
         <span className='sr-only'>Toggle theme</span>

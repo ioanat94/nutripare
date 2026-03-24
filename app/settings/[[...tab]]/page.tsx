@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect } from 'react';
 
 import { AccountTab } from '@/components/settings/account-tab';
 import { Button } from '@/components/ui/button';
 import { ComparisonsTab } from '@/components/settings/comparisons-tab';
+import Link from 'next/link';
 import { LogOut } from 'lucide-react';
 import { NutritionTab } from '@/components/settings/nutrition-tab';
 import { ProductsTab } from '@/components/settings/products-tab';
@@ -17,10 +18,13 @@ type Tab = 'account' | 'nutrition' | 'products' | 'comparisons';
 
 const TABS: Tab[] = ['account', 'nutrition', 'products', 'comparisons'];
 
-export default function SettingsPage() {
+export default function SettingsPage({ params }: { params: Promise<{ tab?: string[] }> }) {
+  const { tab: tabSegment } = use(params);
+  const rawTab = tabSegment?.[0];
+  const activeTab: Tab = (TABS as string[]).includes(rawTab ?? '') ? (rawTab as Tab) : 'account';
+
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>('account');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -43,17 +47,17 @@ export default function SettingsPage() {
         <nav className='flex w-44 shrink-0 flex-col'>
           <div className='flex flex-col gap-1'>
             {TABS.map((tab) => (
-              <button
+              <Link
                 key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`cursor-pointer rounded-md px-3 py-2 text-left text-sm font-medium capitalize transition-colors ${
+                href={`/settings/${tab}`}
+                className={`rounded-md px-3 py-2 text-left text-sm font-medium capitalize transition-colors ${
                   activeTab === tab
                     ? 'bg-accent text-accent-foreground'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {tab}
-              </button>
+              </Link>
             ))}
           </div>
           <div className='mt-8'>

@@ -5,7 +5,8 @@ import { Eye, Loader2, SaveOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { deleteProduct, getSavedProducts } from '@/lib/firestore';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import Link from 'next/link';
 import {
   Table,
   TableBody,
@@ -61,17 +62,14 @@ export function ProductsTab({ userId }: { userId: string }) {
             <TableCell className='font-mono'>{product.ean}</TableCell>
             <TableCell>
               <div className='flex gap-1'>
-                <Button
-                  variant='ghost'
-                  size='icon'
+                <Link
+                  href={`/compare?codes=${product.ean}`}
+                  target='_blank'
                   aria-label={`View ${product.name}`}
-                  className='hover:text-info hover:bg-info/10'
-                  onClick={() =>
-                    window.open(`/compare?codes=${product.ean}`, '_blank')
-                  }
+                  className={buttonVariants({ variant: 'ghost', size: 'icon' }) + ' hover:text-info hover:bg-info/10'}
                 >
                   <Eye className='size-4' />
-                </Button>
+                </Link>
                 <Button
                   variant='ghost'
                   size='icon'

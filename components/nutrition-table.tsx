@@ -125,6 +125,12 @@ export function NutritionTable({
       })
     : products;
 
+  const allKeysOrdered = settings?.nutrientOrder ?? ROWS.map((r) => r.key);
+  const displayRows = allKeysOrdered
+    .filter((key) => visibleNutrients.includes(key))
+    .map((key) => ROWS.find((r) => r.key === key)!)
+    .filter(Boolean);
+
   function handleShare() {
     const codes = products.map((p) => p.code).join(',');
     const url = `${window.location.origin}/compare?codes=${encodeURIComponent(codes)}`;
@@ -321,7 +327,7 @@ export function NutritionTable({
               </TableCell>
             </TableRow>
           ) : (
-            ROWS.filter((row) => visibleNutrients.includes(row.key)).map((row, i) => {
+            displayRows.map((row, i) => {
               const isActive = sort?.key === row.key;
               const rowBg = isActive
                 ? 'bg-primary/10'

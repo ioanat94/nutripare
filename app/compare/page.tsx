@@ -5,11 +5,12 @@ import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
 import {
   deleteComparison,
   deleteProduct,
+  findSavedComparison,
   getNutritionSettings,
   getSavedProductEans,
-  isComparisonSaved,
   saveComparison,
   saveProduct,
+  updateComparisonRuleset,
 } from '@/lib/firestore';
 import type { NutritionSettings } from '@/types/firestore';
 
@@ -52,7 +53,8 @@ function ComparePageContent() {
   const [savedProductCodes, setSavedProductCodes] = useState<Set<string>>(
     new Set(),
   );
-  const [comparisonSaved, setComparisonSaved] = useState(false);
+  const [savedComparisonId, setSavedComparisonId] = useState<string | null>(null);
+  const [selectedRulesetId, setSelectedRulesetId] = useState<string | null>(null);
   const [nutritionSettings, setNutritionSettings] = useState<NutritionSettings | null | undefined>(undefined);
 
   useEffect(() => {
@@ -61,7 +63,10 @@ function ComparePageContent() {
       setNutritionSettings(null);
       return;
     }
-    getNutritionSettings(user.id).then(setNutritionSettings);
+    getNutritionSettings(user.id).then((settings) => {
+      setNutritionSettings(settings);
+      setSelectedRulesetId(settings?.rulesets[0]?.id ?? null);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, authLoading]);
 
@@ -71,10 +76,15 @@ function ComparePageContent() {
     const codes = products.map((p) => p.code);
     Promise.all([
       getSavedProductEans(user.id, codes),
-      isComparisonSaved(user.id, codes),
-    ]).then(([savedEans, compSaved]) => {
+      findSavedComparison(user.id, codes),
+    ]).then(([savedEans, savedComp]) => {
       setSavedProductCodes(savedEans);
-      setComparisonSaved(compSaved);
+      if (savedComp) {
+        setSavedComparisonId(savedComp.id);
+        if (savedComp.rulesetId) setSelectedRulesetId(savedComp.rulesetId);
+      } else {
+        setSavedComparisonId(null);
+      }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productCodesKey, user?.id]);
@@ -113,7 +123,7 @@ function ComparePageContent() {
         for (const p of fetched) next = replaceOrAppend(next, p);
         return next;
       });
-      setComparisonSaved(false);
+      setSavedComparisonId(null);
     }
     setInvalidCodes(invalid);
     setNotFoundCodes(notFound);
@@ -140,7 +150,7 @@ function ComparePageContent() {
       next.delete(code);
       return next;
     });
-    setComparisonSaved(false);
+    setSavedComparisonId(null);
   }
 
   function handleClearAll() {
@@ -148,7 +158,7 @@ function ComparePageContent() {
     setNotFoundCodes([]);
     setInvalidCodes([]);
     setSavedProductCodes(new Set());
-    setComparisonSaved(false);
+    setSavedComparisonId(null);
   }
 
   async function handleSaveProduct(code: string) {
@@ -191,12 +201,16 @@ function ComparePageContent() {
     const name = `${firstName} + ${products.length - 1} others`;
     const eans = products.map((p) => p.code);
     try {
-      await saveComparison(user.id, { name, eans });
-      setComparisonSaved(true);
+      const id = await saveComparison(user.id, { name, eans });
+      setSavedComparisonId(id);
+      if (selectedRulesetId) {
+        updateComparisonRuleset(user.id, id, selectedRulesetId).catch(() => {});
+      }
       toast.success('Comparison saved');
     } catch (e) {
       if (e instanceof Error && e.message === 'DUPLICATE') {
-        setComparisonSaved(true);
+        const existing = await findSavedComparison(user.id, eans);
+        if (existing) setSavedComparisonId(existing.id);
         toast.info('Comparison already saved');
       } else {
         toast.error('Failed to save comparison');
@@ -209,10 +223,17 @@ function ComparePageContent() {
     const eans = products.map((p) => p.code);
     try {
       await deleteComparison(user.id, eans);
-      setComparisonSaved(false);
+      setSavedComparisonId(null);
       toast.success('Comparison removed');
     } catch {
       toast.error('Failed to remove comparison');
+    }
+  }
+
+  async function handleRulesetChange(id: string) {
+    setSelectedRulesetId(id);
+    if (savedComparisonId) {
+      updateComparisonRuleset(user!.id, savedComparisonId, id).catch(() => {});
     }
   }
 
@@ -226,7 +247,7 @@ function ComparePageContent() {
       } else {
         setProducts((prev) => replaceOrAppend(prev, product));
         setNotFoundCodes([]);
-        setComparisonSaved(false);
+        setSavedComparisonId(null);
       }
     } catch {
       setNotFoundCodes([code]);
@@ -338,10 +359,13 @@ function ComparePageContent() {
             onSaveProduct={user ? handleSaveProduct : undefined}
             onSaveComparison={user ? handleSaveComparison : undefined}
             savedProductCodes={savedProductCodes}
-            comparisonSaved={comparisonSaved}
+            comparisonSaved={!!savedComparisonId}
             onUnsaveProduct={user ? handleUnsaveProduct : undefined}
             onUnsaveComparison={user ? handleUnsaveComparison : undefined}
             settings={nutritionSettings}
+            rulesets={nutritionSettings?.rulesets}
+            selectedRulesetId={selectedRulesetId}
+            onRulesetChange={user ? handleRulesetChange : undefined}
           />
           <p className='mt-4 text-xs text-muted-foreground'>
             Data sourced from{' '}

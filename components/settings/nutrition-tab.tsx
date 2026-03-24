@@ -2,10 +2,11 @@
 
 import type {
   NutritionRule,
+  NutritionRuleset,
   NutritionSettings,
   ThresholdColor,
 } from '@/types/firestore';
-import { GripVertical, Loader2, Plus, Trash2 } from 'lucide-react';
+import { Eye, GripVertical, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -30,6 +31,14 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -66,13 +75,19 @@ function buildDefault(): NutritionSettings {
     visibleRows: [...ROWS.map((r) => r.key), SCORE_ROW.key],
     showCrown: true,
     showFlag: true,
-    rules: getDefaultRules(),
+    rulesets: [{ id: 'default', name: 'Default', rules: getDefaultRules() }],
     rowOrder: [...ROWS.map((r) => r.key), SCORE_ROW.key],
   };
 }
 
 function settingsEqual(a: NutritionSettings, b: NutritionSettings): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
+  return (
+    JSON.stringify(a.visibleRows) === JSON.stringify(b.visibleRows) &&
+    a.showCrown === b.showCrown &&
+    a.showFlag === b.showFlag &&
+    JSON.stringify(a.rowOrder) === JSON.stringify(b.rowOrder) &&
+    JSON.stringify(a.rulesets) === JSON.stringify(b.rulesets)
+  );
 }
 
 interface SortableNutrientRowProps {
@@ -107,6 +122,53 @@ function SortableNutrientRow({ rowKey, label, checked, onToggle }: SortableNutri
         />
         {label}
       </label>
+    </div>
+  );
+}
+
+interface SortableRulesetRowProps {
+  ruleset: NutritionRuleset;
+  onView: (ruleset: NutritionRuleset) => void;
+  onDelete: (id: string) => void;
+}
+
+function SortableRulesetRow({ ruleset, onView, onDelete }: SortableRulesetRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ruleset.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={style} className='flex items-center gap-2 py-1'>
+      <button
+        {...attributes}
+        {...listeners}
+        aria-label='Drag to reorder'
+        className='cursor-grab text-muted-foreground active:cursor-grabbing'
+        data-testid='ruleset-drag-handle'
+      >
+        <GripVertical className='size-4' />
+      </button>
+      <span className='flex-1 truncate text-sm'>{ruleset.name}</span>
+      <Button
+        variant='ghost'
+        size='icon'
+        onClick={() => onView(ruleset)}
+        aria-label='View ruleset'
+        className='hover:text-info hover:bg-info/10'
+      >
+        <Eye className='size-4' />
+      </Button>
+      <Button
+        variant='ghost'
+        size='icon'
+        onClick={() => onDelete(ruleset.id)}
+        aria-label='Delete ruleset'
+        className='hover:text-destructive'
+      >
+        <Trash2 className='size-4' />
+      </Button>
     </div>
   );
 }
@@ -253,13 +315,25 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<NutritionSettings | null>(null);
-  const [saveAttempted, setSaveAttempted] = useState(false);
 
+  // List view state
+  const [view, setView] = useState<'list' | 'detail'>('list');
   const [visibleRows, setVisibleRows] = useState<string[]>([]);
   const [showCrown, setShowCrown] = useState(true);
   const [showFlag, setShowFlag] = useState(true);
-  const [rules, setRules] = useState<DraftRule[]>([]);
+  const [rulesets, setRulesets] = useState<NutritionRuleset[]>([]);
   const [rowOrder, setRowOrder] = useState<string[]>([...ROWS.map((r) => r.key), SCORE_ROW.key]);
+
+  // Delete confirmation for list view
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  // Detail view state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const [editingRules, setEditingRules] = useState<DraftRule[]>([]);
+  const [isNewRuleset, setIsNewRuleset] = useState(false);
+  const [detailSaveAttempted, setDetailSaveAttempted] = useState(false);
+  const [showDetailDeleteConfirm, setShowDetailDeleteConfirm] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -270,15 +344,11 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     getNutritionSettings(userId).then((fetched) => {
       const s = fetched ?? buildDefault();
       const normalizedRowOrder = s.rowOrder ?? [...ROWS.map((r) => r.key), SCORE_ROW.key];
-      setSaved({
-        ...s,
-        rules: s.rules.map((r) => ({ nutrient: r.nutrient, direction: r.direction, value: r.value, rating: r.rating })),
-        rowOrder: normalizedRowOrder,
-      });
+      setSaved({ ...s, rowOrder: normalizedRowOrder });
       setVisibleRows(s.visibleRows);
       setShowCrown(s.showCrown);
       setShowFlag(s.showFlag);
-      setRules(s.rules.map((r, i) => ({ ...r, id: `rule-${i}` })));
+      setRulesets(s.rulesets);
       setRowOrder(normalizedRowOrder);
       setLoading(false);
     });
@@ -288,15 +358,16 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     visibleRows,
     showCrown,
     showFlag,
-    rules: rules.map((r) => ({ nutrient: r.nutrient, direction: r.direction, value: r.value!, rating: r.rating })),
+    rulesets,
     rowOrder,
   };
   const isDirty = saved !== null && !settingsEqual(current, saved);
 
-  const validationErrors = useMemo<Record<number, string>>(() => {
+  // Detail view validation
+  const detailValidationErrors = useMemo<Record<number, string>>(() => {
     const errors: Record<number, string> = {};
     const seen = new Map<string, number>();
-    rules.forEach((rule, i) => {
+    editingRules.forEach((rule, i) => {
       if (rule.value === undefined) {
         errors[i] = 'Value is required';
         return;
@@ -315,46 +386,30 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       }
     });
     return errors;
-  }, [rules]);
+  }, [editingRules]);
 
-  const hasErrors = Object.keys(validationErrors).length > 0;
   const defaultRules = useMemo(() => getDefaultRules(), []);
   const resetDisabled =
-    rules.length === defaultRules.length &&
-    rules.every(
+    editingRules.length === defaultRules.length &&
+    editingRules.every(
       (r, i) =>
         r.nutrient === defaultRules[i].nutrient &&
         r.direction === defaultRules[i].direction &&
         r.value === defaultRules[i].value &&
         r.rating === defaultRules[i].rating,
     );
-  const saveDisabled = !isDirty || saving;
+
+  function openDetail(ruleset: NutritionRuleset, isNew = false) {
+    setEditingId(ruleset.id);
+    setEditingName(ruleset.name);
+    setEditingRules(ruleset.rules.map((r, i) => ({ ...r, id: `rule-${i}` })));
+    setIsNewRuleset(isNew);
+    setDetailSaveAttempted(false);
+    setView('detail');
+  }
 
   function toggleNutrient(key: string, checked: boolean) {
     setVisibleRows((prev) => (checked ? [...prev, key] : prev.filter((k) => k !== key)));
-  }
-
-  function updateRule(index: number, field: keyof NutritionRule, value: string | number | undefined) {
-    setSaveAttempted(false);
-    setRules((prev) => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
-  }
-
-  function addRule() {
-    setSaveAttempted(false);
-    setRules((prev) => [
-      ...prev,
-      {
-        nutrient: ROWS[0].key,
-        direction: 'above' as const,
-        value: undefined,
-        rating: 'positive' as const,
-        id: crypto.randomUUID(),
-      },
-    ]);
-  }
-
-  function removeRule(index: number) {
-    setRules((prev) => prev.filter((_, i) => i !== index));
   }
 
   function handleNutrientDragEnd(event: DragEndEvent) {
@@ -368,20 +423,31 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     }
   }
 
-  function handleRuleDragEnd(event: DragEndEvent) {
+  function handleRulesetDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      setRules((prev) => {
-        const oldIndex = prev.findIndex((r) => r.id === active.id);
-        const newIndex = prev.findIndex((r) => r.id === over.id);
+      setRulesets((prev) => {
+        const oldIndex = prev.findIndex((rs) => rs.id === active.id);
+        const newIndex = prev.findIndex((rs) => rs.id === over.id);
         return arrayMove(prev, oldIndex, newIndex);
       });
     }
   }
 
+  function handleAddRuleset() {
+    const newRuleset: NutritionRuleset = { id: crypto.randomUUID(), name: 'New Ruleset', rules: [] };
+    setRulesets((prev) => [...prev, newRuleset]);
+    openDetail(newRuleset, true);
+  }
+
+  function confirmDeleteFromList() {
+    if (deleteConfirmId) {
+      setRulesets((prev) => prev.filter((rs) => rs.id !== deleteConfirmId));
+      setDeleteConfirmId(null);
+    }
+  }
+
   async function handleSave() {
-    setSaveAttempted(true);
-    if (hasErrors) return;
     setSaving(true);
     try {
       await saveNutritionSettings(userId, current);
@@ -394,8 +460,204 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     }
   }
 
+  // Detail view handlers
+  function updateEditingRule(index: number, field: keyof NutritionRule, value: string | number | undefined) {
+    setDetailSaveAttempted(false);
+    setEditingRules((prev) => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
+  }
+
+  function addEditingRule() {
+    setDetailSaveAttempted(false);
+    setEditingRules((prev) => [
+      ...prev,
+      {
+        nutrient: ROWS[0].key,
+        direction: 'above' as const,
+        value: undefined,
+        rating: 'positive' as const,
+        id: crypto.randomUUID(),
+      },
+    ]);
+  }
+
+  function removeEditingRule(index: number) {
+    setEditingRules((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function handleEditingRuleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setEditingRules((prev) => {
+        const oldIndex = prev.findIndex((r) => r.id === active.id);
+        const newIndex = prev.findIndex((r) => r.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+  }
+
+  async function handleDetailSave() {
+    setDetailSaveAttempted(true);
+    if (Object.keys(detailValidationErrors).length > 0) return;
+
+    const cleanRules = editingRules.map((r) => ({
+      nutrient: r.nutrient,
+      direction: r.direction,
+      value: r.value!,
+      rating: r.rating,
+    }));
+
+    const updatedRulesets = rulesets.map((rs) =>
+      rs.id === editingId ? { ...rs, name: editingName, rules: cleanRules } : rs,
+    );
+    setRulesets(updatedRulesets);
+
+    const updatedSettings: NutritionSettings = {
+      visibleRows: saved?.visibleRows ?? visibleRows,
+      showCrown: saved?.showCrown ?? showCrown,
+      showFlag: saved?.showFlag ?? showFlag,
+      rowOrder: saved?.rowOrder ?? rowOrder,
+      rulesets: updatedRulesets,
+    };
+
+    setSaving(true);
+    try {
+      await saveNutritionSettings(userId, updatedSettings);
+      setSaved(updatedSettings);
+      toast.success('Ruleset saved');
+    } catch {
+      toast.error('Failed to save ruleset');
+    } finally {
+      setSaving(false);
+    }
+    setIsNewRuleset(false);
+    setView('list');
+  }
+
+  function handleDetailCancel() {
+    if (isNewRuleset && editingId) {
+      setRulesets((prev) => prev.filter((rs) => rs.id !== editingId));
+    }
+    setView('list');
+  }
+
+  async function handleDetailDelete() {
+    const updatedRulesets = rulesets.filter((rs) => rs.id !== editingId);
+    const updatedSettings: NutritionSettings = {
+      visibleRows: saved?.visibleRows ?? visibleRows,
+      showCrown: saved?.showCrown ?? showCrown,
+      showFlag: saved?.showFlag ?? showFlag,
+      rowOrder: saved?.rowOrder ?? rowOrder,
+      rulesets: updatedRulesets,
+    };
+
+    setSaving(true);
+    try {
+      await saveNutritionSettings(userId, updatedSettings);
+      setRulesets(updatedRulesets);
+      setSaved(updatedSettings);
+      toast.success('Ruleset deleted');
+    } catch {
+      toast.error('Failed to delete ruleset');
+    } finally {
+      setSaving(false);
+      setShowDetailDeleteConfirm(false);
+    }
+    setView('list');
+  }
+
   if (loading) {
     return <Loader2 className='size-5 animate-spin text-muted-foreground' />;
+  }
+
+  if (view === 'detail') {
+    return (
+      <div className='space-y-8'>
+        {/* Ruleset name */}
+        <div className='group flex items-center gap-2 border-b border-border pb-1 focus-within:border-ring'>
+          <input
+            type='text'
+            value={editingName}
+            onChange={(e) => setEditingName(e.target.value)}
+            className='min-w-0 flex-1 bg-transparent text-xl font-semibold outline-none'
+            aria-label='Ruleset name'
+          />
+          <Pencil className='size-4 shrink-0 text-muted-foreground' />
+        </div>
+
+        {/* Rules editor */}
+        <section className='space-y-3'>
+          <h3 className='text-base font-semibold'>Rules</h3>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleEditingRuleDragEnd}>
+            <SortableContext items={editingRules.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+              <div className='space-y-2'>
+                {editingRules.map((rule, i) => (
+                  <SortableRuleRow
+                    key={rule.id}
+                    rule={rule}
+                    index={i}
+                    error={detailValidationErrors[i]}
+                    showError={detailSaveAttempted}
+                    onUpdate={updateEditingRule}
+                    onRemove={removeEditingRule}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+
+          <div className='flex gap-2'>
+            <Button variant='outline' size='sm' onClick={addEditingRule}>
+              <Plus className='size-4' />
+              Add rule
+            </Button>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setEditingRules(getDefaultRules().map((r, i) => ({ ...r, id: `rule-reset-${i}` })))}
+              disabled={resetDisabled}
+            >
+              Reset to defaults
+            </Button>
+          </div>
+        </section>
+
+        {/* Action row */}
+        <div className='flex gap-2'>
+          <Button onClick={handleDetailSave} disabled={saving}>
+            {saving ? 'Saving…' : 'Save'}
+          </Button>
+          <Button variant='outline' onClick={handleDetailCancel} disabled={saving}>
+            Cancel
+          </Button>
+          <Button
+            variant='destructive'
+            onClick={() => setShowDetailDeleteConfirm(true)}
+            disabled={saving || isNewRuleset}
+            className='ml-auto'
+          >
+            Delete ruleset
+          </Button>
+        </div>
+
+        {/* Detail delete confirmation */}
+        <AlertDialog open={showDetailDeleteConfirm} onOpenChange={(open) => !open && setShowDetailDeleteConfirm(false)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete ruleset?</AlertDialogTitle>
+              <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <Button variant='outline' onClick={() => setShowDetailDeleteConfirm(false)}>
+                Cancel
+              </Button>
+              <Button variant='destructive' onClick={handleDetailDelete} disabled={saving}>
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
   }
 
   return (
@@ -450,46 +712,50 @@ export function NutritionTab({ userId }: NutritionTabProps) {
         </div>
       </section>
 
-      {/* Rules */}
+      {/* Rulesets */}
       <section className='space-y-3'>
-        <h3 className='text-base font-semibold'>Rules</h3>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleRuleDragEnd}>
-          <SortableContext items={rules.map((r) => r.id)} strategy={verticalListSortingStrategy}>
-            <div className='space-y-2'>
-              {rules.map((rule, i) => (
-                <SortableRuleRow
-                  key={rule.id}
-                  rule={rule}
-                  index={i}
-                  error={validationErrors[i]}
-                  showError={saveAttempted}
-                  onUpdate={updateRule}
-                  onRemove={removeRule}
+        <h3 className='text-base font-semibold'>Rulesets</h3>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleRulesetDragEnd}>
+          <SortableContext items={rulesets.map((rs) => rs.id)} strategy={verticalListSortingStrategy}>
+            <div className='space-y-1'>
+              {rulesets.map((rs) => (
+                <SortableRulesetRow
+                  key={rs.id}
+                  ruleset={rs}
+                  onView={(ruleset) => openDetail(ruleset)}
+                  onDelete={(id) => setDeleteConfirmId(id)}
                 />
               ))}
             </div>
           </SortableContext>
         </DndContext>
-
-        <div className='flex gap-2'>
-          <Button variant='outline' size='sm' onClick={addRule}>
-            <Plus className='size-4' />
-            Add rule
-          </Button>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => setRules(getDefaultRules().map((r, i) => ({ ...r, id: `rule-reset-${i}` })))}
-            disabled={resetDisabled}
-          >
-            Reset to defaults
-          </Button>
-        </div>
+        <Button variant='outline' size='sm' onClick={handleAddRuleset}>
+          <Plus className='size-4' />
+          Add ruleset
+        </Button>
       </section>
 
-      <Button onClick={handleSave} disabled={saveDisabled}>
+      <Button onClick={handleSave} disabled={!isDirty || saving}>
         {saving ? 'Saving…' : 'Save'}
       </Button>
+
+      {/* List view delete confirmation */}
+      <AlertDialog open={deleteConfirmId !== null} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete ruleset?</AlertDialogTitle>
+            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant='outline' onClick={() => setDeleteConfirmId(null)}>
+              Cancel
+            </Button>
+            <Button variant='destructive' onClick={confirmDeleteFromList}>
+              Delete
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

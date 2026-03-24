@@ -12,7 +12,8 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase';
-import type { NutritionSettings, SavedComparison, SavedProduct } from '@/types/firestore';
+import type { NutritionRule, NutritionSettings, SavedComparison, SavedProduct } from '@/types/firestore';
+import { getDefaultRules } from '@/utils/thresholds';
 
 const VALID_RATINGS = new Set(['positive', 'info', 'warning', 'negative']);
 
@@ -29,7 +30,7 @@ export async function saveProduct(
 export async function saveComparison(
   uid: string,
   comparison: { name: string; eans: string[] },
-): Promise<void> {
+): Promise<string> {
   const col = collection(db, 'users', uid, 'comparisons');
   const snapshot = await getDocs(col);
   const sortedInput = [...comparison.eans].sort().join(',');
@@ -38,7 +39,8 @@ export async function saveComparison(
       [...(d.data().eans as string[])].sort().join(',') === sortedInput,
   );
   if (isDuplicate) throw new Error('DUPLICATE');
-  await addDoc(col, comparison);
+  const docRef = await addDoc(col, comparison);
+  return docRef.id;
 }
 
 export async function getSavedProductEans(
@@ -51,17 +53,36 @@ export async function getSavedProductEans(
   return new Set(snapshot.docs.map((d) => d.data().ean as string));
 }
 
+export async function findSavedComparison(
+  uid: string,
+  eans: string[],
+): Promise<{ id: string; rulesetId?: string } | null> {
+  const col = collection(db, 'users', uid, 'comparisons');
+  const snapshot = await getDocs(col);
+  const sortedInput = [...eans].sort().join(',');
+  for (const d of snapshot.docs) {
+    if ([...(d.data().eans as string[])].sort().join(',') === sortedInput) {
+      return { id: d.id, rulesetId: d.data().rulesetId as string | undefined };
+    }
+  }
+  return null;
+}
+
 export async function isComparisonSaved(
   uid: string,
   eans: string[],
 ): Promise<boolean> {
-  const col = collection(db, 'users', uid, 'comparisons');
-  const snapshot = await getDocs(col);
-  const sortedInput = [...eans].sort().join(',');
-  return snapshot.docs.some(
-    (d) =>
-      [...(d.data().eans as string[])].sort().join(',') === sortedInput,
-  );
+  const result = await findSavedComparison(uid, eans);
+  return result !== null;
+}
+
+export async function updateComparisonRuleset(
+  uid: string,
+  comparisonId: string,
+  rulesetId: string,
+): Promise<void> {
+  const ref = doc(db, 'users', uid, 'comparisons', comparisonId);
+  await updateDoc(ref, { rulesetId });
 }
 
 export async function deleteProduct(uid: string, ean: string): Promise<void> {
@@ -132,7 +153,7 @@ export async function getNutritionSettings(
   const ref = doc(db, 'users', uid, 'settings', 'nutrition');
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
-  const raw = snap.data() as Record<string, unknown> & { rules?: NutritionSettings['rules'] };
+  const raw = snap.data() as Record<string, unknown>;
 
   const visibleRows: string[] =
     (raw.visibleRows as string[] | undefined) ??
@@ -146,13 +167,26 @@ export async function getNutritionSettings(
   if (!visibleRows.includes('computed_score')) visibleRows.push('computed_score');
   if (!rowOrder.includes('computed_score')) rowOrder.push('computed_score');
 
+  let rulesets: NutritionSettings['rulesets'];
+  if (raw.rulesets) {
+    rulesets = (raw.rulesets as NutritionSettings['rulesets']).map((rs) => ({
+      ...rs,
+      rules: (rs.rules ?? []).filter((r: NutritionRule) => VALID_RATINGS.has(r.rating)),
+    }));
+  } else {
+    const oldRules = ((raw.rules ?? []) as NutritionRule[]).filter(
+      (r) => VALID_RATINGS.has(r.rating),
+    );
+    rulesets = oldRules.length > 0
+      ? [{ id: 'default', name: 'Default', rules: oldRules }]
+      : [{ id: 'default', name: 'Default', rules: getDefaultRules() }];
+  }
+
   return {
     visibleRows,
     showCrown: (raw.showCrown as boolean | undefined) ?? true,
     showFlag: (raw.showFlag as boolean | undefined) ?? true,
-    rules: ((raw.rules ?? []) as NutritionSettings['rules']).filter((r) =>
-      VALID_RATINGS.has(r.rating),
-    ),
+    rulesets,
     rowOrder,
   };
 }

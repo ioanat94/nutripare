@@ -114,7 +114,7 @@ export function ComparisonsTab({ userId }: { userId: string }) {
                     variant='ghost'
                     size='icon'
                     aria-label='Save name'
-                    className='size-7 shrink-0 text-positive hover:text-positive hover:bg-positive/10'
+                    className='size-7 shrink-0 hover:text-positive hover:bg-positive/10'
                   >
                     <Check className='size-3.5' />
                   </Button>
@@ -123,7 +123,7 @@ export function ComparisonsTab({ userId }: { userId: string }) {
                     variant='ghost'
                     size='icon'
                     aria-label='Cancel'
-                    className='size-7 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10'
+                    className='size-7 shrink-0 hover:text-destructive hover:bg-destructive/10'
                     onClick={cancelEditing}
                   >
                     <X className='size-3.5' />
@@ -153,7 +153,7 @@ export function ComparisonsTab({ userId }: { userId: string }) {
                   variant='ghost'
                   size='icon'
                   aria-label={`View ${comparison.name}`}
-                  className='text-info hover:text-info hover:bg-info/10'
+                  className='hover:text-info hover:bg-info/10'
                   onClick={() =>
                     window.open(
                       `/compare?codes=${comparison.eans.join(',')}`,
@@ -167,7 +167,7 @@ export function ComparisonsTab({ userId }: { userId: string }) {
                   variant='ghost'
                   size='icon'
                   aria-label={`Unsave ${comparison.name}`}
-                  className='text-destructive hover:text-destructive hover:bg-destructive/10'
+                  className='hover:text-destructive hover:bg-destructive/10'
                   onClick={() => handleUnsave(comparison.eans)}
                 >
                   <SaveOff className='size-4' />

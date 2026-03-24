@@ -13,6 +13,7 @@ export interface SavedComparison {
   id: string;
   name: string;
   eans: string[];
+  rulesetId?: string;
 }
 
 export type ThresholdColor = 'positive' | 'info' | 'warning' | 'negative';
@@ -24,10 +25,16 @@ export interface NutritionRule {
   rating: ThresholdColor;
 }
 
+export interface NutritionRuleset {
+  id: string;
+  name: string;
+  rules: NutritionRule[];
+}
+
 export interface NutritionSettings {
   visibleRows: string[];
   showCrown: boolean;
   showFlag: boolean;
-  rules: NutritionRule[];
+  rulesets: NutritionRuleset[];
   rowOrder?: string[];
 }

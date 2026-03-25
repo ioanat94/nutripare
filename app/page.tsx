@@ -8,9 +8,10 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 
-import Link from 'next/link';
-
 import { Button } from '@/components/ui/button';
+import { HomeDemo } from '@/components/home-demo';
+import { RulesetDemo } from '@/components/ruleset-demo';
+import Link from 'next/link';
 
 const features = [
   {
@@ -60,24 +61,12 @@ const accountBenefits = [
   },
   {
     icon: Gauge,
-    title: 'Set your own thresholds',
+    title: 'Build nutrition profiles',
     description:
-      'Define what "high" and "low" mean to you for each nutrient, not some generic baseline.',
+      'Create named rulesets that define what matters to your diet — switch between them per comparison.',
   },
 ];
 
-function VisualPlaceholder() {
-  return (
-    <div
-      data-testid='visual-placeholder'
-      className='flex min-h-48 w-full items-center justify-center rounded-xl border border-border bg-muted'
-    >
-      <span className='text-sm text-muted-foreground'>
-        [ Visual placeholder ]
-      </span>
-    </div>
-  );
-}
 
 export default function Home() {
   return (
@@ -94,10 +83,15 @@ export default function Home() {
           Compare products, spot what matters, and make better choices — no
           guesswork.
         </p>
-        <Button size='lg' className='mt-2 px-6 text-base' nativeButton={false} render={<Link href='/compare' />}>
+        <Button
+          size='lg'
+          className='mt-2 px-6 text-base'
+          nativeButton={false}
+          render={<Link href='/compare' />}
+        >
           Start comparing →
         </Button>
-        <VisualPlaceholder />
+        <HomeDemo />
       </section>
 
       {/* Features */}
@@ -121,9 +115,6 @@ export default function Home() {
               <p className='text-sm text-muted-foreground'>{description}</p>
             </div>
           ))}
-        </div>
-        <div className='mt-6'>
-          <VisualPlaceholder />
         </div>
       </section>
 
@@ -150,6 +141,9 @@ export default function Home() {
               <p className='text-sm text-muted-foreground'>{description}</p>
             </div>
           ))}
+        </div>
+        <div className='mt-6'>
+          <RulesetDemo />
         </div>
       </section>
     </main>

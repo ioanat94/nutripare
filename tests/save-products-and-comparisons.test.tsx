@@ -246,7 +246,20 @@ describe('Compare page — save handlers', () => {
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Failed to save product'));
   });
 
-  it('calls saveComparison with correctly formatted name and eans', async () => {
+  it('opens a dialog with pre-filled name when save comparison is clicked', async () => {
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Nutella' },
+      { code: '22222222', product_name: 'Skippy' },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('dialog')).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('textbox')).toHaveValue('Nutella + 1 others');
+  });
+
+  it('calls saveComparison with the pre-filled name and eans on confirm', async () => {
     await renderCompareWithProducts([
       { code: '11111111', product_name: 'Nutella' },
       { code: '22222222', product_name: 'Skippy' },
@@ -254,6 +267,8 @@ describe('Compare page — save handlers', () => {
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
     await waitFor(() =>
       expect(mockSaveComparison).toHaveBeenCalledWith('uid-123', {
         name: 'Nutella + 2 others',
@@ -261,6 +276,61 @@ describe('Compare page — save handlers', () => {
       }),
     );
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Comparison saved'));
+  });
+
+  it('calls saveComparison with a custom name when the user edits it', async () => {
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Nutella' },
+      { code: '22222222', product_name: 'Skippy' },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'My custom name' } });
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+    await waitFor(() =>
+      expect(mockSaveComparison).toHaveBeenCalledWith('uid-123', {
+        name: 'My custom name',
+        eans: ['11111111', '22222222'],
+      }),
+    );
+  });
+
+  it('disables the Save button when the name is empty', async () => {
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Nutella' },
+      { code: '22222222', product_name: 'Skippy' },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '' } });
+    expect(screen.getByRole('button', { name: /^save$/i })).toBeDisabled();
+  });
+
+  it('closes the dialog without saving when Cancel is clicked', async () => {
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Nutella' },
+      { code: '22222222', product_name: 'Skippy' },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(mockSaveComparison).not.toHaveBeenCalled();
+  });
+
+  it('submits via Enter key in the name input', async () => {
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Nutella' },
+      { code: '22222222', product_name: 'Skippy' },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+    await waitFor(() => expect(mockSaveComparison).toHaveBeenCalledTimes(1));
   });
 
   it('shows "Comparison already saved" info toast on duplicate', async () => {
@@ -271,6 +341,8 @@ describe('Compare page — save handlers', () => {
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
     await waitFor(() => expect(toast.info).toHaveBeenCalledWith('Comparison already saved'));
   });
 

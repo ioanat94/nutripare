@@ -14,6 +14,14 @@ import {
 } from '@/lib/firestore';
 import type { NutritionSettings } from '@/types/firestore';
 
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NutritionTable } from '@/components/nutrition-table';
@@ -55,6 +63,8 @@ function ComparePageContent() {
   );
   const [savedComparisonId, setSavedComparisonId] = useState<string | null>(null);
   const [selectedRulesetId, setSelectedRulesetId] = useState<string | null>(null);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [saveDialogName, setSaveDialogName] = useState('');
   const [nutritionSettings, setNutritionSettings] = useState<NutritionSettings | null | undefined>(undefined);
 
   useEffect(() => {
@@ -197,14 +207,23 @@ function ComparePageContent() {
     }
   }
 
-  async function handleSaveComparison() {
+  function handleSaveComparison() {
     if (!user) return;
     const firstName = products[0]?.product_name || products[0]?.code || '';
-    const name = `${firstName} + ${products.length - 1} others`;
+    const defaultName = products.length > 1
+      ? `${firstName} + ${products.length - 1} others`
+      : firstName;
+    setSaveDialogName(defaultName);
+    setSaveDialogOpen(true);
+  }
+
+  async function handleConfirmSaveComparison() {
+    if (!user) return;
     const eans = products.map((p) => p.code);
     try {
-      const id = await saveComparison(user.id, { name, eans });
+      const id = await saveComparison(user.id, { name: saveDialogName, eans });
       setSavedComparisonId(id);
+      setSaveDialogOpen(false);
       if (selectedRulesetId) {
         updateComparisonRuleset(user.id, id, selectedRulesetId).catch(() => {});
       }
@@ -213,6 +232,7 @@ function ComparePageContent() {
       if (e instanceof Error && e.message === 'DUPLICATE') {
         const existing = await findSavedComparison(user.id, eans);
         if (existing) setSavedComparisonId(existing.id);
+        setSaveDialogOpen(false);
         toast.info('Comparison already saved');
       } else {
         toast.error('Failed to save comparison');
@@ -384,6 +404,33 @@ function ComparePageContent() {
           </p>
         </div>
       )}
+      <AlertDialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Name this comparison</AlertDialogTitle>
+            <AlertDialogDescription>
+              Choose a name for your saved comparison.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            className='my-2'
+            value={saveDialogName}
+            onChange={(e) => setSaveDialogName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && saveDialogName.trim()) handleConfirmSaveComparison();
+            }}
+            autoFocus
+          />
+          <AlertDialogFooter>
+            <Button variant='outline' onClick={() => setSaveDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmSaveComparison} disabled={!saveDialogName.trim()}>
+              Save
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }

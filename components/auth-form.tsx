@@ -20,7 +20,9 @@ import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Policies } from './policies';
 import { useForm } from 'react-hook-form';
+import { sendEmailVerification } from 'firebase/auth';
 import { useMemo } from 'react';
+import { auth } from '@/lib/firebase';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -80,6 +82,11 @@ export function AuthForm({
         await signInAction({ email: values.email, password: values.password });
       } else {
         await signUpAction({ email: values.email, password: values.password });
+        try {
+          await sendEmailVerification(auth.currentUser!);
+        } catch {
+          // user can resend from the verification screen
+        }
       }
     } catch (error) {
       const message =

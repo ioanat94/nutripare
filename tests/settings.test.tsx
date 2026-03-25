@@ -111,7 +111,7 @@ async function renderSettings(tab?: string) {
 
 describe('Settings page — auth guard', () => {
   it('redirects to /login when user is null after loading', async () => {
-    mockUseAuth.mockReturnValue({ user: null, loading: false });
+    mockUseAuth.mockReturnValue({ user: null, loading: false, emailVerified: false });
     await renderSettings();
     await waitFor(() =>
       expect(mockPush).toHaveBeenCalledWith('/login?redirect=/settings'),
@@ -119,7 +119,7 @@ describe('Settings page — auth guard', () => {
   });
 
   it('renders nothing while loading', async () => {
-    mockUseAuth.mockReturnValue({ user: null, loading: true });
+    mockUseAuth.mockReturnValue({ user: null, loading: true, emailVerified: false });
     await renderSettings();
     expect(screen.queryByRole('heading', { name: /settings/i })).toBeNull();
   });
@@ -129,7 +129,7 @@ describe('Settings page — auth guard', () => {
 
 describe('Settings page — layout', () => {
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
+    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false, emailVerified: true });
   });
 
   it('renders "Settings" header and all four sidebar tabs when authenticated', async () => {
@@ -185,7 +185,7 @@ describe('Settings page — layout', () => {
 
 describe('Settings page — Account tab', () => {
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
+    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false, emailVerified: true });
   });
 
   it('renders display name input, password section, and delete account button', async () => {
@@ -227,7 +227,7 @@ describe('Settings page — Account tab', () => {
 
 describe('Settings page — Products tab', () => {
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
+    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false, emailVerified: true });
   });
 
   it('shows empty state when there are no saved products', async () => {
@@ -279,7 +279,7 @@ describe('Settings page — Products tab', () => {
 
 describe('Settings page — Comparisons tab', () => {
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
+    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false, emailVerified: true });
   });
 
   it('shows empty state when there are no saved comparisons', async () => {
@@ -411,7 +411,7 @@ describe('Settings page — Comparisons tab', () => {
 
 describe('Settings page — Products tab — compare selection', () => {
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
+    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false, emailVerified: true });
     mockGetSavedProducts.mockResolvedValue([
       { id: 'p1', name: 'Nutella', ean: '5000112637922' },
       { id: 'p2', name: 'Skippy', ean: '8076809513388' },
@@ -518,7 +518,7 @@ describe('Settings page — Products tab — compare selection', () => {
 
 describe('Settings page — Products tab — search', () => {
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
+    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false, emailVerified: true });
     mockGetSavedProducts.mockResolvedValue([
       { id: 'p1', name: 'Nutella', ean: '5000112637922' },
       { id: 'p2', name: 'Skippy', ean: '8076809513388' },
@@ -592,7 +592,7 @@ describe('Settings page — Products tab — search', () => {
 
 describe('Settings page — Comparisons tab — search', () => {
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
+    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false, emailVerified: true });
     mockGetSavedComparisons.mockResolvedValue([
       {
         id: 'c1',
@@ -665,7 +665,7 @@ describe('Settings page — Comparisons tab — search', () => {
 
 describe('Settings page — Nutrition tab — rulesets search', () => {
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
+    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false, emailVerified: true });
     mockGetNutritionSettings.mockResolvedValue({
       visibleRows: [],
       showCrown: true,

@@ -18,26 +18,32 @@ type Tab = 'account' | 'nutrition' | 'products' | 'comparisons';
 
 const TABS: Tab[] = ['account', 'nutrition', 'products', 'comparisons'];
 
-export default function SettingsPage({ params }: { params: Promise<{ tab?: string[] }> }) {
+export default function SettingsPage({
+  params,
+}: {
+  params: Promise<{ tab?: string[] }>;
+}) {
   const { tab: tabSegment } = use(params);
   const rawTab = tabSegment?.[0];
-  const activeTab: Tab = (TABS as string[]).includes(rawTab ?? '') ? (rawTab as Tab) : 'account';
+  const activeTab: Tab = (TABS as string[]).includes(rawTab ?? '')
+    ? (rawTab as Tab)
+    : 'account';
 
-  const { user, loading } = useAuth();
+  const { user, loading, emailVerified } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && (!user || !emailVerified)) {
       router.push('/login?redirect=/settings');
     }
-  }, [loading, user, router]);
+  }, [loading, user, emailVerified, router]);
 
   async function handleLogout() {
     await signOut(auth);
     router.push('/');
   }
 
-  if (loading || !user) return null;
+  if (loading || !user || !emailVerified) return null;
 
   return (
     <main className='mx-auto w-full max-w-5xl px-6 py-12'>

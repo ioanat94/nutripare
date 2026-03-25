@@ -41,10 +41,38 @@ export default function SettingsPage({ params }: { params: Promise<{ tab?: strin
 
   return (
     <main className='mx-auto w-full max-w-5xl px-6 py-12'>
-      <h1 className='mb-8 text-3xl font-bold tracking-tight'>Settings</h1>
+      <div className='mb-8 flex items-center justify-between'>
+        <h1 className='text-3xl font-bold tracking-tight'>Settings</h1>
+        <Button
+          variant='destructive'
+          size='sm'
+          className='sm:hidden'
+          onClick={handleLogout}
+        >
+          <LogOut className='size-4' />
+        </Button>
+      </div>
+
+      {/* Mobile: horizontal tab strip */}
+      <nav className='mb-6 flex border-b border-border sm:hidden'>
+        {TABS.map((tab) => (
+          <Link
+            key={tab}
+            href={`/settings/${tab}`}
+            className={`flex-1 border-b-2 px-2 pb-3 text-center text-sm font-medium capitalize transition-colors ${
+              activeTab === tab
+                ? 'border-foreground text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {tab}
+          </Link>
+        ))}
+      </nav>
+
       <div className='flex gap-8'>
-        {/* Sidebar */}
-        <nav className='flex w-44 shrink-0 flex-col'>
+        {/* Desktop: sidebar */}
+        <nav className='hidden w-44 shrink-0 flex-col sm:flex'>
           <div className='flex flex-col gap-1'>
             {TABS.map((tab) => (
               <Link

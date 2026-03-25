@@ -315,12 +315,12 @@ export function NutritionTable({
 
       <Table
         className='table-fixed'
-        style={{ width: `calc(10rem + ${sortedProducts.length} * 14rem)` }}
+        style={{ width: `calc(8rem + ${sortedProducts.length} * 14rem)` }}
       >
         <TableHeader>
           <TableRow className='hover:bg-transparent'>
             {/* Corner cell — table-wide qualifier */}
-            <TableHead className='sticky left-0 z-10 bg-background w-40 align-bottom pb-3 text-right text-xs font-normal text-muted-foreground'>
+            <TableHead className='sticky left-0 z-10 bg-background w-32 align-bottom pb-3 text-right text-xs font-normal text-muted-foreground'>
               per 100g
             </TableHead>
             {sortedProducts.map((p) => {
@@ -350,7 +350,7 @@ export function NutritionTable({
                       >
                         <MoreHorizontal className='size-4' aria-hidden='true' />
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align='end' className='w-36'>
+                      <DropdownMenuContent align='end' className='w-32'>
                         {savedProductCodes?.has(p.code)
                           ? onUnsaveProduct && (
                               <DropdownMenuItem
@@ -452,7 +452,7 @@ export function NutritionTable({
                   {/* Row label — sticky, clickable to sort */}
                   <TableCell
                     scope='row'
-                    className={`sticky left-0 z-10 w-40 py-3 ${isActive ? 'bg-primary/10' : 'bg-background'}`}
+                    className={`sticky left-0 z-10 w-32 py-3 ${isActive ? 'bg-primary/10' : 'bg-background'}`}
                   >
                     <div className='flex items-center gap-1'>
                       <button

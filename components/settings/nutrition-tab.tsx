@@ -11,7 +11,8 @@ import {
 import {
   DndContext,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -248,130 +249,130 @@ function SortableRuleRow({
   };
   return (
     <div ref={setNodeRef} style={style}>
-      <div className='flex flex-wrap items-center gap-2'>
-        <button
-          {...attributes}
-          {...listeners}
-          aria-label='Drag to reorder'
-          className='cursor-grab text-muted-foreground active:cursor-grabbing'
-          data-testid='rule-drag-handle'
-        >
-          <GripVertical className='size-4' />
-        </button>
+      <div className='flex min-w-max items-center gap-2'>
+          <button
+            {...attributes}
+            {...listeners}
+            aria-label='Drag to reorder'
+            className='cursor-grab text-muted-foreground active:cursor-grabbing'
+            data-testid='rule-drag-handle'
+          >
+            <GripVertical className='size-4' />
+          </button>
 
-        <Select
-          value={rule.nutrient}
-          onValueChange={(v) => v && onUpdate(index, 'nutrient', v)}
-        >
-          <SelectTrigger className='w-40'>
-            <span className='flex flex-1 text-left'>
-              {[...ROWS, SCORE_ROW].find((r) => r.key === rule.nutrient)
-                ?.label ?? rule.nutrient}
-            </span>
-          </SelectTrigger>
-          <SelectContent className='min-w-0' alignItemWithTrigger={false}>
-            {ROWS.map((row) => (
-              <SelectItem key={row.key} value={row.key}>
-                {row.label}
+          <Select
+            value={rule.nutrient}
+            onValueChange={(v) => v && onUpdate(index, 'nutrient', v)}
+          >
+            <SelectTrigger className='w-40'>
+              <span className='flex flex-1 text-left'>
+                {[...ROWS, SCORE_ROW].find((r) => r.key === rule.nutrient)
+                  ?.label ?? rule.nutrient}
+              </span>
+            </SelectTrigger>
+            <SelectContent className='min-w-0' alignItemWithTrigger={false}>
+              {ROWS.map((row) => (
+                <SelectItem key={row.key} value={row.key}>
+                  {row.label}
+                </SelectItem>
+              ))}
+              <SelectItem key={SCORE_ROW.key} value={SCORE_ROW.key}>
+                {SCORE_ROW.label}
               </SelectItem>
-            ))}
-            <SelectItem key={SCORE_ROW.key} value={SCORE_ROW.key}>
-              {SCORE_ROW.label}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+            </SelectContent>
+          </Select>
 
-        <Select
-          value={rule.direction}
-          onValueChange={(v) =>
-            v && onUpdate(index, 'direction', v as 'above' | 'below')
-          }
-        >
-          <SelectTrigger className='w-24'>
-            <span className='flex flex-1 text-left'>{rule.direction}</span>
-          </SelectTrigger>
-          <SelectContent className='min-w-0' alignItemWithTrigger={false}>
-            {DIRECTION_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <span className='text-sm text-muted-foreground'>or equal to</span>
-
-        <input
-          type='number'
-          min={0}
-          max={99.9}
-          step={0.1}
-          value={rule.value ?? ''}
-          onChange={(e) => {
-            if (e.target.value === '') {
-              onUpdate(index, 'value', undefined);
-              return;
+          <Select
+            value={rule.direction}
+            onValueChange={(v) =>
+              v && onUpdate(index, 'direction', v as 'above' | 'below')
             }
-            const raw = parseFloat(e.target.value);
-            if (!isNaN(raw)) {
-              const clamped = Math.min(
-                99.9,
-                Math.max(0, parseFloat(raw.toFixed(1))),
-              );
-              onUpdate(index, 'value', clamped);
+          >
+            <SelectTrigger className='w-24'>
+              <span className='flex flex-1 text-left'>{rule.direction}</span>
+            </SelectTrigger>
+            <SelectContent className='min-w-0' alignItemWithTrigger={false}>
+              {DIRECTION_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <span className='text-sm text-muted-foreground'>or equal to</span>
+
+          <input
+            type='number'
+            min={0}
+            max={99.9}
+            step={0.1}
+            value={rule.value ?? ''}
+            onChange={(e) => {
+              if (e.target.value === '') {
+                onUpdate(index, 'value', undefined);
+                return;
+              }
+              const raw = parseFloat(e.target.value);
+              if (!isNaN(raw)) {
+                const clamped = Math.min(
+                  99.9,
+                  Math.max(0, parseFloat(raw.toFixed(1))),
+                );
+                onUpdate(index, 'value', clamped);
+              }
+            }}
+            className='h-8 w-20 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
+          />
+
+          <span className='text-sm text-muted-foreground'>is</span>
+
+          <Select
+            value={rule.rating}
+            onValueChange={(v) =>
+              v && onUpdate(index, 'rating', v as ThresholdColor)
             }
-          }}
-          className='h-8 w-20 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
-        />
-
-        <span className='text-sm text-muted-foreground'>is</span>
-
-        <Select
-          value={rule.rating}
-          onValueChange={(v) =>
-            v && onUpdate(index, 'rating', v as ThresholdColor)
-          }
-        >
-          <SelectTrigger className='w-32'>
-            <span className='flex flex-1 items-center gap-2 text-left'>
-              {(() => {
-                const opt = RATING_OPTIONS.find((o) => o.value === rule.rating);
-                return opt ? (
-                  <>
+          >
+            <SelectTrigger className='w-32'>
+              <span className='flex flex-1 items-center gap-2 text-left'>
+                {(() => {
+                  const opt = RATING_OPTIONS.find((o) => o.value === rule.rating);
+                  return opt ? (
+                    <>
+                      <span
+                        className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`}
+                      />
+                      {opt.label}
+                    </>
+                  ) : (
+                    rule.rating
+                  );
+                })()}
+              </span>
+            </SelectTrigger>
+            <SelectContent className='min-w-0' alignItemWithTrigger={false}>
+              {RATING_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  <span className='flex w-full items-center gap-2'>
                     <span
                       className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`}
                     />
                     {opt.label}
-                  </>
-                ) : (
-                  rule.rating
-                );
-              })()}
-            </span>
-          </SelectTrigger>
-          <SelectContent className='min-w-0' alignItemWithTrigger={false}>
-            {RATING_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                <span className='flex w-full items-center gap-2'>
-                  <span
-                    className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`}
-                  />
-                  {opt.label}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Button
-          variant='ghost'
-          size='icon'
-          onClick={() => onRemove(index)}
-          aria-label='Remove rule'
-          className='hover:text-destructive'
-        >
-          <Trash2 className='size-4' />
-        </Button>
+          <Button
+            variant='ghost'
+            size='icon'
+            onClick={() => onRemove(index)}
+            aria-label='Remove rule'
+            className='hover:text-destructive'
+          >
+            <Trash2 className='size-4' />
+          </Button>
       </div>
       {showError && error && (
         <p className='mt-1 text-xs text-destructive'>{error}</p>
@@ -409,7 +410,8 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   const [showDetailDeleteConfirm, setShowDetailDeleteConfirm] = useState(false);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
@@ -682,6 +684,7 @@ export function NutritionTab({ userId }: NutritionTabProps) {
         {/* Rules editor */}
         <section className='space-y-3'>
           <h3 className='text-base font-semibold'>Rules</h3>
+          <div className='overflow-x-auto pb-2'>
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -691,7 +694,7 @@ export function NutritionTab({ userId }: NutritionTabProps) {
               items={editingRules.map((r) => r.id)}
               strategy={verticalListSortingStrategy}
             >
-              <div className='space-y-2'>
+              <div className='min-w-max space-y-2'>
                 {editingRules.map((rule, i) => (
                   <SortableRuleRow
                     key={rule.id}
@@ -706,6 +709,7 @@ export function NutritionTab({ userId }: NutritionTabProps) {
               </div>
             </SortableContext>
           </DndContext>
+          </div>
 
           <div className='flex gap-2'>
             <Button variant='outline' size='sm' onClick={addEditingRule}>

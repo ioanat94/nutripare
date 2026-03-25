@@ -121,8 +121,8 @@ export function ComparisonsTab({ userId }: { userId: string }) {
           <TableBody>
             {filtered.map((comparison) => (
               <TableRow key={comparison.id}>
-                <TableCell>
-                  {editingId === comparison.id ? (
+                {editingId === comparison.id ? (
+                  <TableCell colSpan={3}>
                     <form
                       className='flex items-center gap-1'
                       onSubmit={(e) => {
@@ -156,48 +156,52 @@ export function ComparisonsTab({ userId }: { userId: string }) {
                         <X className='size-3.5' />
                       </Button>
                     </form>
-                  ) : (
-                    <span className='flex items-center gap-1.5'>
-                      {comparison.name}
-                      <Button
-                        variant='ghost'
-                        size='icon'
-                        aria-label={`Rename ${comparison.name}`}
-                        className='size-6 shrink-0 text-muted-foreground hover:text-foreground'
-                        onClick={() => startEditing(comparison)}
-                      >
-                        <Pencil className='size-3' />
-                      </Button>
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell className='max-w-48 whitespace-normal font-mono'>
-                  {comparison.eans.join(', ')}
-                </TableCell>
-                <TableCell>
-                  <div className='flex gap-1'>
-                    <Link
-                      href={`/compare?codes=${comparison.eans.join(',')}`}
-                      target='_blank'
-                      aria-label={`View ${comparison.name}`}
-                      className={
-                        buttonVariants({ variant: 'ghost', size: 'icon' }) +
-                        ' hover:text-info hover:bg-info/10'
-                      }
-                    >
-                      <Eye className='size-4' />
-                    </Link>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      aria-label={`Unsave ${comparison.name}`}
-                      className='hover:text-destructive hover:bg-destructive/10'
-                      onClick={() => handleUnsave(comparison.eans)}
-                    >
-                      <SaveOff className='size-4' />
-                    </Button>
-                  </div>
-                </TableCell>
+                  </TableCell>
+                ) : (
+                  <>
+                    <TableCell className='max-w-48 whitespace-normal'>
+                      <span className='flex items-center gap-1.5'>
+                        {comparison.name}
+                        <Button
+                          variant='ghost'
+                          size='icon'
+                          aria-label={`Rename ${comparison.name}`}
+                          className='size-6 shrink-0 text-muted-foreground hover:text-foreground'
+                          onClick={() => startEditing(comparison)}
+                        >
+                          <Pencil className='size-3' />
+                        </Button>
+                      </span>
+                    </TableCell>
+                    <TableCell className='max-w-48 whitespace-normal font-mono'>
+                      {comparison.eans.join(', ')}
+                    </TableCell>
+                    <TableCell>
+                      <div className='flex gap-1'>
+                        <Link
+                          href={`/compare?codes=${comparison.eans.join(',')}`}
+                          target='_blank'
+                          aria-label={`View ${comparison.name}`}
+                          className={
+                            buttonVariants({ variant: 'ghost', size: 'icon' }) +
+                            ' hover:text-info hover:bg-info/10'
+                          }
+                        >
+                          <Eye className='size-4' />
+                        </Link>
+                        <Button
+                          variant='ghost'
+                          size='icon'
+                          aria-label={`Unsave ${comparison.name}`}
+                          className='hover:text-destructive hover:bg-destructive/10'
+                          onClick={() => handleUnsave(comparison.eans)}
+                        >
+                          <SaveOff className='size-4' />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </>
+                )}
               </TableRow>
             ))}
           </TableBody>

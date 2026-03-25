@@ -108,8 +108,8 @@ export function ProductsTab({ userId }: { userId: string }) {
                     aria-label={`Select ${product.name}`}
                   />
                 </TableCell>
-                <TableCell>{product.name}</TableCell>
-                <TableCell className='font-mono'>{product.ean}</TableCell>
+                <TableCell className='max-w-48 whitespace-normal'>{product.name}</TableCell>
+                <TableCell className='max-w-48 whitespace-normal font-mono'>{product.ean}</TableCell>
                 <TableCell>
                   <div className='flex gap-1'>
                     <Link

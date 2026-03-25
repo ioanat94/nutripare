@@ -17,6 +17,7 @@ import type { FirestoreUser } from '@/types/firestore';
 interface AuthContextValue {
   user: FirestoreUser | null;
   loading: boolean;
+  emailVerified: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<FirestoreUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [emailVerified, setEmailVerified] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -44,8 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setUser(snapshot.data() as FirestoreUser);
         }
+        setEmailVerified(firebaseUser.emailVerified);
       } else {
         setUser(null);
+        setEmailVerified(false);
       }
 
       setLoading(false);
@@ -55,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, emailVerified }}>
       {children}
     </AuthContext.Provider>
   );

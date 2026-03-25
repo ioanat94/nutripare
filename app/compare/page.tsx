@@ -89,11 +89,13 @@ function ComparePageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productCodesKey, user?.id]);
 
+  const settingsLoaded = nutritionSettings !== undefined;
   useEffect(() => {
+    if (!settingsLoaded) return;
     const codes = searchParams?.get('codes');
     if (codes) runSearch(codes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [settingsLoaded]);
 
   async function runSearch(rawInput: string) {
     const { valid, invalid } = parseEanInput(rawInput);
@@ -350,7 +352,7 @@ function ComparePageContent() {
       )}
 
       {/* Results */}
-      {!loading && !authLoading && nutritionSettings !== undefined && products.length > 0 && (
+      {!loading && products.length > 0 && (
         <div className='mt-10'>
           <NutritionTable
             products={products}

@@ -419,29 +419,31 @@ describe('Settings page — Products tab — compare selection', () => {
     ]);
   });
 
-  it('does not show the compare button when fewer than 2 products are selected', async () => {
+  it('does not show the action bar when fewer than 2 products are selected', async () => {
     await renderSettings('products');
     await waitFor(() =>
       expect(screen.getByText('Nutella')).toBeInTheDocument(),
     );
-    expect(screen.queryByRole('link', { name: /compare/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /^compare$/i })).toBeNull();
     fireEvent.click(screen.getByRole('checkbox', { name: /select nutella/i }));
-    expect(screen.queryByRole('link', { name: /compare 1/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /^compare$/i })).toBeNull();
+    expect(screen.queryByText(/products selected/i)).toBeNull();
   });
 
-  it('shows the compare button when 2 products are selected', async () => {
+  it('shows the action bar with selected count and compare link when 2 products are selected', async () => {
     await renderSettings('products');
     await waitFor(() =>
       expect(screen.getByText('Nutella')).toBeInTheDocument(),
     );
     fireEvent.click(screen.getByRole('checkbox', { name: /select nutella/i }));
     fireEvent.click(screen.getByRole('checkbox', { name: /select skippy/i }));
+    expect(screen.getByText('2 products selected')).toBeInTheDocument();
     expect(
-      screen.getByRole('link', { name: /compare 2 products/i }),
+      screen.getByRole('link', { name: /^compare$/i }),
     ).toBeInTheDocument();
   });
 
-  it('compare button href contains the selected EANs', async () => {
+  it('compare link href contains the selected EANs', async () => {
     await renderSettings('products');
     await waitFor(() =>
       expect(screen.getByText('Nutella')).toBeInTheDocument(),
@@ -449,29 +451,25 @@ describe('Settings page — Products tab — compare selection', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: /select nutella/i }));
     fireEvent.click(screen.getByRole('checkbox', { name: /select skippy/i }));
     const link = screen.getByRole('link', {
-      name: /compare 2 products/i,
+      name: /^compare$/i,
     }) as HTMLAnchorElement;
     expect(link.href).toContain('5000112637922');
     expect(link.href).toContain('8076809513388');
   });
 
-  it('updates the compare button count as more products are selected', async () => {
+  it('updates the selected count as more products are selected', async () => {
     await renderSettings('products');
     await waitFor(() =>
       expect(screen.getByText('Nutella')).toBeInTheDocument(),
     );
     fireEvent.click(screen.getByRole('checkbox', { name: /select nutella/i }));
     fireEvent.click(screen.getByRole('checkbox', { name: /select skippy/i }));
-    expect(
-      screen.getByRole('link', { name: /compare 2 products/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByText('2 products selected')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('checkbox', { name: /select jif/i }));
-    expect(
-      screen.getByRole('link', { name: /compare 3 products/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByText('3 products selected')).toBeInTheDocument();
   });
 
-  it('deselecting a product removes its EAN from the compare link', async () => {
+  it('deselecting a product hides the action bar when fewer than 2 remain selected', async () => {
     await renderSettings('products');
     await waitFor(() =>
       expect(screen.getByText('Nutella')).toBeInTheDocument(),
@@ -479,7 +477,21 @@ describe('Settings page — Products tab — compare selection', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: /select nutella/i }));
     fireEvent.click(screen.getByRole('checkbox', { name: /select skippy/i }));
     fireEvent.click(screen.getByRole('checkbox', { name: /select nutella/i }));
-    expect(screen.queryByRole('link', { name: /compare/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /^compare$/i })).toBeNull();
+    expect(screen.queryByText(/products selected/i)).toBeNull();
+  });
+
+  it('Clear button deselects all products and hides the action bar', async () => {
+    await renderSettings('products');
+    await waitFor(() =>
+      expect(screen.getByText('Nutella')).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole('checkbox', { name: /select nutella/i }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /select skippy/i }));
+    expect(screen.getByText('2 products selected')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^clear$/i }));
+    expect(screen.queryByRole('link', { name: /^compare$/i })).toBeNull();
+    expect(screen.queryByText(/products selected/i)).toBeNull();
   });
 
   it('unsaving a selected product removes it from the selection', async () => {
@@ -494,7 +506,7 @@ describe('Settings page — Products tab — compare selection', () => {
     fireEvent.click(screen.getByRole('button', { name: /unsave nutella/i }));
     await waitFor(() => expect(screen.queryByText('Nutella')).toBeNull());
     const link = screen.getByRole('link', {
-      name: /compare 2 products/i,
+      name: /^compare$/i,
     }) as HTMLAnchorElement;
     expect(link.href).not.toContain('5000112637922');
     expect(link.href).toContain('8076809513388');

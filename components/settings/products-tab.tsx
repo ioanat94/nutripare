@@ -86,16 +86,6 @@ export function ProductsTab({ userId }: { userId: string }) {
           className='pl-8'
         />
       </div>
-      {selected.size >= 2 && (
-        <Link
-          href={compareUrl}
-          target='_blank'
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
-        >
-          <GitCompareArrows className='size-4' />
-          Compare {selected.size} products
-        </Link>
-      )}
       {filtered.length === 0 && search ? (
         <p className='text-muted-foreground'>No products match your search.</p>
       ) : (
@@ -148,6 +138,30 @@ export function ProductsTab({ userId }: { userId: string }) {
             ))}
           </TableBody>
         </Table>
+      )}
+      {selected.size >= 2 && (
+        <div className='flex items-center justify-between border-t pt-3'>
+            <span className='text-sm text-muted-foreground'>
+              {selected.size} products selected
+            </span>
+            <div className='flex items-center gap-2'>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => setSelected(new Set())}
+              >
+                Clear
+              </Button>
+              <Link
+                href={compareUrl}
+                target='_blank'
+                className={buttonVariants({ size: 'sm' })}
+              >
+                <GitCompareArrows className='size-4' />
+                Compare
+              </Link>
+            </div>
+        </div>
       )}
     </div>
   );

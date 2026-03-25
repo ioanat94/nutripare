@@ -1,6 +1,6 @@
 'use client';
 
-import { House, Moon, Sun, User } from 'lucide-react';
+import { CircleHelp, House, Moon, Scale, Sun, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -29,6 +29,14 @@ export function Navbar() {
       <Link href='/' className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'mr-auto')}>
         <House />
         <span className='sr-only'>Home</span>
+      </Link>
+      <Link href='/compare' className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+        <Scale />
+        <span className='sr-only'>Compare</span>
+      </Link>
+      <Link href='/help' className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+        <CircleHelp />
+        <span className='sr-only'>Help</span>
       </Link>
       <Link href={userHref} className={buttonVariants({ variant: 'ghost', size: 'icon' })}>
         <User className={userIconClass} />

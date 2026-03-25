@@ -81,14 +81,25 @@ export default function Home() {
           Compare products, spot what matters, and make better choices — no
           guesswork.
         </p>
-        <Button
-          size='lg'
-          className='mt-2 px-6 text-base'
-          nativeButton={false}
-          render={<Link href='/compare' />}
-        >
-          Start comparing →
-        </Button>
+        <div className='mt-2 flex flex-wrap items-center justify-center gap-3'>
+          <Button
+            size='lg'
+            className='px-6 text-base'
+            nativeButton={false}
+            render={<Link href='/compare' />}
+          >
+            Start comparing →
+          </Button>
+          <Button
+            size='lg'
+            variant='outline'
+            className='px-6 text-base dark:bg-foreground dark:text-background dark:hover:bg-foreground/90'
+            nativeButton={false}
+            render={<Link href='/help' />}
+          >
+            How it works
+          </Button>
+        </div>
         <HomeDemo />
       </section>
 

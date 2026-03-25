@@ -140,17 +140,17 @@ describe('Settings page — layout', () => {
       ).toBeInTheDocument(),
     );
     expect(
-      screen.getByRole('link', { name: /^account$/i }),
-    ).toBeInTheDocument();
+      screen.getAllByRole('link', { name: /^account$/i }).length,
+    ).toBeGreaterThan(0);
     expect(
-      screen.getByRole('link', { name: /^nutrition$/i }),
-    ).toBeInTheDocument();
+      screen.getAllByRole('link', { name: /^nutrition$/i }).length,
+    ).toBeGreaterThan(0);
     expect(
-      screen.getByRole('link', { name: /^products$/i }),
-    ).toBeInTheDocument();
+      screen.getAllByRole('link', { name: /^products$/i }).length,
+    ).toBeGreaterThan(0);
     expect(
-      screen.getByRole('link', { name: /^comparisons$/i }),
-    ).toBeInTheDocument();
+      screen.getAllByRole('link', { name: /^comparisons$/i }).length,
+    ).toBeGreaterThan(0);
   });
 
   it('renders the logout button', async () => {

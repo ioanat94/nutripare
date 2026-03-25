@@ -4,7 +4,8 @@ import { vi } from 'vitest';
 // Mock dnd-kit (no-op, we don't test DnD here)
 vi.mock('@dnd-kit/core', () => ({
   DndContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  PointerSensor: class {},
+  MouseSensor: class {},
+  TouchSensor: class {},
   KeyboardSensor: class {},
   closestCenter: vi.fn(),
   useSensor: vi.fn(),

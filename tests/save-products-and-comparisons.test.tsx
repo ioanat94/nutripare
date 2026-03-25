@@ -15,6 +15,8 @@ vi.mock('@/lib/firestore', () => ({
   saveComparison: vi.fn(),
   deleteProduct: vi.fn(),
   deleteComparison: vi.fn(),
+  deleteComparisonById: vi.fn().mockResolvedValue(undefined),
+  updateComparisonEans: vi.fn().mockResolvedValue(undefined),
   getSavedProductEans: vi.fn().mockResolvedValue(new Set()),
   findSavedComparison: vi.fn().mockResolvedValue(null),
   updateComparisonRuleset: vi.fn().mockResolvedValue(undefined),
@@ -33,9 +35,18 @@ vi.mock('sonner', () => ({
 const { useAuth } = await import('@/contexts/auth-context');
 const mockUseAuth = vi.mocked(useAuth);
 
-const { saveProduct, saveComparison } = await import('@/lib/firestore');
+const {
+  saveProduct,
+  saveComparison,
+  findSavedComparison,
+  deleteComparisonById,
+  updateComparisonEans,
+} = await import('@/lib/firestore');
 const mockSaveProduct = vi.mocked(saveProduct);
 const mockSaveComparison = vi.mocked(saveComparison);
+const mockFindSavedComparison = vi.mocked(findSavedComparison);
+const mockDeleteComparisonById = vi.mocked(deleteComparisonById);
+const mockUpdateComparisonEans = vi.mocked(updateComparisonEans);
 
 const { toast } = await import('sonner');
 
@@ -351,5 +362,282 @@ describe('Compare page — save handlers', () => {
     await renderCompareWithProducts([{ code: '11111111', product_name: 'Nutella' }]);
     fireEvent.click(screen.getByRole('button', { name: /options for nutella/i }));
     expect(screen.queryByRole('menuitem', { name: /save product/i })).toBeNull();
+  });
+});
+
+// ─── NutritionTable — loaded comparison menu states ──────────────────────────
+
+describe('NutritionTable — loaded comparison menu states', () => {
+  const twoProducts = [
+    makeProduct({ code: '111', product_name: 'Product A' }),
+    makeProduct({ code: '222', product_name: 'Product B' }),
+  ];
+
+  it('fresh state: shows Save comparison, no Update/Save as new/Delete', () => {
+    render(
+      <NutritionTable
+        products={twoProducts}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+        onSaveComparison={vi.fn()}
+        onSaveAsNew={vi.fn()}
+        onUpdateComparison={vi.fn()}
+        onUnsaveComparison={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    expect(screen.getByRole('menuitem', { name: /save comparison/i })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: /update/i })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: /save as new/i })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: /delete/i })).toBeNull();
+  });
+
+  it('unmodified saved state: shows only Delete "[name]"', () => {
+    render(
+      <NutritionTable
+        products={twoProducts}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+        onSaveComparison={vi.fn()}
+        onSaveAsNew={vi.fn()}
+        onUpdateComparison={vi.fn()}
+        onUnsaveComparison={vi.fn()}
+        loadedComparisonName='Milks'
+        isDirty={false}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: /save comparison/i })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: /update/i })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: /save as new/i })).toBeNull();
+  });
+
+  it('dirty state: shows Update, Save as new, and Delete — no Save comparison', () => {
+    render(
+      <NutritionTable
+        products={twoProducts}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+        onSaveComparison={vi.fn()}
+        onSaveAsNew={vi.fn()}
+        onUpdateComparison={vi.fn()}
+        onUnsaveComparison={vi.fn()}
+        loadedComparisonName='Milks'
+        isDirty={true}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    expect(screen.getByRole('menuitem', { name: /update/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /save as new/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: /save comparison/i })).toBeNull();
+  });
+
+  it('calls onUpdateComparison when Update is clicked', async () => {
+    const onUpdateComparison = vi.fn().mockResolvedValue(undefined);
+    render(
+      <NutritionTable
+        products={twoProducts}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+        onUpdateComparison={onUpdateComparison}
+        onSaveAsNew={vi.fn()}
+        onUnsaveComparison={vi.fn()}
+        loadedComparisonName='Milks'
+        isDirty={true}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /update/i }));
+    await waitFor(() => expect(onUpdateComparison).toHaveBeenCalledTimes(1));
+  });
+
+  it('calls onSaveAsNew when Save as new is clicked', () => {
+    const onSaveAsNew = vi.fn();
+    render(
+      <NutritionTable
+        products={twoProducts}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+        onUpdateComparison={vi.fn().mockResolvedValue(undefined)}
+        onSaveAsNew={onSaveAsNew}
+        onUnsaveComparison={vi.fn()}
+        loadedComparisonName='Milks'
+        isDirty={true}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /save as new/i }));
+    expect(onSaveAsNew).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onUnsaveComparison when Delete is clicked in unmodified state', async () => {
+    const onUnsaveComparison = vi.fn().mockResolvedValue(undefined);
+    render(
+      <NutritionTable
+        products={twoProducts}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+        onUnsaveComparison={onUnsaveComparison}
+        loadedComparisonName='Milks'
+        isDirty={false}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /delete/i }));
+    await waitFor(() => expect(onUnsaveComparison).toHaveBeenCalledTimes(1));
+  });
+
+  it('calls onUnsaveComparison when Delete is clicked in dirty state', async () => {
+    const onUnsaveComparison = vi.fn().mockResolvedValue(undefined);
+    render(
+      <NutritionTable
+        products={twoProducts}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+        onUpdateComparison={vi.fn().mockResolvedValue(undefined)}
+        onSaveAsNew={vi.fn()}
+        onUnsaveComparison={onUnsaveComparison}
+        loadedComparisonName='Milks'
+        isDirty={true}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /delete/i }));
+    await waitFor(() => expect(onUnsaveComparison).toHaveBeenCalledTimes(1));
+  });
+
+  it('Update button is disabled while in progress', async () => {
+    let resolve!: () => void;
+    const onUpdateComparison = vi.fn(
+      () => new Promise<void>((res) => { resolve = res; }),
+    );
+    render(
+      <NutritionTable
+        products={twoProducts}
+        onDismiss={vi.fn()}
+        onClearAll={vi.fn()}
+        onUpdateComparison={onUpdateComparison}
+        onSaveAsNew={vi.fn()}
+        onUnsaveComparison={vi.fn()}
+        loadedComparisonName='Milks'
+        isDirty={true}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /update/i }));
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: /update/i })).toHaveAttribute('data-disabled'),
+    );
+    resolve();
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: /update/i })).not.toHaveAttribute('data-disabled'),
+    );
+  });
+});
+
+// ─── Compare page — update and delete comparison handlers ─────────────────────
+
+describe('Compare page — update and delete comparison handlers', () => {
+  beforeEach(() => {
+    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
+    mockFindSavedComparison.mockResolvedValue(null);
+  });
+
+  it('shows Delete when products match a saved comparison', async () => {
+    mockFindSavedComparison.mockResolvedValue({
+      id: 'cmp-1',
+      name: 'Milks',
+      rulesetId: undefined,
+    });
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Milk A' },
+      { code: '22222222', product_name: 'Milk B' },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: /save comparison/i })).toBeNull();
+  });
+
+  it('shows Update and Save as new when a product is added to a loaded comparison', async () => {
+    // First two products match a saved comparison
+    mockFindSavedComparison.mockResolvedValueOnce({
+      id: 'cmp-1',
+      name: 'Milks',
+      rulesetId: undefined,
+    });
+    // After adding a third product, no match
+    mockFindSavedComparison.mockResolvedValue(null);
+
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Milk A' },
+      { code: '22222222', product_name: 'Milk B' },
+    ]);
+
+    // Add a third product
+    const extraProduct = makeProduct({ code: '33333333', product_name: 'Milk C' });
+    mockFetchProduct.mockResolvedValueOnce(extraProduct);
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '33333333' } });
+    fireEvent.submit(screen.getByRole('textbox').closest('form')!);
+    await waitFor(() => expect(screen.getByText('Milk C')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    expect(screen.getByRole('menuitem', { name: /update/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /save as new/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+  });
+
+  it('calls updateComparisonEans and shows success toast when Update is clicked', async () => {
+    mockFindSavedComparison.mockResolvedValueOnce({
+      id: 'cmp-1',
+      name: 'Milks',
+      rulesetId: undefined,
+    });
+    mockFindSavedComparison.mockResolvedValue(null);
+
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Milk A' },
+      { code: '22222222', product_name: 'Milk B' },
+    ]);
+
+    const extraProduct = makeProduct({ code: '33333333', product_name: 'Milk C' });
+    mockFetchProduct.mockResolvedValueOnce(extraProduct);
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '33333333' } });
+    fireEvent.submit(screen.getByRole('textbox').closest('form')!);
+    await waitFor(() => expect(screen.getByText('Milk C')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /update/i }));
+
+    await waitFor(() =>
+      expect(mockUpdateComparisonEans).toHaveBeenCalledWith('uid-123', 'cmp-1', [
+        '11111111',
+        '22222222',
+        '33333333',
+      ]),
+    );
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Comparison updated'));
+  });
+
+  it('calls deleteComparisonById and shows success toast when Delete is clicked', async () => {
+    mockFindSavedComparison.mockResolvedValue({
+      id: 'cmp-1',
+      name: 'Milks',
+      rulesetId: undefined,
+    });
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Milk A' },
+      { code: '22222222', product_name: 'Milk B' },
+    ]);
+
+    fireEvent.click(screen.getByRole('button', { name: /more options/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /delete/i }));
+
+    await waitFor(() =>
+      expect(mockDeleteComparisonById).toHaveBeenCalledWith('uid-123', 'cmp-1'),
+    );
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Comparison removed'));
   });
 });

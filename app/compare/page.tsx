@@ -3,13 +3,14 @@
 import { Loader2, ScanBarcode, TriangleAlert } from 'lucide-react';
 import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
 import {
-  deleteComparison,
+  deleteComparisonById,
   deleteProduct,
   findSavedComparison,
   getNutritionSettings,
   getSavedProductEans,
   saveComparison,
   saveProduct,
+  updateComparisonEans,
   updateComparisonRuleset,
 } from '@/lib/firestore';
 import type { NutritionSettings } from '@/types/firestore';
@@ -62,6 +63,7 @@ function ComparePageContent() {
     new Set(),
   );
   const [savedComparisonId, setSavedComparisonId] = useState<string | null>(null);
+  const [loadedComparison, setLoadedComparison] = useState<{ id: string; name: string } | null>(null);
   const [selectedRulesetId, setSelectedRulesetId] = useState<string | null>(null);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveDialogName, setSaveDialogName] = useState('');
@@ -92,6 +94,7 @@ function ComparePageContent() {
       if (savedComp) {
         setSavedComparisonId(savedComp.id);
         if (savedComp.rulesetId) setSelectedRulesetId(savedComp.rulesetId);
+        setLoadedComparison((prev) => prev ?? { id: savedComp.id, name: savedComp.name });
       } else {
         setSavedComparisonId(null);
       }
@@ -171,6 +174,7 @@ function ComparePageContent() {
     setInvalidCodes([]);
     setSavedProductCodes(new Set());
     setSavedComparisonId(null);
+    setLoadedComparison(null);
   }
 
   async function handleSaveProduct(code: string) {
@@ -223,6 +227,7 @@ function ComparePageContent() {
     try {
       const id = await saveComparison(user.id, { name: saveDialogName, eans });
       setSavedComparisonId(id);
+      setLoadedComparison({ id, name: saveDialogName });
       setSaveDialogOpen(false);
       if (selectedRulesetId) {
         updateComparisonRuleset(user.id, id, selectedRulesetId).catch(() => {});
@@ -231,7 +236,10 @@ function ComparePageContent() {
     } catch (e) {
       if (e instanceof Error && e.message === 'DUPLICATE') {
         const existing = await findSavedComparison(user.id, eans);
-        if (existing) setSavedComparisonId(existing.id);
+        if (existing) {
+          setSavedComparisonId(existing.id);
+          setLoadedComparison({ id: existing.id, name: existing.name });
+        }
         setSaveDialogOpen(false);
         toast.info('Comparison already saved');
       } else {
@@ -240,12 +248,26 @@ function ComparePageContent() {
     }
   }
 
-  async function handleUnsaveComparison() {
-    if (!user) return;
+  async function handleUpdateComparison() {
+    if (!user || !loadedComparison) return;
     const eans = products.map((p) => p.code);
     try {
-      await deleteComparison(user.id, eans);
+      await updateComparisonEans(user.id, loadedComparison.id, eans);
+      setSavedComparisonId(loadedComparison.id);
+      toast.success('Comparison updated');
+    } catch {
+      toast.error('Failed to update comparison');
+    }
+  }
+
+  async function handleUnsaveComparison() {
+    if (!user) return;
+    const targetId = loadedComparison?.id ?? savedComparisonId;
+    if (!targetId) return;
+    try {
+      await deleteComparisonById(user.id, targetId);
       setSavedComparisonId(null);
+      setLoadedComparison(null);
       toast.success('Comparison removed');
     } catch {
       toast.error('Failed to remove comparison');
@@ -380,8 +402,11 @@ function ComparePageContent() {
             onClearAll={handleClearAll}
             onSaveProduct={user ? handleSaveProduct : undefined}
             onSaveComparison={user ? handleSaveComparison : undefined}
+            onSaveAsNew={user ? handleSaveComparison : undefined}
+            onUpdateComparison={user ? handleUpdateComparison : undefined}
             savedProductCodes={savedProductCodes}
-            comparisonSaved={!!savedComparisonId}
+            loadedComparisonName={loadedComparison?.name}
+            isDirty={loadedComparison !== null && savedComparisonId !== loadedComparison.id}
             onUnsaveProduct={user ? handleUnsaveProduct : undefined}
             onUnsaveComparison={user ? handleUnsaveComparison : undefined}
             settings={nutritionSettings}

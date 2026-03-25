@@ -7,6 +7,7 @@ import {
   Loader2,
   MoreHorizontal,
   Save,
+  SaveAll,
   SaveOff,
   Share2,
   Trash2,
@@ -58,9 +59,12 @@ interface NutritionTableProps {
   onDismiss: (code: string) => void;
   onClearAll: () => void;
   onSaveProduct?: (code: string) => Promise<void>;
-  onSaveComparison?: () => Promise<void>;
+  onSaveComparison?: () => void;
+  onSaveAsNew?: () => void;
+  onUpdateComparison?: () => Promise<void>;
   savedProductCodes?: Set<string>;
-  comparisonSaved?: boolean;
+  loadedComparisonName?: string;
+  isDirty?: boolean;
   onUnsaveProduct?: (code: string) => Promise<void>;
   onUnsaveComparison?: () => Promise<void>;
   settings?: NutritionSettings | null;
@@ -112,8 +116,11 @@ export function NutritionTable({
   onClearAll,
   onSaveProduct,
   onSaveComparison,
+  onSaveAsNew,
+  onUpdateComparison,
   savedProductCodes,
-  comparisonSaved,
+  loadedComparisonName,
+  isDirty,
   onUnsaveProduct,
   onUnsaveComparison,
   settings,
@@ -203,14 +210,15 @@ export function NutritionTable({
           >
             <MoreHorizontal className='size-4' aria-hidden='true' />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align='end' className='w-48'>
+          <DropdownMenuContent align='end' className='w-52'>
             {rulesets && rulesets.length > 0 && (
               <>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className='flex max-w-full gap-1'>
                     <span className='shrink-0'>Ruleset:</span>
                     <span className='truncate'>
-                      {rulesets.find((rs) => rs.id === selectedRulesetId)?.name ?? 'None'}
+                      {rulesets.find((rs) => rs.id === selectedRulesetId)
+                        ?.name ?? 'None'}
                     </span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className='max-w-48'>
@@ -233,42 +241,62 @@ export function NutritionTable({
                 <DropdownMenuSeparator />
               </>
             )}
-            {products.length >= 2 &&
-              (comparisonSaved
-                ? onUnsaveComparison && (
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        setSavingComparison(true);
-                        await onUnsaveComparison();
-                        setSavingComparison(false);
-                      }}
-                      disabled={savingComparison}
-                    >
-                      {savingComparison ? (
-                        <Loader2 className='size-4 animate-spin' aria-hidden='true' />
-                      ) : (
-                        <SaveOff className='size-4' aria-hidden='true' />
-                      )}
-                      Unsave comparison
-                    </DropdownMenuItem>
-                  )
-                : onSaveComparison && (
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        setSavingComparison(true);
-                        await onSaveComparison();
-                        setSavingComparison(false);
-                      }}
-                      disabled={savingComparison}
-                    >
-                      {savingComparison ? (
-                        <Loader2 className='size-4 animate-spin' aria-hidden='true' />
-                      ) : (
-                        <Save className='size-4' aria-hidden='true' />
-                      )}
-                      Save comparison
-                    </DropdownMenuItem>
-                  ))}
+            {products.length >= 2 && (
+              <>
+                {isDirty && loadedComparisonName && onUpdateComparison && (
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      setSavingComparison(true);
+                      await onUpdateComparison();
+                      setSavingComparison(false);
+                    }}
+                    disabled={savingComparison}
+                  >
+                    {savingComparison ? (
+                      <Loader2
+                        className='size-4 animate-spin'
+                        aria-hidden='true'
+                      />
+                    ) : (
+                      <Save className='size-4' aria-hidden='true' />
+                    )}
+                    Update &ldquo;{loadedComparisonName}&rdquo;
+                  </DropdownMenuItem>
+                )}
+                {isDirty && loadedComparisonName && onSaveAsNew && (
+                  <DropdownMenuItem onClick={onSaveAsNew}>
+                    <SaveAll className='size-4' aria-hidden='true' />
+                    Save as new comparison
+                  </DropdownMenuItem>
+                )}
+                {!loadedComparisonName && onSaveComparison && (
+                  <DropdownMenuItem onClick={onSaveComparison}>
+                    <Save className='size-4' aria-hidden='true' />
+                    Save comparison
+                  </DropdownMenuItem>
+                )}
+                {loadedComparisonName && onUnsaveComparison && (
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      setSavingComparison(true);
+                      await onUnsaveComparison();
+                      setSavingComparison(false);
+                    }}
+                    disabled={savingComparison}
+                  >
+                    {savingComparison ? (
+                      <Loader2
+                        className='size-4 animate-spin'
+                        aria-hidden='true'
+                      />
+                    ) : (
+                      <SaveOff className='size-4' aria-hidden='true' />
+                    )}
+                    Delete &ldquo;{loadedComparisonName}&rdquo;
+                  </DropdownMenuItem>
+                )}
+              </>
+            )}
             <DropdownMenuItem onClick={handleShare}>
               <Share2 className='size-4' aria-hidden='true' />
               Share

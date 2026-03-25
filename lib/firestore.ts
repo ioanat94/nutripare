@@ -56,13 +56,13 @@ export async function getSavedProductEans(
 export async function findSavedComparison(
   uid: string,
   eans: string[],
-): Promise<{ id: string; rulesetId?: string } | null> {
+): Promise<{ id: string; name: string; rulesetId?: string } | null> {
   const col = collection(db, 'users', uid, 'comparisons');
   const snapshot = await getDocs(col);
   const sortedInput = [...eans].sort().join(',');
   for (const d of snapshot.docs) {
     if ([...(d.data().eans as string[])].sort().join(',') === sortedInput) {
-      return { id: d.id, rulesetId: d.data().rulesetId as string | undefined };
+      return { id: d.id, name: d.data().name as string, rulesetId: d.data().rulesetId as string | undefined };
     }
   }
   return null;
@@ -83,6 +83,20 @@ export async function updateComparisonRuleset(
 ): Promise<void> {
   const ref = doc(db, 'users', uid, 'comparisons', comparisonId);
   await updateDoc(ref, { rulesetId });
+}
+
+export async function updateComparisonEans(
+  uid: string,
+  id: string,
+  eans: string[],
+): Promise<void> {
+  const ref = doc(db, 'users', uid, 'comparisons', id);
+  await updateDoc(ref, { eans });
+}
+
+export async function deleteComparisonById(uid: string, id: string): Promise<void> {
+  const ref = doc(db, 'users', uid, 'comparisons', id);
+  await deleteDoc(ref);
 }
 
 export async function deleteProduct(uid: string, ean: string): Promise<void> {

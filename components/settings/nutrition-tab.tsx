@@ -1,20 +1,13 @@
 'use client';
 
-import type {
-  NutritionRule,
-  NutritionRuleset,
-  NutritionSettings,
-  ThresholdColor,
-} from '@/types/firestore';
-import { Eye, GripVertical, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select';
-import { getNutritionSettings, saveNutritionSettings } from '@/lib/firestore';
-import { useEffect, useMemo, useState } from 'react';
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   DndContext,
   KeyboardSensor,
@@ -24,31 +17,50 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import {
+  Eye,
+  GripVertical,
+  Loader2,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from 'lucide-react';
+import type {
+  NutritionRule,
+  NutritionRuleset,
+  NutritionSettings,
+  ThresholdColor,
+} from '@/types/firestore';
+import { ROWS, SCORE_ROW } from '@/components/nutrition-table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from '@/components/ui/select';
+import {
   SortableContext,
   arrayMove,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { getNutritionSettings, saveNutritionSettings } from '@/lib/firestore';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { CSS } from '@dnd-kit/utilities';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ROWS, SCORE_ROW } from '@/components/nutrition-table';
+import type { DragEndEvent } from '@dnd-kit/core';
+import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { getDefaultRules } from '@/utils/thresholds';
 import { toast } from 'sonner';
-import type { DragEndEvent } from '@dnd-kit/core';
 
-type DraftRule = Omit<NutritionRule, 'value'> & { value: number | undefined; id: string };
+type DraftRule = Omit<NutritionRule, 'value'> & {
+  value: number | undefined;
+  id: string;
+};
 
 interface NutritionTabProps {
   userId: string;
@@ -97,8 +109,20 @@ interface SortableNutrientRowProps {
   onToggle: (key: string, checked: boolean) => void;
 }
 
-function SortableNutrientRow({ rowKey, label, checked, onToggle }: SortableNutrientRowProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: rowKey });
+function SortableNutrientRow({
+  rowKey,
+  label,
+  checked,
+  onToggle,
+}: SortableNutrientRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: rowKey });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -132,15 +156,30 @@ interface SortableRulesetRowProps {
   onDelete: (id: string) => void;
 }
 
-function SortableRulesetRow({ ruleset, onView, onDelete }: SortableRulesetRowProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ruleset.id });
+function SortableRulesetRow({
+  ruleset,
+  onView,
+  onDelete,
+}: SortableRulesetRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: ruleset.id });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
   return (
-    <div ref={setNodeRef} style={style} className='flex items-center gap-2 py-1'>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className='flex items-center gap-2 py-1'
+    >
       <button
         {...attributes}
         {...listeners}
@@ -178,12 +217,30 @@ interface SortableRuleRowProps {
   index: number;
   error: string | undefined;
   showError: boolean;
-  onUpdate: (index: number, field: keyof NutritionRule, value: string | number | undefined) => void;
+  onUpdate: (
+    index: number,
+    field: keyof NutritionRule,
+    value: string | number | undefined,
+  ) => void;
   onRemove: (index: number) => void;
 }
 
-function SortableRuleRow({ rule, index, error, showError, onUpdate, onRemove }: SortableRuleRowProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: rule.id });
+function SortableRuleRow({
+  rule,
+  index,
+  error,
+  showError,
+  onUpdate,
+  onRemove,
+}: SortableRuleRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: rule.id });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -208,7 +265,8 @@ function SortableRuleRow({ rule, index, error, showError, onUpdate, onRemove }: 
         >
           <SelectTrigger className='w-40'>
             <span className='flex flex-1 text-left'>
-              {[...ROWS, SCORE_ROW].find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient}
+              {[...ROWS, SCORE_ROW].find((r) => r.key === rule.nutrient)
+                ?.label ?? rule.nutrient}
             </span>
           </SelectTrigger>
           <SelectContent className='min-w-0' alignItemWithTrigger={false}>
@@ -225,7 +283,9 @@ function SortableRuleRow({ rule, index, error, showError, onUpdate, onRemove }: 
 
         <Select
           value={rule.direction}
-          onValueChange={(v) => v && onUpdate(index, 'direction', v as 'above' | 'below')}
+          onValueChange={(v) =>
+            v && onUpdate(index, 'direction', v as 'above' | 'below')
+          }
         >
           <SelectTrigger className='w-24'>
             <span className='flex flex-1 text-left'>{rule.direction}</span>
@@ -254,7 +314,10 @@ function SortableRuleRow({ rule, index, error, showError, onUpdate, onRemove }: 
             }
             const raw = parseFloat(e.target.value);
             if (!isNaN(raw)) {
-              const clamped = Math.min(99.9, Math.max(0, parseFloat(raw.toFixed(1))));
+              const clamped = Math.min(
+                99.9,
+                Math.max(0, parseFloat(raw.toFixed(1))),
+              );
               onUpdate(index, 'value', clamped);
             }
           }}
@@ -265,7 +328,9 @@ function SortableRuleRow({ rule, index, error, showError, onUpdate, onRemove }: 
 
         <Select
           value={rule.rating}
-          onValueChange={(v) => v && onUpdate(index, 'rating', v as ThresholdColor)}
+          onValueChange={(v) =>
+            v && onUpdate(index, 'rating', v as ThresholdColor)
+          }
         >
           <SelectTrigger className='w-32'>
             <span className='flex flex-1 items-center gap-2 text-left'>
@@ -273,7 +338,9 @@ function SortableRuleRow({ rule, index, error, showError, onUpdate, onRemove }: 
                 const opt = RATING_OPTIONS.find((o) => o.value === rule.rating);
                 return opt ? (
                   <>
-                    <span className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`} />
+                    <span
+                      className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`}
+                    />
                     {opt.label}
                   </>
                 ) : (
@@ -286,7 +353,9 @@ function SortableRuleRow({ rule, index, error, showError, onUpdate, onRemove }: 
             {RATING_OPTIONS.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 <span className='flex w-full items-center gap-2'>
-                  <span className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`} />
+                  <span
+                    className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`}
+                  />
                   {opt.label}
                 </span>
               </SelectItem>
@@ -322,10 +391,14 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   const [showCrown, setShowCrown] = useState(true);
   const [showFlag, setShowFlag] = useState(true);
   const [rulesets, setRulesets] = useState<NutritionRuleset[]>([]);
-  const [rowOrder, setRowOrder] = useState<string[]>([...ROWS.map((r) => r.key), SCORE_ROW.key]);
+  const [rowOrder, setRowOrder] = useState<string[]>([
+    ...ROWS.map((r) => r.key),
+    SCORE_ROW.key,
+  ]);
 
   // Delete confirmation for list view
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [rulesetSearch, setRulesetSearch] = useState('');
 
   // Detail view state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -337,13 +410,18 @@ export function NutritionTab({ userId }: NutritionTabProps) {
 
   const sensors = useSensors(
     useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   useEffect(() => {
     getNutritionSettings(userId).then((fetched) => {
       const s = fetched ?? buildDefault();
-      const normalizedRowOrder = s.rowOrder ?? [...ROWS.map((r) => r.key), SCORE_ROW.key];
+      const normalizedRowOrder = s.rowOrder ?? [
+        ...ROWS.map((r) => r.key),
+        SCORE_ROW.key,
+      ];
       setSaved({ ...s, rowOrder: normalizedRowOrder });
       setVisibleRows(s.visibleRows);
       setShowCrown(s.showCrown);
@@ -375,8 +453,11 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       const key = `${rule.nutrient}:${rule.rating}`;
       if (seen.has(key)) {
         const allRows = [...ROWS, SCORE_ROW];
-        const nutrientLabel = allRows.find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient;
-        const ratingLabel = RATING_OPTIONS.find((o) => o.value === rule.rating)?.label ?? rule.rating;
+        const nutrientLabel =
+          allRows.find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient;
+        const ratingLabel =
+          RATING_OPTIONS.find((o) => o.value === rule.rating)?.label ??
+          rule.rating;
         const msg = `A rule for ${nutrientLabel} / ${ratingLabel} already exists`;
         errors[i] = msg;
         const firstIdx = seen.get(key)!;
@@ -409,7 +490,9 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   }
 
   function toggleNutrient(key: string, checked: boolean) {
-    setVisibleRows((prev) => (checked ? [...prev, key] : prev.filter((k) => k !== key)));
+    setVisibleRows((prev) =>
+      checked ? [...prev, key] : prev.filter((k) => k !== key),
+    );
   }
 
   function handleNutrientDragEnd(event: DragEndEvent) {
@@ -435,7 +518,11 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   }
 
   function handleAddRuleset() {
-    const newRuleset: NutritionRuleset = { id: crypto.randomUUID(), name: 'New Ruleset', rules: [] };
+    const newRuleset: NutritionRuleset = {
+      id: crypto.randomUUID(),
+      name: 'New Ruleset',
+      rules: [],
+    };
     setRulesets((prev) => [...prev, newRuleset]);
     openDetail(newRuleset, true);
   }
@@ -461,9 +548,15 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   }
 
   // Detail view handlers
-  function updateEditingRule(index: number, field: keyof NutritionRule, value: string | number | undefined) {
+  function updateEditingRule(
+    index: number,
+    field: keyof NutritionRule,
+    value: string | number | undefined,
+  ) {
     setDetailSaveAttempted(false);
-    setEditingRules((prev) => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
+    setEditingRules((prev) =>
+      prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)),
+    );
   }
 
   function addEditingRule() {
@@ -507,7 +600,9 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     }));
 
     const updatedRulesets = rulesets.map((rs) =>
-      rs.id === editingId ? { ...rs, name: editingName, rules: cleanRules } : rs,
+      rs.id === editingId
+        ? { ...rs, name: editingName, rules: cleanRules }
+        : rs,
     );
     setRulesets(updatedRulesets);
 
@@ -587,8 +682,15 @@ export function NutritionTab({ userId }: NutritionTabProps) {
         {/* Rules editor */}
         <section className='space-y-3'>
           <h3 className='text-base font-semibold'>Rules</h3>
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleEditingRuleDragEnd}>
-            <SortableContext items={editingRules.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleEditingRuleDragEnd}
+          >
+            <SortableContext
+              items={editingRules.map((r) => r.id)}
+              strategy={verticalListSortingStrategy}
+            >
               <div className='space-y-2'>
                 {editingRules.map((rule, i) => (
                   <SortableRuleRow
@@ -613,7 +715,14 @@ export function NutritionTab({ userId }: NutritionTabProps) {
             <Button
               variant='outline'
               size='sm'
-              onClick={() => setEditingRules(getDefaultRules().map((r, i) => ({ ...r, id: `rule-reset-${i}` })))}
+              onClick={() =>
+                setEditingRules(
+                  getDefaultRules().map((r, i) => ({
+                    ...r,
+                    id: `rule-reset-${i}`,
+                  })),
+                )
+              }
               disabled={resetDisabled}
             >
               Reset to defaults
@@ -626,7 +735,11 @@ export function NutritionTab({ userId }: NutritionTabProps) {
           <Button onClick={handleDetailSave} disabled={saving}>
             {saving ? 'Saving…' : 'Save'}
           </Button>
-          <Button variant='outline' onClick={handleDetailCancel} disabled={saving}>
+          <Button
+            variant='outline'
+            onClick={handleDetailCancel}
+            disabled={saving}
+          >
             Cancel
           </Button>
           <Button
@@ -640,17 +753,29 @@ export function NutritionTab({ userId }: NutritionTabProps) {
         </div>
 
         {/* Detail delete confirmation */}
-        <AlertDialog open={showDetailDeleteConfirm} onOpenChange={(open) => !open && setShowDetailDeleteConfirm(false)}>
+        <AlertDialog
+          open={showDetailDeleteConfirm}
+          onOpenChange={(open) => !open && setShowDetailDeleteConfirm(false)}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete ruleset?</AlertDialogTitle>
-              <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+              <AlertDialogDescription>
+                This cannot be undone.
+              </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <Button variant='outline' onClick={() => setShowDetailDeleteConfirm(false)}>
+              <Button
+                variant='outline'
+                onClick={() => setShowDetailDeleteConfirm(false)}
+              >
                 Cancel
               </Button>
-              <Button variant='destructive' onClick={handleDetailDelete} disabled={saving}>
+              <Button
+                variant='destructive'
+                onClick={handleDetailDelete}
+                disabled={saving}
+              >
                 Delete
               </Button>
             </AlertDialogFooter>
@@ -665,8 +790,15 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       {/* Visible rows */}
       <section className='space-y-3'>
         <h3 className='text-base font-semibold'>Visible rows</h3>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleNutrientDragEnd}>
-          <SortableContext items={rowOrder} strategy={verticalListSortingStrategy}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleNutrientDragEnd}
+        >
+          <SortableContext
+            items={rowOrder}
+            strategy={verticalListSortingStrategy}
+          >
             <div className='space-y-2'>
               {rowOrder.map((key) => {
                 const allRows = [...ROWS, SCORE_ROW];
@@ -692,20 +824,28 @@ export function NutritionTab({ userId }: NutritionTabProps) {
         <h3 className='text-base font-semibold'>Highlights</h3>
         <div className='space-y-4'>
           <div className='flex items-center gap-4'>
-            <Switch checked={showCrown} onCheckedChange={(v) => setShowCrown(v)} />
+            <Switch
+              checked={showCrown}
+              onCheckedChange={(v) => setShowCrown(v)}
+            />
             <div>
               <p className='text-sm font-medium'>Show crown (👑)</p>
               <p className='text-xs text-muted-foreground'>
-                Marks the top result for nutrients with a &apos;Great&apos; rule.
+                Marks the top result for nutrients with a &apos;Great&apos;
+                rule.
               </p>
             </div>
           </div>
           <div className='flex items-center gap-4'>
-            <Switch checked={showFlag} onCheckedChange={(v) => setShowFlag(v)} />
+            <Switch
+              checked={showFlag}
+              onCheckedChange={(v) => setShowFlag(v)}
+            />
             <div>
               <p className='text-sm font-medium'>Show flag (🚩)</p>
               <p className='text-xs text-muted-foreground'>
-                Marks the worst result for nutrients with a &apos;Bad&apos; rule.
+                Marks the worst result for nutrients with a &apos;Bad&apos;
+                rule.
               </p>
             </div>
           </div>
@@ -715,20 +855,61 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       {/* Rulesets */}
       <section className='space-y-3'>
         <h3 className='text-base font-semibold'>Rulesets</h3>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleRulesetDragEnd}>
-          <SortableContext items={rulesets.map((rs) => rs.id)} strategy={verticalListSortingStrategy}>
-            <div className='space-y-1'>
-              {rulesets.map((rs) => (
-                <SortableRulesetRow
-                  key={rs.id}
-                  ruleset={rs}
-                  onView={(ruleset) => openDetail(ruleset)}
-                  onDelete={(id) => setDeleteConfirmId(id)}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+        <div className='relative'>
+          <Search className='absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
+          <Input
+            placeholder='Search by name…'
+            value={rulesetSearch}
+            onChange={(e) => setRulesetSearch(e.target.value)}
+            className='pl-8'
+          />
+        </div>
+        {rulesetSearch ? (
+          <div className='space-y-1'>
+            {rulesets.filter((rs) =>
+              rs.name.toLowerCase().includes(rulesetSearch.toLowerCase()),
+            ).length === 0 ? (
+              <p className='text-muted-foreground text-sm'>
+                No rulesets match your search.
+              </p>
+            ) : (
+              rulesets
+                .filter((rs) =>
+                  rs.name.toLowerCase().includes(rulesetSearch.toLowerCase()),
+                )
+                .map((rs) => (
+                  <SortableRulesetRow
+                    key={rs.id}
+                    ruleset={rs}
+                    onView={(ruleset) => openDetail(ruleset)}
+                    onDelete={(id) => setDeleteConfirmId(id)}
+                  />
+                ))
+            )}
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleRulesetDragEnd}
+          >
+            <SortableContext
+              items={rulesets.map((rs) => rs.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className='space-y-1'>
+                {rulesets.map((rs) => (
+                  <SortableRulesetRow
+                    key={rs.id}
+                    ruleset={rs}
+                    onView={(ruleset) => openDetail(ruleset)}
+                    onDelete={(id) => setDeleteConfirmId(id)}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
         <Button variant='outline' size='sm' onClick={handleAddRuleset}>
           <Plus className='size-4' />
           Add ruleset
@@ -740,11 +921,16 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       </Button>
 
       {/* List view delete confirmation */}
-      <AlertDialog open={deleteConfirmId !== null} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+      <AlertDialog
+        open={deleteConfirmId !== null}
+        onOpenChange={(open) => !open && setDeleteConfirmId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete ruleset?</AlertDialogTitle>
-            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+            <AlertDialogDescription>
+              This cannot be undone.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button variant='outline' onClick={() => setDeleteConfirmId(null)}>

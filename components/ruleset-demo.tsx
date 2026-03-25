@@ -115,16 +115,16 @@ const LOW_CARB_ROWS: RowData[] = [
     label: 'Carbohydrates (g)',
     cells: [
       { value: '84', className: 'text-destructive', emoji: '🚩' }, // >75
-      { value: '68', className: 'text-warning', emoji: null },     // 60–75
-      { value: '66', className: 'text-warning', emoji: null },     // 60–75
+      { value: '68', className: 'text-warning', emoji: null }, // 60–75
+      { value: '66', className: 'text-warning', emoji: null }, // 60–75
     ],
   },
   {
     label: 'Sugar (g)',
     cells: [
       { value: '36.0', className: 'text-destructive', emoji: '🚩' }, // >15
-      { value: '4.4', className: 'text-warning', emoji: null },      // 3–15
-      { value: '1.1', className: 'text-positive', emoji: '👑' },     // <3
+      { value: '4.4', className: 'text-warning', emoji: null }, // 3–15
+      { value: '1.1', className: 'text-positive', emoji: '👑' }, // <3
     ],
   },
   {
@@ -146,9 +146,9 @@ const LOW_CARB_ROWS: RowData[] = [
   {
     label: 'Fiber (g)',
     cells: [
-      { value: '2.9', className: '', emoji: null },                // <6
+      { value: '2.9', className: '', emoji: null }, // <6
       { value: '10.0', className: 'text-positive', emoji: '👑' }, // >6, highest
-      { value: '8.0', className: 'text-positive', emoji: null },  // >6
+      { value: '8.0', className: 'text-positive', emoji: null }, // >6
     ],
   },
   {
@@ -185,8 +185,8 @@ const HIGH_PROTEIN_ROWS: RowData[] = [
     label: 'Protein (g)',
     cells: [
       { value: '5.8', className: 'text-destructive', emoji: '🚩' }, // <10
-      { value: '11.0', className: 'text-positive', emoji: null },   // >10
-      { value: '13.0', className: 'text-positive', emoji: '👑' },   // >10, highest
+      { value: '11.0', className: 'text-positive', emoji: null }, // >10
+      { value: '13.0', className: 'text-positive', emoji: '👑' }, // >10, highest
     ],
   },
   {
@@ -259,7 +259,8 @@ export function RulesetDemo() {
 
   return (
     <div
-      className='overflow-hidden rounded-xl border border-border shadow-lg'
+      className='w-full overflow-hidden rounded-xl border border-border shadow-lg'
+      style={{ maxWidth: 'calc(100vw - 3rem)' }}
       aria-hidden='true'
     >
       {/* Browser chrome */}
@@ -299,18 +300,18 @@ export function RulesetDemo() {
         <table
           style={{
             width: '100%',
-            minWidth: 'calc(10rem + 3 * 14rem)',
+            minWidth: 'calc(8rem + 3 * 14rem)',
             tableLayout: 'fixed',
             borderCollapse: 'collapse',
           }}
         >
           <thead>
             <tr className='border-b border-border'>
-              <th className='w-40 px-4 pb-1 text-right align-bottom text-xs font-normal text-muted-foreground'>
+              <th className='sticky left-0 z-10 w-32 bg-background px-4 pb-1 text-right align-bottom text-xs font-normal text-muted-foreground'>
                 per 100g
               </th>
-              {PRODUCTS.map((p, i) => (
-                <th key={p.code} className={`w-48 px-4 pb-1 align-top text-left ${i === PRODUCTS.length - 1 ? 'hidden sm:table-cell' : ''}`}>
+              {PRODUCTS.map((p) => (
+                <th key={p.code} className='w-48 px-4 pb-1 align-top text-left'>
                   <span className='block truncate text-sm font-semibold text-foreground'>
                     {p.name}
                   </span>
@@ -325,11 +326,11 @@ export function RulesetDemo() {
             {active.rows.map((row, i) => (
               <tr
                 key={row.label}
-                className={i % 2 === 0 ? 'bg-muted/30' : ''}
+                className={`${i < active.rows.length - 1 ? 'border-b border-border' : ''} ${i % 2 === 0 ? 'bg-muted/30' : ''}`}
                 style={{ height: '45px' }}
               >
                 <td
-                  className={`w-40 py-0 pl-4 text-left ${i % 2 === 0 ? 'bg-muted/30' : 'bg-background'}`}
+                  className={`sticky left-0 z-10 w-32 bg-background py-0 pl-4 text-left ${i < active.rows.length - 1 ? 'border-b border-border' : ''}`}
                 >
                   <span className='text-sm font-medium text-muted-foreground'>
                     {row.label}
@@ -338,7 +339,7 @@ export function RulesetDemo() {
                 {row.cells.map((cell, j) => (
                   <td
                     key={j}
-                    className={`py-0 text-sm font-medium tabular-nums ${cell.className} ${j === PRODUCTS.length - 1 ? 'pr-4 hidden sm:table-cell' : ''}`}
+                    className={`py-0 pr-4 text-sm font-medium tabular-nums ${cell.className}`}
                   >
                     <div className='flex items-center justify-end'>
                       <span className='w-5 shrink-0 text-center text-base leading-none'>

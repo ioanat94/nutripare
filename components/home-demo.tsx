@@ -93,7 +93,7 @@ const ROWS: Array<{ label: string; cells: CellData[] }> = [
 export function HomeDemo() {
   return (
     <div
-      className='overflow-hidden rounded-xl border border-border shadow-lg'
+      className='w-full overflow-hidden rounded-xl border border-border shadow-lg' style={{ maxWidth: 'calc(100vw - 3rem)' }}
       aria-hidden='true'
     >
       {/* Browser chrome */}
@@ -108,32 +108,32 @@ export function HomeDemo() {
         </span>
       </div>
 
-      {/* Table area */}
-      <div className='overflow-x-auto bg-background pt-3'>
-        {/* Toolbar */}
-        <div className='mb-3 flex items-center justify-between px-4'>
-          <p className='text-sm text-muted-foreground'>3 products</p>
-          <MoreHorizontal
-            className='size-4 text-muted-foreground'
-            aria-hidden='true'
-          />
-        </div>
+      {/* Toolbar */}
+      <div className='flex items-center justify-between bg-background px-4 pb-3 pt-3'>
+        <p className='text-sm text-muted-foreground'>3 products</p>
+        <MoreHorizontal
+          className='size-4 text-muted-foreground'
+          aria-hidden='true'
+        />
+      </div>
 
+      {/* Table area */}
+      <div className='overflow-x-auto bg-background'>
         <table
           style={{
             width: '100%',
-            minWidth: 'calc(10rem + 3 * 14rem)',
+            minWidth: 'calc(8rem + 3 * 14rem)',
             tableLayout: 'fixed',
             borderCollapse: 'collapse',
           }}
         >
           <thead>
             <tr className='border-b border-border'>
-              <th className='w-40 px-4 pb-1 text-right align-bottom text-xs font-normal text-muted-foreground'>
+              <th className='sticky left-0 z-10 w-32 bg-background px-4 pb-1 text-right align-bottom text-xs font-normal text-muted-foreground'>
                 per 100g
               </th>
-              {PRODUCTS.map((p, i) => (
-                <th key={p.code} className={`w-48 px-4 pb-1 align-top text-left ${i === PRODUCTS.length - 1 ? 'hidden sm:table-cell' : ''}`}>
+              {PRODUCTS.map((p) => (
+                <th key={p.code} className='w-48 px-4 pb-1 align-top text-left'>
                   <div className='flex items-start justify-between gap-2'>
                     <div className='min-w-0 flex-1'>
                       <span className='block truncate text-sm font-semibold text-foreground'>
@@ -153,11 +153,11 @@ export function HomeDemo() {
             {ROWS.map((row, i) => (
               <tr
                 key={row.label}
-                className={i % 2 === 0 ? 'bg-muted/30' : ''}
+                className={`${i < ROWS.length - 1 ? 'border-b border-border' : ''} ${i % 2 === 0 ? 'bg-muted/30' : ''}`}
                 style={{ height: '45px' }}
               >
                 <td
-                  className={`w-40 py-0 pl-4 text-left ${i % 2 === 0 ? 'bg-muted/30' : 'bg-background'}`}
+                  className={`sticky left-0 z-10 w-32 bg-background py-0 pl-4 text-left ${i < ROWS.length - 1 ? 'border-b border-border' : ''}`}
                 >
                   <span className='text-sm font-medium text-muted-foreground'>
                     {row.label}
@@ -166,7 +166,7 @@ export function HomeDemo() {
                 {row.cells.map((cell, j) => (
                   <td
                     key={j}
-                    className={`py-0 text-sm font-medium tabular-nums ${cell.className} ${j === PRODUCTS.length - 1 ? 'pr-4 hidden sm:table-cell' : ''}`}
+                    className={`py-0 text-sm font-medium tabular-nums pr-4 ${cell.className}`}
                   >
                     <div className='flex items-center justify-end'>
                       <span className='w-5 shrink-0 text-center text-base leading-none'>

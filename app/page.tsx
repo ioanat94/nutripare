@@ -10,8 +10,8 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { HomeDemo } from '@/components/home-demo';
-import { RulesetDemo } from '@/components/ruleset-demo';
 import Link from 'next/link';
+import { RulesetDemo } from '@/components/ruleset-demo';
 
 const features = [
   {
@@ -67,15 +67,13 @@ const accountBenefits = [
   },
 ];
 
-
 export default function Home() {
   return (
     <main className='mx-auto max-w-5xl px-6 py-20'>
       {/* Hero */}
       <section className='flex flex-col items-center gap-6 text-center'>
-        <h1 className='text-5xl font-bold tracking-tight sm:text-7xl'>
-          Know what you&apos;re eating.
-          <br />
+        <h1 className='text-4xl font-bold tracking-tight sm:text-5xl lg:text-7xl'>
+          Know what you&apos;re eating.{' '}
           <span className='text-primary'>Actually.</span>
         </h1>
         <p className='max-w-xl text-lg text-muted-foreground'>
@@ -127,7 +125,7 @@ export default function Home() {
           Nutripare is free to use — no credit card, no catch.
         </p>
         <div
-          className='grid grid-cols-1 gap-4 sm:grid-cols-2'
+          className='grid grid-cols-1 gap-4 md:grid-cols-2'
           data-testid='benefits-grid'
         >
           {accountBenefits.map(({ icon: Icon, title, description }) => (
@@ -142,9 +140,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <div className='mt-6'>
-          <RulesetDemo />
-        </div>
+        <div className='mt-6'>{<RulesetDemo />}</div>
       </section>
     </main>
   );

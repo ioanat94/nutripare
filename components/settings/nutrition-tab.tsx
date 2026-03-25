@@ -529,9 +529,26 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     openDetail(newRuleset, true);
   }
 
-  function confirmDeleteFromList() {
-    if (deleteConfirmId) {
-      setRulesets((prev) => prev.filter((rs) => rs.id !== deleteConfirmId));
+  async function confirmDeleteFromList() {
+    if (!deleteConfirmId) return;
+    const updatedRulesets = rulesets.filter((rs) => rs.id !== deleteConfirmId);
+    const updatedSettings: NutritionSettings = {
+      visibleRows: saved?.visibleRows ?? visibleRows,
+      showCrown: saved?.showCrown ?? showCrown,
+      showFlag: saved?.showFlag ?? showFlag,
+      rowOrder: saved?.rowOrder ?? rowOrder,
+      rulesets: updatedRulesets,
+    };
+    setSaving(true);
+    try {
+      await saveNutritionSettings(userId, updatedSettings);
+      setRulesets(updatedRulesets);
+      setSaved(updatedSettings);
+      toast.success('Ruleset deleted');
+    } catch {
+      toast.error('Failed to delete ruleset');
+    } finally {
+      setSaving(false);
       setDeleteConfirmId(null);
     }
   }

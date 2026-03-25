@@ -2,6 +2,7 @@
 
 import { Loader2, ScanBarcode, TriangleAlert } from 'lucide-react';
 import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
+import { getDefaultRules } from '@/utils/thresholds';
 import {
   deleteComparisonById,
   deleteProduct,
@@ -77,7 +78,7 @@ function ComparePageContent() {
     }
     getNutritionSettings(user.id).then((settings) => {
       setNutritionSettings(settings);
-      setSelectedRulesetId(settings?.rulesets[0]?.id ?? null);
+      setSelectedRulesetId(settings?.rulesets[0]?.id ?? 'default');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, authLoading]);
@@ -410,7 +411,7 @@ function ComparePageContent() {
             onUnsaveProduct={user ? handleUnsaveProduct : undefined}
             onUnsaveComparison={user ? handleUnsaveComparison : undefined}
             settings={nutritionSettings}
-            rulesets={nutritionSettings?.rulesets}
+            rulesets={nutritionSettings !== undefined ? (nutritionSettings?.rulesets ?? [{ id: 'default', name: 'Default', rules: getDefaultRules() }]) : undefined}
             selectedRulesetId={selectedRulesetId}
             onRulesetChange={user ? handleRulesetChange : undefined}
           />

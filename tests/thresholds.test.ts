@@ -1,4 +1,4 @@
-import { getDefaultRules, getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
+import { BUILTIN_RULESETS, getDefaultRules, getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
 import type { NutritionRule } from '@/types/firestore';
 
 const rule = (
@@ -7,6 +7,48 @@ const rule = (
   value: number,
   rating: NutritionRule['rating'],
 ): NutritionRule => ({ nutrient, direction, value, rating });
+
+// ---------------------------------------------------------------------------
+// BUILTIN_RULESETS
+// ---------------------------------------------------------------------------
+
+describe('BUILTIN_RULESETS', () => {
+  it('exports exactly 3 rulesets', () => {
+    expect(BUILTIN_RULESETS).toHaveLength(3);
+  });
+
+  it('contains Default, Low Carb, and High Protein rulesets', () => {
+    const ids = BUILTIN_RULESETS.map((r) => r.id);
+    expect(ids).toContain('default');
+    expect(ids).toContain('low-carb');
+    expect(ids).toContain('high-protein');
+  });
+
+  it('Default ruleset rules match getDefaultRules()', () => {
+    const defaultRuleset = BUILTIN_RULESETS.find((r) => r.id === 'default')!;
+    expect(defaultRuleset.rules).toEqual(getDefaultRules());
+  });
+
+  it('each ruleset has at least one rule', () => {
+    for (const rs of BUILTIN_RULESETS) {
+      expect(rs.rules.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('Low Carb ruleset penalises high carbohydrates', () => {
+    const lowCarb = BUILTIN_RULESETS.find((r) => r.id === 'low-carb')!;
+    const carbRules = lowCarb.rules.filter((r) => r.nutrient === 'carbohydrates');
+    expect(carbRules.length).toBeGreaterThan(0);
+    expect(carbRules.some((r) => r.rating === 'negative')).toBe(true);
+  });
+
+  it('High Protein ruleset rewards high protein', () => {
+    const highProtein = BUILTIN_RULESETS.find((r) => r.id === 'high-protein')!;
+    const proteinRules = highProtein.rules.filter((r) => r.nutrient === 'protein');
+    expect(proteinRules.some((r) => r.direction === 'above' && r.rating === 'positive')).toBe(true);
+    expect(proteinRules.some((r) => r.direction === 'below' && r.rating === 'negative')).toBe(true);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // getThresholdColor

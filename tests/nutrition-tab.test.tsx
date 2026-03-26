@@ -108,9 +108,21 @@ describe('NutritionTab', () => {
     await waitFor(() => expect(saveBtn).not.toBeDisabled());
   });
 
-  it('clicking Add ruleset navigates to detail view', async () => {
+  it('clicking Add ruleset trigger opens dropdown with New ruleset option', async () => {
     await renderTab();
     fireEvent.click(screen.getByRole('button', { name: /add ruleset/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: /new ruleset/i })).toBeInTheDocument(),
+    );
+  });
+
+  it('clicking New ruleset from dropdown navigates to detail view', async () => {
+    await renderTab();
+    fireEvent.click(screen.getByRole('button', { name: /add ruleset/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: /new ruleset/i })).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole('menuitem', { name: /new ruleset/i }));
     await waitFor(() =>
       expect(screen.getByRole('textbox', { name: /ruleset name/i })).toBeInTheDocument(),
     );
@@ -119,8 +131,8 @@ describe('NutritionTab', () => {
 
   it('clicking View navigates to detail view with the correct ruleset', async () => {
     await renderTab();
-    // Default ruleset is created from buildDefault()
-    fireEvent.click(screen.getByRole('button', { name: /view ruleset/i }));
+    // renderTab with null settings produces 3 built-in rulesets; use the first (Default)
+    fireEvent.click(screen.getAllByRole('button', { name: /view ruleset/i })[0]);
     await waitFor(() =>
       expect(screen.getByRole('textbox', { name: /ruleset name/i })).toBeInTheDocument(),
     );
@@ -129,7 +141,7 @@ describe('NutritionTab', () => {
 
   it('clicking Add rule in detail view appends a new row', async () => {
     await renderTab();
-    fireEvent.click(screen.getByRole('button', { name: /view ruleset/i }));
+    fireEvent.click(screen.getAllByRole('button', { name: /view ruleset/i })[0]);
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /add rule/i })).toBeInTheDocument(),
     );
@@ -147,7 +159,7 @@ describe('NutritionTab', () => {
 
   it('clicking Remove rule in detail view removes it from the list', async () => {
     await renderTab();
-    fireEvent.click(screen.getByRole('button', { name: /view ruleset/i }));
+    fireEvent.click(screen.getAllByRole('button', { name: /view ruleset/i })[0]);
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /add rule/i })).toBeInTheDocument(),
     );
@@ -165,7 +177,7 @@ describe('NutritionTab', () => {
 
   it('Cancel in detail view returns to list view without saving', async () => {
     await renderTab();
-    fireEvent.click(screen.getByRole('button', { name: /view ruleset/i }));
+    fireEvent.click(screen.getAllByRole('button', { name: /view ruleset/i })[0]);
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /^cancel$/i })).toBeInTheDocument(),
     );
@@ -176,6 +188,40 @@ describe('NutritionTab', () => {
       expect(screen.getByRole('heading', { name: /^rulesets$/i })).toBeInTheDocument(),
     );
     expect(mockSaveNutritionSettings).not.toHaveBeenCalled();
+  });
+
+  it('Reset to defaults button is present in list view', async () => {
+    await renderTab();
+    expect(screen.getByRole('button', { name: /reset to defaults/i })).toBeInTheDocument();
+  });
+
+  it('clicking Reset to defaults shows confirmation dialog', async () => {
+    await renderTab();
+    fireEvent.click(screen.getByRole('button', { name: /reset to defaults/i }));
+    await waitFor(() =>
+      expect(screen.getByText(/reset all settings\?/i)).toBeInTheDocument(),
+    );
+  });
+
+  it('confirming global reset calls saveNutritionSettings with all 3 built-in rulesets', async () => {
+    await renderTab();
+    fireEvent.click(screen.getByRole('button', { name: /reset to defaults/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /^reset$/i })).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^reset$/i }));
+    await waitFor(() =>
+      expect(mockSaveNutritionSettings).toHaveBeenCalledWith(
+        'uid-123',
+        expect.objectContaining({
+          rulesets: expect.arrayContaining([
+            expect.objectContaining({ id: 'default' }),
+            expect.objectContaining({ id: 'low-carb' }),
+            expect.objectContaining({ id: 'high-protein' }),
+          ]),
+        }),
+      ),
+    );
   });
 
   it('duplicate nutrient+rating shows inline error on save attempt and does not save', async () => {

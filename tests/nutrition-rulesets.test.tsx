@@ -160,15 +160,45 @@ describe('NutritionTab — rulesets list', () => {
     expect(screen.getByRole('textbox', { name: /ruleset name/i })).toHaveValue('Dairy');
   });
 
-  it('"Add ruleset" creates a new entry named "New Ruleset" and opens detail view', async () => {
+  it('"Add ruleset" dropdown contains New ruleset and From template options', async () => {
     await renderTab();
 
     fireEvent.click(screen.getByRole('button', { name: /add ruleset/i }));
 
     await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: /new ruleset/i })).toBeInTheDocument(),
+    );
+    expect(screen.getByText(/from template/i)).toBeInTheDocument();
+  });
+
+  it('"New ruleset" creates a blank entry and opens detail view', async () => {
+    await renderTab();
+
+    fireEvent.click(screen.getByRole('button', { name: /add ruleset/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: /new ruleset/i })).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole('menuitem', { name: /new ruleset/i }));
+
+    await waitFor(() =>
       expect(screen.getByRole('textbox', { name: /ruleset name/i })).toBeInTheDocument(),
     );
     expect(screen.getByRole('textbox', { name: /ruleset name/i })).toHaveValue('New Ruleset');
+  });
+
+  it('"From template" adds a copy of the built-in ruleset and opens editor with its name', async () => {
+    await renderTab();
+
+    fireEvent.click(screen.getByRole('button', { name: /add ruleset/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: /^default$/i })).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole('menuitem', { name: /^default$/i }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('textbox', { name: /ruleset name/i })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('textbox', { name: /ruleset name/i })).toHaveValue('Default');
   });
 });
 
@@ -231,6 +261,10 @@ describe('NutritionTab — ruleset detail', () => {
     await renderTab();
 
     fireEvent.click(screen.getByRole('button', { name: /add ruleset/i }));
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: /new ruleset/i })).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole('menuitem', { name: /new ruleset/i }));
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /^cancel$/i })).toBeInTheDocument(),
     );

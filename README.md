@@ -89,6 +89,7 @@ Nutripare lets you look up food products by barcode or name, view their nutritio
    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
    NEXT_PUBLIC_FIREBASE_APP_ID=
    OPENFOODFACTS_BASE_URL=https://world.openfoodfacts.net
+   OPENFOODFACTS_STAGING_AUTH=off:off
    ```
 
 4. Start the development server

@@ -1,3 +1,4 @@
+import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 function GithubIcon() {
@@ -25,9 +26,10 @@ export function Footer() {
           href='https://world.openfoodfacts.org'
           target='_blank'
           rel='noopener noreferrer'
-          className={linkClass}
+          className={`${linkClass} flex items-center gap-1`}
         >
-          Data from Open Food Facts
+          Open Food Facts
+          <ExternalLink className='size-3' aria-hidden='true' />
         </a>
         {separator}
         <Link href='/privacy' className={linkClass}>

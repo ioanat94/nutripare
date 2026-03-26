@@ -24,7 +24,6 @@ Next.js 16 App Router application (React 19, TypeScript strict mode, Tailwind CS
 - `app/login/page.tsx` — login (`/login`)
 - `app/compare/page.tsx` — compare (`/compare`)
 - `app/settings/page.tsx` — settings (`/settings`)
-- `app/preview/page.tsx` — theme/component preview (`/preview`)
 - `app/layout.tsx` — root layout with Geist font, global metadata, and `dark` class on `<html>`
 - `app/api/product/[code]/route.ts` — GET proxy to OpenFoodFacts API (caches 1h via `next.revalidate`)
 

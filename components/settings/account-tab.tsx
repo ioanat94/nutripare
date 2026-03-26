@@ -11,7 +11,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { deleteAllUserData } from '@/lib/firestore';
+import { deleteAllUserData, getSavedProducts, getSavedComparisons, getNutritionSettings } from '@/lib/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -141,6 +141,37 @@ export function AccountTab({
     }
   }
 
+  async function handleDownloadData() {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    const [products, comparisons, nutritionSettings] = await Promise.all([
+      getSavedProducts(currentUser.uid),
+      getSavedComparisons(currentUser.uid),
+      getNutritionSettings(currentUser.uid),
+    ]);
+    const data = {
+      account: {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        displayName: currentUser.displayName,
+        emailVerified: currentUser.emailVerified,
+        createdAt: currentUser.metadata.creationTime,
+        lastSignIn: currentUser.metadata.lastSignInTime,
+        providers: currentUser.providerData.map((p) => p.providerId),
+      },
+      nutritionSettings,
+      savedProducts: products,
+      savedComparisons: comparisons,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nutripare-data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const email = auth.currentUser?.email;
 
   return (
@@ -216,6 +247,19 @@ export function AccountTab({
           </div>
         </form>
       )}
+
+      {/* Download your data */}
+      <div className='flex flex-col gap-3'>
+        <h3 className='font-medium'>Download your data</h3>
+        <p className='text-sm text-muted-foreground'>
+          Download a copy of your account data, saved products, comparisons, and nutrition settings.
+        </p>
+        <div>
+          <Button variant='outline' onClick={handleDownloadData}>
+            Download data
+          </Button>
+        </div>
+      </div>
 
       {/* Delete account */}
       <div className='flex flex-col gap-3'>

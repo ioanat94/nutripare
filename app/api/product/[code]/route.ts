@@ -5,7 +5,7 @@ export async function GET(
   { params }: { params: Promise<{ code: string }> }
 ) {
   const { code } = await params;
-  const url = `https://world.openfoodfacts.net/api/v2/product/${code}?fields=code,product_name,nutriments`;
+  const url = `${process.env.OPENFOODFACTS_BASE_URL}/api/v2/product/${code}?fields=code,product_name,nutriments`;
   try {
     const res = await fetch(url, {
       headers: { Authorization: 'Basic ' + btoa('off:off') },

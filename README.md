@@ -79,7 +79,7 @@ Nutripare lets you look up food products by barcode or name, view their nutritio
    npm install
    ```
 
-3. Create a `.env.local` file in the project root and add your Firebase config:
+3. Create a `.env.local` file in the project root:
 
    ```env
    NEXT_PUBLIC_FIREBASE_API_KEY=
@@ -88,6 +88,7 @@ Nutripare lets you look up food products by barcode or name, view their nutritio
    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
    NEXT_PUBLIC_FIREBASE_APP_ID=
+   OPENFOODFACTS_BASE_URL=https://world.openfoodfacts.net
    ```
 
 4. Start the development server

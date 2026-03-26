@@ -12,7 +12,9 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { auth, db } from '@/lib/firebase';
+import { saveNutritionSettings } from '@/lib/firestore';
 import type { FirestoreUser } from '@/types/firestore';
+import { BUILTIN_RULESETS } from '@/utils/thresholds';
 
 interface AuthContextValue {
   user: FirestoreUser | null;
@@ -42,6 +44,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               'User',
           };
           await setDoc(docRef, newUser);
+
+          await saveNutritionSettings(firebaseUser.uid, {
+            visibleRows: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt', 'computed_score'],
+            rowOrder: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt', 'computed_score'],
+            showCrown: true,
+            showFlag: true,
+            rulesets: BUILTIN_RULESETS,
+          });
+
           setUser(newUser);
         } else {
           setUser(snapshot.data() as FirestoreUser);

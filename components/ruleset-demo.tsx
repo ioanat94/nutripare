@@ -19,9 +19,9 @@ const DEFAULT_ROWS: RowData[] = [
   {
     label: 'Calories (kcal)',
     cells: [
-      { value: '383', className: '', emoji: null },
-      { value: '362', className: '', emoji: null },
-      { value: '389', className: '', emoji: null },
+      { value: '381', className: '', emoji: null },
+      { value: '336', className: '', emoji: null },
+      { value: '379', className: '', emoji: null },
     ],
   },
   {
@@ -98,9 +98,9 @@ const LOW_CARB_ROWS: RowData[] = [
   {
     label: 'Calories (kcal)',
     cells: [
-      { value: '383', className: '', emoji: null },
-      { value: '362', className: '', emoji: null },
-      { value: '389', className: '', emoji: null },
+      { value: '381', className: '', emoji: null },
+      { value: '336', className: '', emoji: null },
+      { value: '379', className: '', emoji: null },
     ],
   },
   {
@@ -176,9 +176,9 @@ const HIGH_PROTEIN_ROWS: RowData[] = [
   {
     label: 'Calories (kcal)',
     cells: [
-      { value: '383', className: '', emoji: null },
-      { value: '362', className: '', emoji: null },
-      { value: '389', className: '', emoji: null },
+      { value: '381', className: '', emoji: null },
+      { value: '336', className: '', emoji: null },
+      { value: '379', className: '', emoji: null },
     ],
   },
   {
@@ -271,7 +271,7 @@ export function RulesetDemo() {
           <span className='size-2.5 rounded-full bg-[#28c840]' />
         </div>
         <span className='flex-1 pr-10 text-center text-xs text-muted-foreground/60'>
-          nutripare.app/compare
+          nutripare.eu/compare
         </span>
       </div>
 

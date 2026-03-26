@@ -1,4 +1,4 @@
-import type { NutritionRule, ThresholdColor } from '@/types/firestore';
+import type { NutritionRule, NutritionRuleset, ThresholdColor } from '@/types/firestore';
 
 export type { ThresholdColor };
 export type ThresholdDirection = 'above' | 'below';
@@ -42,6 +42,43 @@ export function getDefaultRules(): NutritionRule[] {
   }
   return rules;
 }
+
+export const BUILTIN_RULESETS: NutritionRuleset[] = [
+  {
+    id: 'default',
+    name: 'Default',
+    rules: getDefaultRules(),
+  },
+  {
+    id: 'low-carb',
+    name: 'Low Carb',
+    rules: [
+      { nutrient: 'carbohydrates', direction: 'above', value: 75, rating: 'negative' },
+      { nutrient: 'carbohydrates', direction: 'above', value: 60, rating: 'warning' },
+      { nutrient: 'sugar', direction: 'below', value: 3, rating: 'positive' },
+      { nutrient: 'sugar', direction: 'above', value: 3, rating: 'warning' },
+      { nutrient: 'sugar', direction: 'above', value: 15, rating: 'negative' },
+      { nutrient: 'saturated_fat', direction: 'below', value: 1.5, rating: 'positive' },
+      { nutrient: 'fiber', direction: 'above', value: 6, rating: 'positive' },
+      { nutrient: 'salt', direction: 'below', value: 0.3, rating: 'positive' },
+    ],
+  },
+  {
+    id: 'high-protein',
+    name: 'High Protein',
+    rules: [
+      { nutrient: 'protein', direction: 'below', value: 10, rating: 'negative' },
+      { nutrient: 'protein', direction: 'above', value: 10, rating: 'positive' },
+      { nutrient: 'sugar', direction: 'below', value: 5, rating: 'positive' },
+      { nutrient: 'sugar', direction: 'above', value: 22.5, rating: 'negative' },
+      { nutrient: 'saturated_fat', direction: 'below', value: 1.5, rating: 'positive' },
+      { nutrient: 'saturated_fat', direction: 'above', value: 5, rating: 'negative' },
+      { nutrient: 'fiber', direction: 'above', value: 6, rating: 'positive' },
+      { nutrient: 'salt', direction: 'below', value: 0.3, rating: 'positive' },
+      { nutrient: 'salt', direction: 'above', value: 1.5, rating: 'negative' },
+    ],
+  },
+];
 
 export function getThresholdColor(
   nutrient: string,

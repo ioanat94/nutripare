@@ -502,8 +502,10 @@ export default function HelpPage() {
                 <p>
                   <span className='text-foreground font-medium'>Rulesets</span>{' '}
                   — a list of saved rulesets. Each ruleset defines which
-                  nutrients are highlighted and how. Use the search box to
-                  filter by name; drag handles allow reordering the list.
+                  nutrients are highlighted and how. New accounts start with
+                  three built-in rulesets: Default, Low Carb, and High Protein.
+                  Use the search box to filter by name; drag handles allow
+                  reordering the list.
                 </p>
                 <ul className='list-disc space-y-1.5 pl-5'>
                   <li>
@@ -524,8 +526,16 @@ export default function HelpPage() {
                     <span className='text-foreground font-medium'>
                       Add ruleset
                     </span>{' '}
-                    creates a new empty ruleset and opens the editor
-                    immediately.
+                    opens a dropdown with two options:{' '}
+                    <span className='text-foreground font-medium'>
+                      New ruleset
+                    </span>{' '}
+                    creates a blank ruleset and opens the editor immediately, and{' '}
+                    <span className='text-foreground font-medium'>
+                      From template
+                    </span>{' '}
+                    lets you restore any of the three built-in rulesets
+                    individually.
                   </li>
                 </ul>
                 <p>In the ruleset editor:</p>
@@ -547,13 +557,6 @@ export default function HelpPage() {
                     appends a new blank rule row.
                   </li>
                   <li>
-                    <span className='text-foreground font-medium'>
-                      Reset to defaults
-                    </span>{' '}
-                    restores the built-in default rules (disabled when already
-                    at defaults).
-                  </li>
-                  <li>
                     <span className='text-foreground font-medium'>Save</span>{' '}
                     persists the ruleset.
                   </li>
@@ -571,10 +574,15 @@ export default function HelpPage() {
                   </li>
                 </ul>
                 <p>
-                  Changes to visible rows, row order, and highlight toggles
-                  require clicking the main{' '}
+                  All changes — visible rows, row order, highlight toggles, and
+                  ruleset edits — are saved using the{' '}
                   <span className='text-foreground font-medium'>Save</span>{' '}
-                  button at the bottom of the tab.
+                  button at the bottom of the tab.{' '}
+                  <span className='text-foreground font-medium'>
+                    Reset to defaults
+                  </span>{' '}
+                  (next to Save) restores all nutrition settings to their
+                  original state, including the three built-in rulesets.
                 </p>
               </div>
             </section>
@@ -946,13 +954,24 @@ export default function HelpPage() {
                     </AccordionItem>
                     <AccordionItem value='reset-settings'>
                       <AccordionTrigger>
-                        What happens if I reset a ruleset?
+                        What does &ldquo;Reset to defaults&rdquo; do?
                       </AccordionTrigger>
                       <AccordionContent className='text-muted-foreground'>
-                        Resetting a ruleset restores its rules to the default
-                        thresholds, discarding any changes you&apos;ve made to
-                        it. Other rulesets, display preferences, and visible
-                        nutrients are unaffected.
+                        The{' '}
+                        <span className='text-foreground font-medium'>
+                          Reset to defaults
+                        </span>{' '}
+                        button at the bottom of the Nutrition tab restores all
+                        nutrition settings to their original state — visible
+                        rows, row order, highlight toggles, and all rulesets
+                        (Default, Low Carb, High Protein). Any custom rulesets
+                        or changes you&apos;ve made will be lost. If you only
+                        want to restore a specific built-in ruleset without
+                        affecting everything else, use{' '}
+                        <span className='text-foreground font-medium'>
+                          Add ruleset → From template
+                        </span>{' '}
+                        instead.
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>

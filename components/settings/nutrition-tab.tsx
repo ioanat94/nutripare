@@ -34,6 +34,15 @@ import type {
 } from '@/types/firestore';
 import { ROWS, SCORE_ROW } from '@/components/nutrition-table';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -55,7 +64,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { getDefaultRules } from '@/utils/thresholds';
+import { BUILTIN_RULESETS } from '@/utils/thresholds';
 import { toast } from 'sonner';
 
 type DraftRule = Omit<NutritionRule, 'value'> & {
@@ -88,7 +97,7 @@ function buildDefault(): NutritionSettings {
     visibleRows: [...ROWS.map((r) => r.key), SCORE_ROW.key],
     showCrown: true,
     showFlag: true,
-    rulesets: [{ id: 'default', name: 'Default', rules: getDefaultRules() }],
+    rulesets: BUILTIN_RULESETS,
     rowOrder: [...ROWS.map((r) => r.key), SCORE_ROW.key],
   };
 }
@@ -471,16 +480,7 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     return errors;
   }, [editingRules]);
 
-  const defaultRules = useMemo(() => getDefaultRules(), []);
-  const resetDisabled =
-    editingRules.length === defaultRules.length &&
-    editingRules.every(
-      (r, i) =>
-        r.nutrient === defaultRules[i].nutrient &&
-        r.direction === defaultRules[i].direction &&
-        r.value === defaultRules[i].value &&
-        r.rating === defaultRules[i].rating,
-    );
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   function openDetail(ruleset: NutritionRuleset, isNew = false) {
     setEditingId(ruleset.id);
@@ -524,6 +524,16 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       id: crypto.randomUUID(),
       name: 'New Ruleset',
       rules: [],
+    };
+    setRulesets((prev) => [...prev, newRuleset]);
+    openDetail(newRuleset, true);
+  }
+
+  function handleAddFromTemplate(template: NutritionRuleset) {
+    const newRuleset: NutritionRuleset = {
+      id: crypto.randomUUID(),
+      name: template.name,
+      rules: template.rules,
     };
     setRulesets((prev) => [...prev, newRuleset]);
     openDetail(newRuleset, true);
@@ -654,6 +664,26 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     setView('list');
   }
 
+  async function handleGlobalReset() {
+    const defaults = buildDefault();
+    setSaving(true);
+    try {
+      await saveNutritionSettings(userId, defaults);
+      setSaved(defaults);
+      setVisibleRows(defaults.visibleRows);
+      setShowCrown(defaults.showCrown);
+      setShowFlag(defaults.showFlag);
+      setRulesets(defaults.rulesets);
+      setRowOrder(defaults.rowOrder!);
+      toast.success('Settings reset to defaults');
+    } catch {
+      toast.error('Failed to reset settings');
+    } finally {
+      setSaving(false);
+      setShowResetConfirm(false);
+    }
+  }
+
   async function handleDetailDelete() {
     const updatedRulesets = rulesets.filter((rs) => rs.id !== editingId);
     const updatedSettings: NutritionSettings = {
@@ -732,21 +762,6 @@ export function NutritionTab({ userId }: NutritionTabProps) {
             <Button variant='outline' size='sm' onClick={addEditingRule}>
               <Plus className='size-4' />
               Add rule
-            </Button>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() =>
-                setEditingRules(
-                  getDefaultRules().map((r, i) => ({
-                    ...r,
-                    id: `rule-reset-${i}`,
-                  })),
-                )
-              }
-              disabled={resetDisabled}
-            >
-              Reset to defaults
             </Button>
           </div>
         </section>
@@ -931,15 +946,45 @@ export function NutritionTab({ userId }: NutritionTabProps) {
             </SortableContext>
           </DndContext>
         )}
-        <Button variant='outline' size='sm' onClick={handleAddRuleset}>
-          <Plus className='size-4' />
-          Add ruleset
-        </Button>
       </section>
 
-      <Button onClick={handleSave} disabled={!isDirty || saving}>
-        {saving ? 'Saving…' : 'Save'}
-      </Button>
+      <div className='flex flex-wrap items-center gap-2'>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger className='inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-sm font-medium whitespace-nowrap transition-all outline-none hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50 dark:border-input dark:bg-input/30 dark:hover:bg-input/50'>
+            <Plus className='size-4' />
+            Add ruleset
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side='top'>
+            <DropdownMenuItem onClick={handleAddRuleset}>
+              New ruleset
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>From template</DropdownMenuLabel>
+              {BUILTIN_RULESETS.map((template) => (
+                <DropdownMenuItem
+                  key={template.id}
+                  onClick={() => handleAddFromTemplate(template)}
+                >
+                  {template.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <div className='flex gap-2 sm:ml-auto'>
+          <Button onClick={handleSave} disabled={!isDirty || saving}>
+            {saving ? 'Saving…' : 'Save'}
+          </Button>
+          <Button
+            variant='outline'
+            onClick={() => setShowResetConfirm(true)}
+            disabled={saving}
+          >
+            Reset to defaults
+          </Button>
+        </div>
+      </div>
 
       {/* List view delete confirmation */}
       <AlertDialog
@@ -959,6 +1004,29 @@ export function NutritionTab({ userId }: NutritionTabProps) {
             </Button>
             <Button variant='destructive' onClick={confirmDeleteFromList}>
               Delete
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reset all settings confirmation */}
+      <AlertDialog
+        open={showResetConfirm}
+        onOpenChange={(open) => !open && setShowResetConfirm(false)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset all settings?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will restore all nutrition settings — visible rows, highlights, and rulesets — to their defaults. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant='outline' onClick={() => setShowResetConfirm(false)}>
+              Cancel
+            </Button>
+            <Button variant='destructive' onClick={handleGlobalReset} disabled={saving}>
+              Reset
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

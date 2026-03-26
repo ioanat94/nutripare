@@ -14,14 +14,15 @@ type CellData = { value: string; className: string; emoji: '👑' | '🚩' | nul
 // sat_fat <1.5 → positive, >5 → negative
 // fiber >6 → positive
 // salt <0.3 → positive
+// Calories computed as protein×4 + carbs×4 + fat×9: CC=381, GF=336, MO=379
 // Scores computed via computeScore(): CC=52, GF=91, MO=95
 const ROWS: Array<{ label: string; cells: CellData[] }> = [
   {
     label: 'Calories (kcal)',
     cells: [
-      { value: '383', className: '', emoji: null },
-      { value: '362', className: '', emoji: null },
-      { value: '389', className: '', emoji: null },
+      { value: '381', className: '', emoji: null },
+      { value: '336', className: '', emoji: null },
+      { value: '379', className: '', emoji: null },
     ],
   },
   {
@@ -93,7 +94,8 @@ const ROWS: Array<{ label: string; cells: CellData[] }> = [
 export function HomeDemo() {
   return (
     <div
-      className='w-full overflow-hidden rounded-xl border border-border shadow-lg' style={{ maxWidth: 'calc(100vw - 3rem)' }}
+      className='w-full overflow-hidden rounded-xl border border-border shadow-lg'
+      style={{ maxWidth: 'calc(100vw - 3rem)' }}
       aria-hidden='true'
     >
       {/* Browser chrome */}
@@ -104,7 +106,7 @@ export function HomeDemo() {
           <span className='size-2.5 rounded-full bg-[#28c840]' />
         </div>
         <span className='flex-1 pr-10 text-center text-xs text-muted-foreground/60'>
-          nutripare.app/compare
+          nutripare.eu/compare
         </span>
       </div>
 

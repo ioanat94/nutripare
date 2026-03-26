@@ -205,6 +205,17 @@ export async function getNutritionSettings(
   };
 }
 
+export async function deleteAllUserData(uid: string): Promise<void> {
+  const productDocs = await getDocs(collection(db, 'users', uid, 'products'));
+  for (const d of productDocs.docs) await deleteDoc(d.ref);
+
+  const comparisonDocs = await getDocs(collection(db, 'users', uid, 'comparisons'));
+  for (const d of comparisonDocs.docs) await deleteDoc(d.ref);
+
+  await deleteDoc(doc(db, 'users', uid, 'settings', 'nutrition'));
+  await deleteDoc(doc(db, 'users', uid));
+}
+
 export async function saveNutritionSettings(
   uid: string,
   settings: NutritionSettings,

@@ -11,6 +11,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
+import { deleteAllUserData } from '@/lib/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -119,6 +120,7 @@ export function AccountTab({
         );
         await reauthenticateWithCredential(currentUser, credential);
       }
+      await deleteAllUserData(currentUser.uid);
       await deleteUser(currentUser);
       router.push('/');
     } catch (e) {
@@ -219,7 +221,8 @@ export function AccountTab({
       <div className='flex flex-col gap-3'>
         <h3 className='font-medium'>Delete account</h3>
         <p className='text-sm text-muted-foreground'>
-          This action is permanent and cannot be undone.
+          This action is permanent and cannot be undone. All your saved products,
+          comparisons, and settings will be deleted.
         </p>
         {!showDeleteConfirm ? (
           <div>

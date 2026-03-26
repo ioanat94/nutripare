@@ -6,7 +6,7 @@ import { AccountTab } from '@/components/settings/account-tab';
 import { Button } from '@/components/ui/button';
 import { ComparisonsTab } from '@/components/settings/comparisons-tab';
 import Link from 'next/link';
-import { LogOut } from 'lucide-react';
+import { Loader2, LogOut } from 'lucide-react';
 import { NutritionTab } from '@/components/settings/nutrition-tab';
 import { ProductsTab } from '@/components/settings/products-tab';
 import { auth } from '@/lib/firebase';
@@ -43,7 +43,13 @@ export default function SettingsPage({
     router.push('/');
   }
 
-  if (loading || !user || !emailVerified) return null;
+  if (loading || !user || !emailVerified) {
+    return (
+      <div className='flex flex-1 items-center justify-center'>
+        <Loader2 className='size-6 animate-spin text-muted-foreground' />
+      </div>
+    );
+  }
 
   return (
     <main className='mx-auto w-full max-w-5xl px-6 py-12'>

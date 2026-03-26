@@ -11,11 +11,16 @@ import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '@/contexts/auth-context';
 
+function safeRedirect(value: string | null): string {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';
+  return value;
+}
+
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, emailVerified } = useAuth();
-  const redirect = searchParams.get('redirect') ?? '/';
+  const redirect = safeRedirect(searchParams.get('redirect'));
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
 
   useEffect(() => {

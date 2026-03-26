@@ -440,6 +440,9 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       setRulesets(s.rulesets);
       setRowOrder(normalizedRowOrder);
       setLoading(false);
+    }).catch(() => {
+      toast.error('Failed to load nutrition settings');
+      setLoading(false);
     });
   }, [userId]);
 

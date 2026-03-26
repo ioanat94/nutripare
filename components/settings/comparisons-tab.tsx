@@ -34,6 +34,9 @@ export function ComparisonsTab({ userId }: { userId: string }) {
     getSavedComparisons(userId).then((data) => {
       setComparisons(data);
       setLoading(false);
+    }).catch(() => {
+      toast.error('Failed to load comparisons');
+      setLoading(false);
     });
   }, [userId]);
 

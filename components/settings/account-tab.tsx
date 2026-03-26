@@ -10,8 +10,13 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
+import {
+  deleteAllUserData,
+  getNutritionSettings,
+  getSavedComparisons,
+  getSavedProducts,
+} from '@/lib/firestore';
 import { doc, updateDoc } from 'firebase/firestore';
-import { deleteAllUserData, getSavedProducts, getSavedComparisons, getNutritionSettings } from '@/lib/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -120,8 +125,8 @@ export function AccountTab({
         );
         await reauthenticateWithCredential(currentUser, credential);
       }
-      await deleteAllUserData(currentUser.uid);
       await deleteUser(currentUser);
+      await deleteAllUserData(currentUser.uid);
       router.push('/');
     } catch (e) {
       if (
@@ -144,11 +149,17 @@ export function AccountTab({
   async function handleDownloadData() {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
-    const [products, comparisons, nutritionSettings] = await Promise.all([
-      getSavedProducts(currentUser.uid),
-      getSavedComparisons(currentUser.uid),
-      getNutritionSettings(currentUser.uid),
-    ]);
+    let products, comparisons, nutritionSettings;
+    try {
+      [products, comparisons, nutritionSettings] = await Promise.all([
+        getSavedProducts(currentUser.uid),
+        getSavedComparisons(currentUser.uid),
+        getNutritionSettings(currentUser.uid),
+      ]);
+    } catch {
+      toast.error('Failed to download data');
+      return;
+    }
     const data = {
       account: {
         uid: currentUser.uid,
@@ -163,7 +174,9 @@ export function AccountTab({
       savedProducts: products,
       savedComparisons: comparisons,
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json',
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -252,7 +265,8 @@ export function AccountTab({
       <div className='flex flex-col gap-3'>
         <h3 className='font-medium'>Download your data</h3>
         <p className='text-sm text-muted-foreground'>
-          Download a copy of your account data, saved products, comparisons, and nutrition settings.
+          Download a copy of your account data, saved products, comparisons, and
+          nutrition settings.
         </p>
         <div>
           <Button variant='outline' onClick={handleDownloadData}>
@@ -265,8 +279,8 @@ export function AccountTab({
       <div className='flex flex-col gap-3'>
         <h3 className='font-medium'>Delete account</h3>
         <p className='text-sm text-muted-foreground'>
-          This action is permanent and cannot be undone. All your saved products,
-          comparisons, and settings will be deleted.
+          This action is permanent and cannot be undone. All your saved
+          products, comparisons, and settings will be deleted.
         </p>
         {!showDeleteConfirm ? (
           <div>

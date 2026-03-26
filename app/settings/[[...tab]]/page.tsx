@@ -25,9 +25,8 @@ export default function SettingsPage({
 }) {
   const { tab: tabSegment } = use(params);
   const rawTab = tabSegment?.[0];
-  const activeTab: Tab = (TABS as string[]).includes(rawTab ?? '')
-    ? (rawTab as Tab)
-    : 'account';
+  const isValidTab = (TABS as string[]).includes(rawTab ?? '');
+  const activeTab: Tab = isValidTab ? (rawTab as Tab) : 'account';
 
   const { user, loading, emailVerified } = useAuth();
   const router = useRouter();
@@ -35,12 +34,18 @@ export default function SettingsPage({
   useEffect(() => {
     if (!loading && (!user || !emailVerified)) {
       router.push('/login?redirect=/settings');
+    } else if (!loading && rawTab && !isValidTab) {
+      router.replace('/settings/account');
     }
-  }, [loading, user, emailVerified, router]);
+  }, [loading, user, emailVerified, router, rawTab, isValidTab]);
 
   async function handleLogout() {
-    await signOut(auth);
-    router.push('/');
+    try {
+      await signOut(auth);
+      router.push('/');
+    } catch (err) {
+      console.error('Sign out failed:', err);
+    }
   }
 
   if (loading || !user || !emailVerified) {

@@ -18,6 +18,15 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Eye,
   GripVertical,
   Loader2,
@@ -34,15 +43,6 @@ import type {
 } from '@/types/firestore';
 import { ROWS, SCORE_ROW } from '@/components/nutrition-table';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -58,14 +58,16 @@ import {
 import { getNutritionSettings, saveNutritionSettings } from '@/lib/firestore';
 import { useEffect, useMemo, useState } from 'react';
 
+import { BUILTIN_RULESETS } from '@/utils/thresholds';
 import { Button } from '@/components/ui/button';
 import { CSS } from '@dnd-kit/utilities';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { BUILTIN_RULESETS } from '@/utils/thresholds';
 import { toast } from 'sonner';
+
+const ALL_ROWS = [...ROWS, SCORE_ROW];
 
 type DraftRule = Omit<NutritionRule, 'value'> & {
   value: number | undefined;
@@ -94,11 +96,11 @@ const DIRECTION_OPTIONS: { value: 'above' | 'below'; label: string }[] = [
 
 function buildDefault(): NutritionSettings {
   return {
-    visibleRows: [...ROWS.map((r) => r.key), SCORE_ROW.key],
+    visibleRows: ALL_ROWS.map((r) => r.key),
     showCrown: true,
     showFlag: true,
     rulesets: BUILTIN_RULESETS,
-    rowOrder: [...ROWS.map((r) => r.key), SCORE_ROW.key],
+    rowOrder: ALL_ROWS.map((r) => r.key),
   };
 }
 
@@ -256,132 +258,130 @@ function SortableRuleRow({
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
+  const selectedRating = RATING_OPTIONS.find((o) => o.value === rule.rating);
   return (
     <div ref={setNodeRef} style={style}>
       <div className='flex min-w-max items-center gap-2'>
-          <button
-            {...attributes}
-            {...listeners}
-            aria-label='Drag to reorder'
-            className='cursor-grab text-muted-foreground active:cursor-grabbing'
-            data-testid='rule-drag-handle'
-          >
-            <GripVertical className='size-4' />
-          </button>
+        <button
+          {...attributes}
+          {...listeners}
+          aria-label='Drag to reorder'
+          className='cursor-grab text-muted-foreground active:cursor-grabbing'
+          data-testid='rule-drag-handle'
+        >
+          <GripVertical className='size-4' />
+        </button>
 
-          <Select
-            value={rule.nutrient}
-            onValueChange={(v) => v && onUpdate(index, 'nutrient', v)}
-          >
-            <SelectTrigger className='w-40'>
-              <span className='flex flex-1 text-left'>
-                {[...ROWS, SCORE_ROW].find((r) => r.key === rule.nutrient)
-                  ?.label ?? rule.nutrient}
-              </span>
-            </SelectTrigger>
-            <SelectContent className='min-w-0' alignItemWithTrigger={false}>
-              {ROWS.map((row) => (
-                <SelectItem key={row.key} value={row.key}>
-                  {row.label}
-                </SelectItem>
-              ))}
-              <SelectItem key={SCORE_ROW.key} value={SCORE_ROW.key}>
-                {SCORE_ROW.label}
+        <Select
+          value={rule.nutrient}
+          onValueChange={(v) => v && onUpdate(index, 'nutrient', v)}
+        >
+          <SelectTrigger className='w-40'>
+            <span className='flex flex-1 text-left'>
+              {ALL_ROWS.find((r) => r.key === rule.nutrient)?.label ??
+                rule.nutrient}
+            </span>
+          </SelectTrigger>
+          <SelectContent className='min-w-0' alignItemWithTrigger={false}>
+            {ROWS.map((row) => (
+              <SelectItem key={row.key} value={row.key}>
+                {row.label}
               </SelectItem>
-            </SelectContent>
-          </Select>
+            ))}
+            <SelectItem key={SCORE_ROW.key} value={SCORE_ROW.key}>
+              {SCORE_ROW.label}
+            </SelectItem>
+          </SelectContent>
+        </Select>
 
-          <Select
-            value={rule.direction}
-            onValueChange={(v) =>
-              v && onUpdate(index, 'direction', v as 'above' | 'below')
+        <Select
+          value={rule.direction}
+          onValueChange={(v) =>
+            v && onUpdate(index, 'direction', v as 'above' | 'below')
+          }
+        >
+          <SelectTrigger className='w-24'>
+            <span className='flex flex-1 text-left'>{rule.direction}</span>
+          </SelectTrigger>
+          <SelectContent className='min-w-0' alignItemWithTrigger={false}>
+            {DIRECTION_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <span className='text-sm text-muted-foreground'>or equal to</span>
+
+        <input
+          type='number'
+          min={0}
+          max={99.9}
+          step={0.1}
+          value={rule.value ?? ''}
+          onChange={(e) => {
+            if (e.target.value === '') {
+              onUpdate(index, 'value', undefined);
+              return;
             }
-          >
-            <SelectTrigger className='w-24'>
-              <span className='flex flex-1 text-left'>{rule.direction}</span>
-            </SelectTrigger>
-            <SelectContent className='min-w-0' alignItemWithTrigger={false}>
-              {DIRECTION_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
+            const raw = parseFloat(e.target.value);
+            if (!isNaN(raw)) {
+              const clamped = Math.min(
+                99.9,
+                Math.max(0, parseFloat(raw.toFixed(1))),
+              );
+              onUpdate(index, 'value', clamped);
+            }
+          }}
+          className='h-8 w-20 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
+        />
+
+        <span className='text-sm text-muted-foreground'>is</span>
+
+        <Select
+          value={rule.rating}
+          onValueChange={(v) =>
+            v && onUpdate(index, 'rating', v as ThresholdColor)
+          }
+        >
+          <SelectTrigger className='w-32'>
+            <span className='flex flex-1 items-center gap-2 text-left'>
+              {selectedRating ? (
+                <>
+                  <span
+                    className={`inline-block size-2 shrink-0 rounded-full ${selectedRating.colorClass}`}
+                  />
+                  {selectedRating.label}
+                </>
+              ) : (
+                rule.rating
+              )}
+            </span>
+          </SelectTrigger>
+          <SelectContent className='min-w-0' alignItemWithTrigger={false}>
+            {RATING_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                <span className='flex w-full items-center gap-2'>
+                  <span
+                    className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`}
+                  />
                   {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-          <span className='text-sm text-muted-foreground'>or equal to</span>
-
-          <input
-            type='number'
-            min={0}
-            max={99.9}
-            step={0.1}
-            value={rule.value ?? ''}
-            onChange={(e) => {
-              if (e.target.value === '') {
-                onUpdate(index, 'value', undefined);
-                return;
-              }
-              const raw = parseFloat(e.target.value);
-              if (!isNaN(raw)) {
-                const clamped = Math.min(
-                  99.9,
-                  Math.max(0, parseFloat(raw.toFixed(1))),
-                );
-                onUpdate(index, 'value', clamped);
-              }
-            }}
-            className='h-8 w-20 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
-          />
-
-          <span className='text-sm text-muted-foreground'>is</span>
-
-          <Select
-            value={rule.rating}
-            onValueChange={(v) =>
-              v && onUpdate(index, 'rating', v as ThresholdColor)
-            }
-          >
-            <SelectTrigger className='w-32'>
-              <span className='flex flex-1 items-center gap-2 text-left'>
-                {(() => {
-                  const opt = RATING_OPTIONS.find((o) => o.value === rule.rating);
-                  return opt ? (
-                    <>
-                      <span
-                        className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`}
-                      />
-                      {opt.label}
-                    </>
-                  ) : (
-                    rule.rating
-                  );
-                })()}
-              </span>
-            </SelectTrigger>
-            <SelectContent className='min-w-0' alignItemWithTrigger={false}>
-              {RATING_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  <span className='flex w-full items-center gap-2'>
-                    <span
-                      className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`}
-                    />
-                    {opt.label}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={() => onRemove(index)}
-            aria-label='Remove rule'
-            className='hover:text-destructive'
-          >
-            <Trash2 className='size-4' />
-          </Button>
+        <Button
+          variant='ghost'
+          size='icon'
+          onClick={() => onRemove(index)}
+          aria-label='Remove rule'
+          className='hover:text-destructive'
+        >
+          <Trash2 className='size-4' />
+        </Button>
       </div>
       {showError && error && (
         <p className='mt-1 text-xs text-destructive'>{error}</p>
@@ -401,10 +401,9 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   const [showCrown, setShowCrown] = useState(true);
   const [showFlag, setShowFlag] = useState(true);
   const [rulesets, setRulesets] = useState<NutritionRuleset[]>([]);
-  const [rowOrder, setRowOrder] = useState<string[]>([
-    ...ROWS.map((r) => r.key),
-    SCORE_ROW.key,
-  ]);
+  const [rowOrder, setRowOrder] = useState<string[]>(
+    ALL_ROWS.map((r) => r.key),
+  );
 
   // Delete confirmation for list view
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -417,43 +416,46 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   const [isNewRuleset, setIsNewRuleset] = useState(false);
   const [detailSaveAttempted, setDetailSaveAttempted] = useState(false);
   const [showDetailDeleteConfirm, setShowDetailDeleteConfirm] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
 
   useEffect(() => {
-    getNutritionSettings(userId).then((fetched) => {
-      const s = fetched ?? buildDefault();
-      const normalizedRowOrder = s.rowOrder ?? [
-        ...ROWS.map((r) => r.key),
-        SCORE_ROW.key,
-      ];
-      setSaved({ ...s, rowOrder: normalizedRowOrder });
-      setVisibleRows(s.visibleRows);
-      setShowCrown(s.showCrown);
-      setShowFlag(s.showFlag);
-      setRulesets(s.rulesets);
-      setRowOrder(normalizedRowOrder);
-      setLoading(false);
-    }).catch(() => {
-      toast.error('Failed to load nutrition settings');
-      setLoading(false);
-    });
+    getNutritionSettings(userId)
+      .then((fetched) => {
+        const s = fetched ?? buildDefault();
+        const normalizedRowOrder = s.rowOrder ?? ALL_ROWS.map((r) => r.key);
+        setSaved({ ...s, rowOrder: normalizedRowOrder });
+        setVisibleRows(s.visibleRows);
+        setShowCrown(s.showCrown);
+        setShowFlag(s.showFlag);
+        setRulesets(s.rulesets);
+        setRowOrder(normalizedRowOrder);
+        setLoading(false);
+      })
+      .catch(() => {
+        toast.error('Failed to load nutrition settings');
+        setLoading(false);
+      });
   }, [userId]);
 
-  const current: NutritionSettings = {
-    visibleRows,
-    showCrown,
-    showFlag,
-    rulesets,
-    rowOrder,
-  };
-  const isDirty = saved !== null && !settingsEqual(current, saved);
+  const isDirty = useMemo(
+    () =>
+      saved !== null &&
+      !settingsEqual(
+        { visibleRows, showCrown, showFlag, rulesets, rowOrder },
+        saved,
+      ),
+    [visibleRows, showCrown, showFlag, rulesets, rowOrder, saved],
+  );
 
   // Detail view validation
   const detailValidationErrors = useMemo<Record<number, string>>(() => {
@@ -466,9 +468,8 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       }
       const key = `${rule.nutrient}:${rule.rating}`;
       if (seen.has(key)) {
-        const allRows = [...ROWS, SCORE_ROW];
         const nutrientLabel =
-          allRows.find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient;
+          ALL_ROWS.find((r) => r.key === rule.nutrient)?.label ?? rule.nutrient;
         const ratingLabel =
           RATING_OPTIONS.find((o) => o.value === rule.rating)?.label ??
           rule.rating;
@@ -482,8 +483,6 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     });
     return errors;
   }, [editingRules]);
-
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   function openDetail(ruleset: NutritionRuleset, isNew = false) {
     setEditingId(ruleset.id);
@@ -542,14 +541,13 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     openDetail(newRuleset, true);
   }
 
-  async function confirmDeleteFromList() {
-    if (!deleteConfirmId) return;
-    const updatedRulesets = rulesets.filter((rs) => rs.id !== deleteConfirmId);
+  async function deleteRuleset(id: string, { navigateBack = false } = {}) {
+    const updatedRulesets = rulesets.filter((rs) => rs.id !== id);
     const updatedSettings: NutritionSettings = {
-      visibleRows: saved?.visibleRows ?? visibleRows,
-      showCrown: saved?.showCrown ?? showCrown,
-      showFlag: saved?.showFlag ?? showFlag,
-      rowOrder: saved?.rowOrder ?? rowOrder,
+      visibleRows,
+      showCrown,
+      showFlag,
+      rowOrder,
       rulesets: updatedRulesets,
     };
     setSaving(true);
@@ -558,15 +556,29 @@ export function NutritionTab({ userId }: NutritionTabProps) {
       setRulesets(updatedRulesets);
       setSaved(updatedSettings);
       toast.success('Ruleset deleted');
+      setDeleteConfirmId(null);
+      setShowDetailDeleteConfirm(false);
+      if (navigateBack) setView('list');
     } catch {
       toast.error('Failed to delete ruleset');
     } finally {
       setSaving(false);
-      setDeleteConfirmId(null);
     }
   }
 
+  async function confirmDeleteFromList() {
+    if (!deleteConfirmId) return;
+    await deleteRuleset(deleteConfirmId);
+  }
+
   async function handleSave() {
+    const current: NutritionSettings = {
+      visibleRows,
+      showCrown,
+      showFlag,
+      rulesets,
+      rowOrder,
+    };
     setSaving(true);
     try {
       await saveNutritionSettings(userId, current);
@@ -622,6 +634,10 @@ export function NutritionTab({ userId }: NutritionTabProps) {
 
   async function handleDetailSave() {
     setDetailSaveAttempted(true);
+    if (!editingName.trim()) {
+      toast.error('Ruleset name cannot be empty');
+      return;
+    }
     if (Object.keys(detailValidationErrors).length > 0) return;
 
     const cleanRules = editingRules.map((r) => ({
@@ -633,31 +649,31 @@ export function NutritionTab({ userId }: NutritionTabProps) {
 
     const updatedRulesets = rulesets.map((rs) =>
       rs.id === editingId
-        ? { ...rs, name: editingName, rules: cleanRules }
+        ? { ...rs, name: editingName.trim(), rules: cleanRules }
         : rs,
     );
-    setRulesets(updatedRulesets);
 
     const updatedSettings: NutritionSettings = {
-      visibleRows: saved?.visibleRows ?? visibleRows,
-      showCrown: saved?.showCrown ?? showCrown,
-      showFlag: saved?.showFlag ?? showFlag,
-      rowOrder: saved?.rowOrder ?? rowOrder,
+      visibleRows,
+      showCrown,
+      showFlag,
+      rowOrder,
       rulesets: updatedRulesets,
     };
 
     setSaving(true);
     try {
       await saveNutritionSettings(userId, updatedSettings);
+      setRulesets(updatedRulesets);
       setSaved(updatedSettings);
       toast.success('Ruleset saved');
+      setIsNewRuleset(false);
+      setView('list');
     } catch {
       toast.error('Failed to save ruleset');
     } finally {
       setSaving(false);
     }
-    setIsNewRuleset(false);
-    setView('list');
   }
 
   function handleDetailCancel() {
@@ -688,28 +704,8 @@ export function NutritionTab({ userId }: NutritionTabProps) {
   }
 
   async function handleDetailDelete() {
-    const updatedRulesets = rulesets.filter((rs) => rs.id !== editingId);
-    const updatedSettings: NutritionSettings = {
-      visibleRows: saved?.visibleRows ?? visibleRows,
-      showCrown: saved?.showCrown ?? showCrown,
-      showFlag: saved?.showFlag ?? showFlag,
-      rowOrder: saved?.rowOrder ?? rowOrder,
-      rulesets: updatedRulesets,
-    };
-
-    setSaving(true);
-    try {
-      await saveNutritionSettings(userId, updatedSettings);
-      setRulesets(updatedRulesets);
-      setSaved(updatedSettings);
-      toast.success('Ruleset deleted');
-    } catch {
-      toast.error('Failed to delete ruleset');
-    } finally {
-      setSaving(false);
-      setShowDetailDeleteConfirm(false);
-    }
-    setView('list');
+    if (!editingId) return;
+    await deleteRuleset(editingId, { navigateBack: true });
   }
 
   if (loading) {
@@ -735,30 +731,30 @@ export function NutritionTab({ userId }: NutritionTabProps) {
         <section className='space-y-3'>
           <h3 className='text-base font-semibold'>Rules</h3>
           <div className='overflow-x-auto pb-2'>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleEditingRuleDragEnd}
-          >
-            <SortableContext
-              items={editingRules.map((r) => r.id)}
-              strategy={verticalListSortingStrategy}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleEditingRuleDragEnd}
             >
-              <div className='min-w-max space-y-2'>
-                {editingRules.map((rule, i) => (
-                  <SortableRuleRow
-                    key={rule.id}
-                    rule={rule}
-                    index={i}
-                    error={detailValidationErrors[i]}
-                    showError={detailSaveAttempted}
-                    onUpdate={updateEditingRule}
-                    onRemove={removeEditingRule}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+              <SortableContext
+                items={editingRules.map((r) => r.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className='min-w-max space-y-2'>
+                  {editingRules.map((rule, i) => (
+                    <SortableRuleRow
+                      key={rule.id}
+                      rule={rule}
+                      index={i}
+                      error={detailValidationErrors[i]}
+                      showError={detailSaveAttempted}
+                      onUpdate={updateEditingRule}
+                      onRemove={removeEditingRule}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           </div>
 
           <div className='flex gap-2'>
@@ -824,6 +820,12 @@ export function NutritionTab({ userId }: NutritionTabProps) {
     );
   }
 
+  const filteredRulesets = rulesetSearch
+    ? rulesets.filter((rs) =>
+        rs.name.toLowerCase().includes(rulesetSearch.toLowerCase()),
+      )
+    : null;
+
   return (
     <div className='space-y-8'>
       {/* Visible rows */}
@@ -840,8 +842,7 @@ export function NutritionTab({ userId }: NutritionTabProps) {
           >
             <div className='space-y-2'>
               {rowOrder.map((key) => {
-                const allRows = [...ROWS, SCORE_ROW];
-                const row = allRows.find((r) => r.key === key);
+                const row = ALL_ROWS.find((r) => r.key === key);
                 if (!row) return null;
                 return (
                   <SortableNutrientRow
@@ -903,27 +904,21 @@ export function NutritionTab({ userId }: NutritionTabProps) {
             className='pl-8'
           />
         </div>
-        {rulesetSearch ? (
+        {filteredRulesets ? (
           <div className='space-y-1'>
-            {rulesets.filter((rs) =>
-              rs.name.toLowerCase().includes(rulesetSearch.toLowerCase()),
-            ).length === 0 ? (
+            {filteredRulesets.length === 0 ? (
               <p className='text-muted-foreground text-sm'>
                 No rulesets match your search.
               </p>
             ) : (
-              rulesets
-                .filter((rs) =>
-                  rs.name.toLowerCase().includes(rulesetSearch.toLowerCase()),
-                )
-                .map((rs) => (
-                  <SortableRulesetRow
-                    key={rs.id}
-                    ruleset={rs}
-                    onView={(ruleset) => openDetail(ruleset)}
-                    onDelete={(id) => setDeleteConfirmId(id)}
-                  />
-                ))
+              filteredRulesets.map((rs) => (
+                <SortableRulesetRow
+                  key={rs.id}
+                  ruleset={rs}
+                  onView={(ruleset) => openDetail(ruleset)}
+                  onDelete={(id) => setDeleteConfirmId(id)}
+                />
+              ))
             )}
           </div>
         ) : (
@@ -1021,14 +1016,23 @@ export function NutritionTab({ userId }: NutritionTabProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Reset all settings?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will restore all nutrition settings — visible rows, highlights, and rulesets — to their defaults. This cannot be undone.
+              This will restore all nutrition settings — visible rows,
+              highlights, and rulesets — to their defaults. This cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <Button variant='outline' onClick={() => setShowResetConfirm(false)}>
+            <Button
+              variant='outline'
+              onClick={() => setShowResetConfirm(false)}
+            >
               Cancel
             </Button>
-            <Button variant='destructive' onClick={handleGlobalReset} disabled={saving}>
+            <Button
+              variant='destructive'
+              onClick={handleGlobalReset}
+              disabled={saving}
+            >
               Reset
             </Button>
           </AlertDialogFooter>

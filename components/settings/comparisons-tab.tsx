@@ -31,13 +31,15 @@ export function ComparisonsTab({ userId }: { userId: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    getSavedComparisons(userId).then((data) => {
-      setComparisons(data);
-      setLoading(false);
-    }).catch(() => {
-      toast.error('Failed to load comparisons');
-      setLoading(false);
-    });
+    getSavedComparisons(userId)
+      .then((data) => {
+        setComparisons(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        toast.error('Failed to load comparisons');
+        setLoading(false);
+      });
   }, [userId]);
 
   useEffect(() => {
@@ -56,7 +58,10 @@ export function ComparisonsTab({ userId }: { userId: string }) {
 
   async function handleRename(id: string) {
     const trimmed = editingName.trim();
-    if (!trimmed) return;
+    if (!trimmed) {
+      toast.error('Name cannot be empty');
+      return;
+    }
     try {
       await renameComparison(userId, id, trimmed);
       setComparisons((prev) =>

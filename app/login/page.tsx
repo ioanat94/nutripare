@@ -34,7 +34,7 @@ function LoginContent() {
       <EmailVerificationScreen
         email={auth.currentUser?.email ?? ''}
         onSignOut={() => signOut(auth)}
-        onVerified={() => { window.location.href = redirect; }}
+        onVerified={() => router.replace(redirect)}
       />
     );
   }
@@ -46,11 +46,7 @@ function LoginContent() {
         description={
           mode === 'signIn' ? 'Sign in to your account' : 'Create a new account'
         }
-        onAuthenticated={() => {
-          if (auth.currentUser?.emailVerified) {
-            router.push(redirect);
-          }
-        }}
+        onAuthenticated={() => {}}
         form={
           <AuthForm
             mode={mode}
@@ -68,7 +64,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense>
+    <Suspense fallback={null}>
       <LoginContent />
     </Suspense>
   );

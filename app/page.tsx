@@ -4,6 +4,7 @@ import {
   Bookmark,
   FolderHeart,
   Gauge,
+  Layers,
   ScanBarcode,
   SlidersHorizontal,
 } from 'lucide-react';
@@ -60,7 +61,7 @@ const accountBenefits = [
       'Decide which nutrients are highlighted — focus on what actually matters to your diet.',
   },
   {
-    icon: Gauge,
+    icon: Layers,
     title: 'Build nutrition profiles',
     description:
       'Create named rulesets that define what matters to your diet — switch between them per comparison.',
@@ -151,7 +152,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <div className='mt-6'>{<RulesetDemo />}</div>
+        <div className='mt-6'><RulesetDemo /></div>
       </section>
     </main>
   );

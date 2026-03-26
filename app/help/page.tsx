@@ -670,16 +670,22 @@ export default function HelpPage() {
                   <thead>
                     <tr className='border-b border-border'>
                       <th className='px-4 py-3 text-left font-medium text-muted-foreground w-full' />
-                      <th className='px-4 py-3 text-center min-w-16 sm:min-w-24'>
+                      <th
+                        aria-label='Signed out'
+                        className='px-4 py-3 text-center min-w-16 sm:min-w-24'
+                      >
                         <UserX
                           className='mx-auto size-5 text-muted-foreground'
-                          aria-label='Signed out'
+                          aria-hidden='true'
                         />
                       </th>
-                      <th className='w-16 px-4 py-3 text-center bg-primary/5 sm:w-24'>
+                      <th
+                        aria-label='Signed in'
+                        className='w-16 px-4 py-3 text-center bg-primary/5 sm:w-24'
+                      >
                         <UserCheck
                           className='mx-auto size-5 text-primary'
-                          aria-label='Signed in'
+                          aria-hidden='true'
                         />
                       </th>
                     </tr>
@@ -1023,7 +1029,7 @@ export default function HelpPage() {
                         display name, saved products, saved comparisons, and
                         nutrition settings. No tracking, analytics, or
                         advertising data is collected. See the{' '}
-                        <a href='/privacy'>Privacy Policy</a> for full details.
+                        <a href='/privacy' className='underline underline-offset-4 hover:text-primary'>Privacy Policy</a> for full details.
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value='multiple-devices'>

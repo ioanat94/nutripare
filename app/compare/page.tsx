@@ -231,7 +231,9 @@ function ComparePageContent() {
       setLoadedComparison({ id, name: saveDialogName });
       setSaveDialogOpen(false);
       if (selectedRulesetId) {
-        updateComparisonRuleset(user.id, id, selectedRulesetId).catch(() => {});
+        updateComparisonRuleset(user.id, id, selectedRulesetId).catch(() => {
+          toast.error('Failed to update ruleset');
+        });
       }
       toast.success('Comparison saved');
     } catch (e) {
@@ -277,9 +279,10 @@ function ComparePageContent() {
 
   async function handleRulesetChange(id: string) {
     setSelectedRulesetId(id);
-    if (savedComparisonId) {
-      updateComparisonRuleset(user!.id, savedComparisonId, id).catch(() => {});
-    }
+    if (!user || !savedComparisonId) return;
+    updateComparisonRuleset(user.id, savedComparisonId, id).catch(() => {
+      toast.error('Failed to update ruleset');
+    });
   }
 
   async function handleScan(code: string) {
@@ -299,6 +302,11 @@ function ComparePageContent() {
     }
     setLoading(false);
   }
+
+  const rulesets =
+    nutritionSettings !== undefined
+      ? (nutritionSettings?.rulesets ?? [{ id: 'default', name: 'Default', rules: getDefaultRules() }])
+      : undefined;
 
   return (
     <main className='mx-auto w-full max-w-5xl px-6 py-12'>
@@ -411,7 +419,7 @@ function ComparePageContent() {
             onUnsaveProduct={user ? handleUnsaveProduct : undefined}
             onUnsaveComparison={user ? handleUnsaveComparison : undefined}
             settings={nutritionSettings}
-            rulesets={nutritionSettings !== undefined ? (nutritionSettings?.rulesets ?? [{ id: 'default', name: 'Default', rules: getDefaultRules() }]) : undefined}
+            rulesets={rulesets}
             selectedRulesetId={selectedRulesetId}
             onRulesetChange={user ? handleRulesetChange : undefined}
           />
@@ -464,7 +472,7 @@ function ComparePageContent() {
 
 export default function ComparePage() {
   return (
-    <Suspense>
+    <Suspense fallback={null}>
       <ComparePageContent />
     </Suspense>
   );

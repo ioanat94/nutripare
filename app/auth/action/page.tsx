@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { applyActionCode } from 'firebase/auth';
 
 import { auth } from '@/lib/firebase';
@@ -17,6 +17,7 @@ import {
 type Status = 'loading' | 'success' | 'error';
 
 function ActionContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const mode = searchParams.get('mode');
   const oobCode = searchParams.get('oobCode');
@@ -57,9 +58,7 @@ function ActionContent() {
               <CardContent className='px-10'>
                 <Button
                   className='w-full'
-                  onClick={() => {
-                    window.location.href = '/';
-                  }}
+                  onClick={() => router.push('/')}
                 >
                   Go to app
                 </Button>
@@ -81,9 +80,7 @@ function ActionContent() {
                 <Button
                   variant='outline'
                   className='w-full'
-                  onClick={() => {
-                    window.location.href = '/login';
-                  }}
+                  onClick={() => router.push('/login')}
                 >
                   Go to sign in
                 </Button>
@@ -98,7 +95,7 @@ function ActionContent() {
 
 export default function AuthActionPage() {
   return (
-    <Suspense>
+    <Suspense fallback={null}>
       <ActionContent />
     </Suspense>
   );

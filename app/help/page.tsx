@@ -1,4 +1,10 @@
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
   Check,
   ExternalLink,
   MoreHorizontal,
@@ -27,6 +33,7 @@ const SECTIONS = [
   { id: 'settings-products', label: 'Settings — Products' },
   { id: 'settings-comparisons', label: 'Settings — Comparisons' },
   { id: 'account-features', label: 'Signed-in vs. Signed-out' },
+  { id: 'faq', label: 'FAQ' },
 ];
 
 const defaultThresholds = [
@@ -762,6 +769,277 @@ export default function HelpPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </section>
+
+            {/* FAQ */}
+            <section id='faq'>
+              <h2 className='mb-8 text-2xl font-semibold'>FAQ</h2>
+              <div className='space-y-10'>
+                {/* Scanning & Products */}
+                <div>
+                  <h3 className='mb-3 text-base font-semibold text-muted-foreground uppercase tracking-wide'>
+                    Scanning &amp; Products
+                  </h3>
+                  <Accordion multiple className='w-full'>
+                    <AccordionItem value='barcode-not-recognized'>
+                      <AccordionTrigger>
+                        Why isn&apos;t my barcode being recognized?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        Nutripare accepts EAN barcodes that are 8, 12, or 13
+                        digits long. Shorter or longer values are rejected
+                        immediately. If your code is the right length but still
+                        fails, the product may not exist in the Open Food Facts
+                        database — try searching for it directly on{' '}
+                        <a
+                          href='https://world.openfoodfacts.org'
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='inline-flex items-center gap-1'
+                        >
+                          world.openfoodfacts.org
+                          <ExternalLink className='size-3' aria-hidden='true' />
+                        </a>
+                        .
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value='data-source'>
+                      <AccordionTrigger>
+                        Where does the product data come from?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        All product data comes from{' '}
+                        <a
+                          href='https://world.openfoodfacts.org'
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='inline-flex items-center gap-1'
+                        >
+                          Open Food Facts
+                          <ExternalLink className='size-3' aria-hidden='true' />
+                        </a>
+                        , a free collaborative database maintained by volunteers
+                        worldwide. Values may be incomplete or inaccurate —
+                        always verify important nutritional information against
+                        the physical product label.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value='missing-product'>
+                      <AccordionTrigger>
+                        Can I add a product that isn&apos;t in the database?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        Not directly through Nutripare. If a product is missing,
+                        you can contribute it to Open Food Facts using their
+                        website or mobile app — once added there, it will be
+                        available in Nutripare too.
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+
+                {/* Scoring */}
+                <div>
+                  <h3 className='mb-3 text-base font-semibold text-muted-foreground uppercase tracking-wide'>
+                    Scoring
+                  </h3>
+                  <Accordion multiple className='w-full'>
+                    <AccordionItem value='score-meaning'>
+                      <AccordionTrigger>
+                        What does the nutrition score actually measure?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        The score (0–100) is built from your nutrition rules,
+                        each of which has a direction and a rating. Great and
+                        good rules (e.g. protein above 20g) push the score up
+                        when they fire; caution and bad rules (e.g. sugar above
+                        22.5g) push it down. The further a value is past its
+                        threshold, the larger the contribution. A product where
+                        no rules fire at all scores exactly 50. The score is
+                        entirely driven by your personal rules — changing
+                        thresholds, directions, or ratings will change it.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value='low-score'>
+                      <AccordionTrigger>
+                        Why does a product I think is healthy have a low score?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        The score is only as good as the rules behind it. If a
+                        nutrient has a strict threshold and the product exceeds
+                        it — even slightly — it will drag the score down. You
+                        can review and adjust your thresholds in{' '}
+                        <span className='font-medium text-foreground'>
+                          Settings → Nutrition
+                        </span>{' '}
+                        to better reflect your own dietary priorities.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value='similar-scores'>
+                      <AccordionTrigger>
+                        Why do two products with similar nutrition have very
+                        different scores?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        The score is non-linear — exceeding a threshold has a
+                        larger impact the further over it you go. A product that
+                        is slightly over on many nutrients can score very
+                        differently from one that is well within limits on most
+                        but heavily over on one. Weights assigned to each
+                        nutrient in your rules also affect the balance.
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+
+                {/* Comparisons & Settings */}
+                <div>
+                  <h3 className='mb-3 text-base font-semibold text-muted-foreground uppercase tracking-wide'>
+                    Comparisons &amp; Settings
+                  </h3>
+                  <Accordion multiple className='w-full'>
+                    <AccordionItem value='compare-limit'>
+                      <AccordionTrigger>
+                        Can I compare more than two products at once?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        Yes — there is no hard limit. You can add as many
+                        products as you like by entering additional barcodes
+                        into the search field. Each new product is appended as a
+                        new column in the table. Keep in mind that comparing a
+                        large number of products at once may affect performance.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value='save-difference'>
+                      <AccordionTrigger>
+                        What&apos;s the difference between saving a product and
+                        saving a comparison?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        Saving a{' '}
+                        <span className='font-medium text-foreground'>
+                          product
+                        </span>{' '}
+                        bookmarks a single item so you can quickly load it again
+                        later from the Products tab in Settings. Saving a{' '}
+                        <span className='font-medium text-foreground'>
+                          comparison
+                        </span>{' '}
+                        saves the full set of products currently in the table
+                        together, so you can restore the entire comparison in
+                        one step from the Comparisons tab.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value='rules-update'>
+                      <AccordionTrigger>
+                        If I change my nutrition rules, do my old comparisons
+                        update?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        Scores and highlights are calculated live each time you
+                        load a comparison, so they always reflect your current
+                        rules. However, if a comparison was saved with a
+                        specific ruleset, it will load using that ruleset by
+                        default — you can switch rulesets from the table header.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value='reset-settings'>
+                      <AccordionTrigger>
+                        What happens if I reset a ruleset?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        Resetting a ruleset restores its rules to the default
+                        thresholds, discarding any changes you&apos;ve made to
+                        it. Other rulesets, display preferences, and visible
+                        nutrients are unaffected.
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+
+                {/* Account */}
+                <div>
+                  <h3 className='mb-3 text-base font-semibold text-muted-foreground uppercase tracking-wide'>
+                    Account
+                  </h3>
+                  <Accordion multiple className='w-full'>
+                    <AccordionItem value='need-account'>
+                      <AccordionTrigger>
+                        Do I need an account to use the app?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        No. You can look up products and compare them without
+                        signing in. An account is only needed if you want to
+                        save products, save comparisons, or sync your nutrition
+                        settings across devices.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value='data-stored'>
+                      <AccordionTrigger>
+                        What data is stored when I create an account?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        Only what you explicitly create: your email address,
+                        display name, saved products, saved comparisons, and
+                        nutrition settings. No tracking, analytics, or
+                        advertising data is collected. See the{' '}
+                        <a href='/privacy'>Privacy Policy</a> for full details.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value='multiple-devices'>
+                      <AccordionTrigger>
+                        Can I use the app on multiple devices?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        Yes. Your saved products, comparisons, and nutrition
+                        settings are stored in the cloud and will be available
+                        on any device you sign in to.
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+
+                {/* General */}
+                <div>
+                  <h3 className='mb-3 text-base font-semibold text-muted-foreground uppercase tracking-wide'>
+                    General
+                  </h3>
+                  <Accordion multiple className='w-full'>
+                    <AccordionItem value='offline'>
+                      <AccordionTrigger>
+                        Does the app work offline?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        No. Product lookups require a live connection to the
+                        Open Food Facts API, and saving data requires a
+                        connection to the database. The app will not function
+                        without internet access.
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value='traffic-light'>
+                      <AccordionTrigger>
+                        What do the traffic light colors on each nutrient mean?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        Each nutrient cell is colored based on the rating of the
+                        rule that fires for that value.{' '}
+                        <span className='font-medium text-positive'>Green</span>{' '}
+                        means a great rule fired,{' '}
+                        <span className='font-medium text-info'>blue</span>{' '}
+                        means good,{' '}
+                        <span className='font-medium text-warning'>amber</span>{' '}
+                        means caution, and{' '}
+                        <span className='font-medium text-destructive'>
+                          red
+                        </span>{' '}
+                        means bad. No color means no rule fired for that
+                        nutrient — either no rule is configured, or the value
+                        didn&apos;t cross its threshold.
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
               </div>
             </section>
           </div>

@@ -25,7 +25,7 @@ export function Navbar() {
       : 'text-foreground';
 
   return (
-    <nav className='flex items-center justify-end border-b px-4 py-2'>
+    <nav className='sticky top-0 z-50 flex items-center justify-end border-b bg-background px-4 py-2'>
       <Link href='/' className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'mr-auto')}>
         <House />
         <span className='sr-only'>Home</span>

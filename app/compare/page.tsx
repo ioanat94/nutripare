@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, ScanBarcode, TriangleAlert } from 'lucide-react';
+import { ExternalLink, Loader2, ScanBarcode, TriangleAlert } from 'lucide-react';
 import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
 import { getDefaultRules } from '@/utils/thresholds';
 import {
@@ -421,9 +421,10 @@ function ComparePageContent() {
               href='https://world.openfoodfacts.org'
               target='_blank'
               rel='noopener noreferrer'
-              className='underline underline-offset-2 hover:text-foreground transition-colors'
+              className='inline-flex items-center gap-1 underline underline-offset-2 hover:text-foreground transition-colors'
             >
               Open Food Facts
+              <ExternalLink className='size-3' aria-hidden='true' />
             </a>
             , a free, collaborative database. Nutritional values may be
             incomplete or inaccurate.

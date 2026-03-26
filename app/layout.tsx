@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
 
 import { Navbar } from '@/components/navbar';
+import { Footer } from '@/components/footer';
 import { Providers } from '@/app/providers';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -41,6 +42,7 @@ export default function RootLayout({
         <Providers>
           <Navbar />
           {children}
+          <Footer />
           <Toaster />
         </Providers>
       </body>

@@ -29,6 +29,9 @@ export function ProductsTab({ userId }: { userId: string }) {
     getSavedProducts(userId).then((data) => {
       setProducts(data);
       setLoading(false);
+    }).catch(() => {
+      toast.error('Failed to load products');
+      setLoading(false);
     });
   }, [userId]);
 

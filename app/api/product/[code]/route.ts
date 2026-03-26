@@ -6,10 +6,20 @@ export async function GET(
 ) {
   const { code } = await params;
   const url = `https://world.openfoodfacts.net/api/v2/product/${code}?fields=code,product_name,nutriments`;
-  const res = await fetch(url, {
-    headers: { Authorization: 'Basic ' + btoa('off:off') },
-    next: { revalidate: 3600 },
-  });
-  const data = await res.json();
-  return NextResponse.json(data);
+  try {
+    const res = await fetch(url, {
+      headers: { Authorization: 'Basic ' + btoa('off:off') },
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) {
+      return NextResponse.json({ error: 'Upstream error' }, { status: 502 });
+    }
+    const data = await res.json();
+    if (data.status === 0) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    }
+    return NextResponse.json(data);
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch product' }, { status: 502 });
+  }
 }

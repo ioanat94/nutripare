@@ -844,6 +844,26 @@ export default function HelpPage() {
                         available in Nutripare too.
                       </AccordionContent>
                     </AccordionItem>
+                    <AccordionItem value='store-barcodes'>
+                      <AccordionTrigger>
+                        Why doesn&apos;t my supermarket&apos;s barcode work?
+                      </AccordionTrigger>
+                      <AccordionContent className='text-muted-foreground'>
+                        Some barcodes are generated in-store and are not
+                        registered in any public database. The most common
+                        example is{' '}
+                        <span className='text-foreground font-medium'>
+                          variable-weight produce
+                        </span>{' '}
+                        — when you weigh bananas or deli items at the counter,
+                        or buy freshly baked goods priced by weight, the
+                        printed barcode encodes the item number and weight
+                        for that specific package. These codes are unique to the
+                        store and change with every purchase, so Open Food Facts
+                        has no record of them. Nutripare only works with
+                        standard EAN barcodes for packaged branded goods.
+                      </AccordionContent>
+                    </AccordionItem>
                   </Accordion>
                 </div>
 

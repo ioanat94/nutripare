@@ -27,8 +27,8 @@ export function useTheme() {
     setTheme(next);
     try {
       localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      console.error('Error toggling theme');
+    } catch (err) {
+      console.error('Failed to persist theme preference:', err);
     }
   }
 

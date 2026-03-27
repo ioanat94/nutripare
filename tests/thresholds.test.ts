@@ -176,72 +176,67 @@ describe('getThresholdColor', () => {
 // ---------------------------------------------------------------------------
 
 describe('getExtremeEmoji', () => {
-  const allVisible = ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt'];
   const defaultRules = getDefaultRules();
 
   describe('basic behaviour', () => {
     it('returns null when only one product is present', () => {
-      expect(getExtremeEmoji('protein', [25], 0, defaultRules, allVisible)).toBeNull();
-    });
-
-    it('returns null when the nutrient is not in visibleRows', () => {
-      expect(getExtremeEmoji('protein', [25, 30], 1, defaultRules, [])).toBeNull();
+      expect(getExtremeEmoji('protein', [25], 0, defaultRules)).toBeNull();
     });
 
     it('returns null when value is undefined', () => {
-      expect(getExtremeEmoji('protein', [undefined, 30], 0, defaultRules, allVisible)).toBeNull();
+      expect(getExtremeEmoji('protein', [undefined, 30], 0, defaultRules)).toBeNull();
     });
 
     it('returns null when no rule applies (value below threshold)', () => {
-      expect(getExtremeEmoji('protein', [5, 10], 1, defaultRules, allVisible)).toBeNull();
+      expect(getExtremeEmoji('protein', [5, 10], 1, defaultRules)).toBeNull();
     });
 
     it('returns null when rules array is empty', () => {
-      expect(getExtremeEmoji('protein', [25, 30], 1, [], allVisible)).toBeNull();
+      expect(getExtremeEmoji('protein', [25, 30], 1, [])).toBeNull();
     });
   });
 
   describe('crown (positive)', () => {
     it('returns crown for the highest protein value above the positive threshold', () => {
       // protein above 20 is positive; 30 > 25
-      expect(getExtremeEmoji('protein', [25, 30], 1, defaultRules, allVisible)).toBe('👑');
+      expect(getExtremeEmoji('protein', [25, 30], 1, defaultRules)).toBe('👑');
     });
 
     it('does not return crown for a lower value that also passes the threshold', () => {
-      expect(getExtremeEmoji('protein', [25, 30], 0, defaultRules, allVisible)).toBeNull();
+      expect(getExtremeEmoji('protein', [25, 30], 0, defaultRules)).toBeNull();
     });
 
     it('returns crown for both products when tied', () => {
-      expect(getExtremeEmoji('protein', [30, 30], 0, defaultRules, allVisible)).toBe('👑');
-      expect(getExtremeEmoji('protein', [30, 30], 1, defaultRules, allVisible)).toBe('👑');
+      expect(getExtremeEmoji('protein', [30, 30], 0, defaultRules)).toBe('👑');
+      expect(getExtremeEmoji('protein', [30, 30], 1, defaultRules)).toBe('👑');
     });
 
     it('returns crown for the lowest salt value below the positive threshold', () => {
       // salt below 0.3 is positive; 0.1 < 0.2
-      expect(getExtremeEmoji('salt', [0.1, 0.2], 0, defaultRules, allVisible)).toBe('👑');
-      expect(getExtremeEmoji('salt', [0.1, 0.2], 1, defaultRules, allVisible)).toBeNull();
+      expect(getExtremeEmoji('salt', [0.1, 0.2], 0, defaultRules)).toBe('👑');
+      expect(getExtremeEmoji('salt', [0.1, 0.2], 1, defaultRules)).toBeNull();
     });
   });
 
   describe('flag (negative)', () => {
     it('returns flag for the highest sugar value above the negative threshold', () => {
       // sugar above 22.5 is negative; 30 > 25
-      expect(getExtremeEmoji('sugar', [25, 30], 1, defaultRules, allVisible)).toBe('🚩');
+      expect(getExtremeEmoji('sugar', [25, 30], 1, defaultRules)).toBe('🚩');
     });
 
     it('does not return flag for a lower value that also passes the threshold', () => {
-      expect(getExtremeEmoji('sugar', [25, 30], 0, defaultRules, allVisible)).toBeNull();
+      expect(getExtremeEmoji('sugar', [25, 30], 0, defaultRules)).toBeNull();
     });
 
     it('returns flag for both products when tied', () => {
-      expect(getExtremeEmoji('sugar', [30, 30], 0, defaultRules, allVisible)).toBe('🚩');
-      expect(getExtremeEmoji('sugar', [30, 30], 1, defaultRules, allVisible)).toBe('🚩');
+      expect(getExtremeEmoji('sugar', [30, 30], 0, defaultRules)).toBe('🚩');
+      expect(getExtremeEmoji('sugar', [30, 30], 1, defaultRules)).toBe('🚩');
     });
 
     it('returns flag for the highest salt value above the negative threshold', () => {
       // salt above 1.5 is negative; 2 > 1.7
-      expect(getExtremeEmoji('salt', [1.7, 2], 1, defaultRules, allVisible)).toBe('🚩');
-      expect(getExtremeEmoji('salt', [1.7, 2], 0, defaultRules, allVisible)).toBeNull();
+      expect(getExtremeEmoji('salt', [1.7, 2], 1, defaultRules)).toBe('🚩');
+      expect(getExtremeEmoji('salt', [1.7, 2], 0, defaultRules)).toBeNull();
     });
   });
 
@@ -254,8 +249,8 @@ describe('getExtremeEmoji', () => {
       ];
       // values: 12 passes above-10 only, 20 passes both
       // crown should go to 20 (the extreme for the positive rule)
-      expect(getExtremeEmoji('protein', [12, 20], 1, rules, allVisible)).toBe('👑');
-      expect(getExtremeEmoji('protein', [12, 20], 0, rules, allVisible)).toBeNull();
+      expect(getExtremeEmoji('protein', [12, 20], 1, rules)).toBe('👑');
+      expect(getExtremeEmoji('protein', [12, 20], 0, rules)).toBeNull();
     });
 
     it('uses the lower-threshold negative rule for flag assignment', () => {
@@ -265,8 +260,8 @@ describe('getExtremeEmoji', () => {
         rule('sugar', 'above', 20, 'negative'),
       ];
       // values: 15 passes above-10 only, 25 passes both
-      expect(getExtremeEmoji('sugar', [15, 25], 1, rules, allVisible)).toBe('🚩');
-      expect(getExtremeEmoji('sugar', [15, 25], 0, rules, allVisible)).toBeNull();
+      expect(getExtremeEmoji('sugar', [15, 25], 1, rules)).toBe('🚩');
+      expect(getExtremeEmoji('sugar', [15, 25], 0, rules)).toBeNull();
     });
   });
 
@@ -278,23 +273,23 @@ describe('getExtremeEmoji', () => {
     const values = [3, 7, 15];
 
     it('returns null for sugar=3 (below both thresholds)', () => {
-      expect(getExtremeEmoji('sugar', values, 0, rules, allVisible)).toBeNull();
+      expect(getExtremeEmoji('sugar', values, 0, rules)).toBeNull();
     });
 
     it('returns null for sugar=7 (info rating, not eligible for emoji)', () => {
-      expect(getExtremeEmoji('sugar', values, 1, rules, allVisible)).toBeNull();
+      expect(getExtremeEmoji('sugar', values, 1, rules)).toBeNull();
     });
 
     it('returns flag for sugar=15 (highest above negative threshold)', () => {
-      expect(getExtremeEmoji('sugar', values, 2, rules, allVisible)).toBe('🚩');
+      expect(getExtremeEmoji('sugar', values, 2, rules)).toBe('🚩');
     });
   });
 
   describe('rounding', () => {
     it('considers values equal when they round to the same 1 decimal place', () => {
       // 30.01 and 30.04 both round to 30.0 — should both get crown
-      expect(getExtremeEmoji('protein', [30.01, 30.04], 0, defaultRules, allVisible)).toBe('👑');
-      expect(getExtremeEmoji('protein', [30.01, 30.04], 1, defaultRules, allVisible)).toBe('👑');
+      expect(getExtremeEmoji('protein', [30.01, 30.04], 0, defaultRules)).toBe('👑');
+      expect(getExtremeEmoji('protein', [30.01, 30.04], 1, defaultRules)).toBe('👑');
     });
   });
 });

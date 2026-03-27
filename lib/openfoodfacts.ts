@@ -32,6 +32,7 @@ export function mapProduct(raw: OFFProductResponse, code: string): ProductNutrit
 
 export async function fetchProduct(code: string): Promise<ProductNutrition | null> {
   const res = await fetch(`/api/product/${code}`);
+  if (!res.ok) throw new Error(`Product fetch failed: ${res.status}`);
   const json: OFFProductResponse = await res.json();
   if (json.status === 0) return null;
   return mapProduct(json, code);

@@ -1,6 +1,11 @@
 import type { NutritionRule, NutritionRuleset, ThresholdColor } from '@/types/firestore';
 
 export type { ThresholdColor };
+
+export const DEFAULT_NUTRITION_ROWS = [
+  'kcals', 'protein', 'carbohydrates', 'sugar',
+  'fat', 'saturated_fat', 'fiber', 'salt', 'computed_score',
+] as const;
 export type ThresholdDirection = 'above' | 'below';
 
 export interface ThresholdCondition {
@@ -89,7 +94,7 @@ export function getThresholdColor(
   const sorted = rules
     .filter((r) => r.nutrient === nutrient)
     .sort((a, b) => {
-      if (a.direction !== b.direction) return 0;
+      if (a.direction !== b.direction) return a.direction === 'above' ? -1 : 1;
       return a.direction === 'above' ? b.value - a.value : a.value - b.value;
     });
   for (const rule of sorted) {
@@ -106,17 +111,15 @@ export function getExtremeEmoji(
   values: (number | undefined)[],
   index: number,
   rules: NutritionRule[],
-  visibleRows: string[],
 ): '👑' | '🚩' | null {
   if (values.length < 2) return null;
-  if (!visibleRows.includes(nutrient)) return null;
   const value = values[index];
   if (value === undefined || isNaN(value)) return null;
 
   const sorted = rules
     .filter((r) => r.nutrient === nutrient && (r.rating === 'positive' || r.rating === 'negative'))
     .sort((a, b) => {
-      if (a.direction !== b.direction) return 0;
+      if (a.direction !== b.direction) return a.direction === 'above' ? -1 : 1;
       return a.direction === 'above' ? b.value - a.value : a.value - b.value;
     });
   for (const rule of sorted) {

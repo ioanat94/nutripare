@@ -14,7 +14,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { saveNutritionSettings } from '@/lib/firestore';
 import type { FirestoreUser } from '@/types/firestore';
-import { BUILTIN_RULESETS } from '@/utils/thresholds';
+import { BUILTIN_RULESETS, DEFAULT_NUTRITION_ROWS } from '@/utils/thresholds';
 
 interface AuthContextValue {
   user: FirestoreUser | null;
@@ -31,39 +31,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const docRef = doc(db, 'users', firebaseUser.uid);
-        const snapshot = await getDoc(docRef);
+      try {
+        if (firebaseUser) {
+          const docRef = doc(db, 'users', firebaseUser.uid);
+          const snapshot = await getDoc(docRef);
 
-        if (!snapshot.exists()) {
-          const newUser: FirestoreUser = {
-            id: firebaseUser.uid,
-            displayName:
-              firebaseUser.displayName ??
-              firebaseUser.email?.split('@')[0] ??
-              'User',
-          };
-          await setDoc(docRef, newUser);
+          if (!snapshot.exists()) {
+            const newUser: FirestoreUser = {
+              id: firebaseUser.uid,
+              displayName:
+                firebaseUser.displayName ??
+                firebaseUser.email?.split('@')[0] ??
+                'User',
+            };
+            await setDoc(docRef, newUser);
 
-          await saveNutritionSettings(firebaseUser.uid, {
-            visibleRows: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt', 'computed_score'],
-            rowOrder: ['kcals', 'protein', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt', 'computed_score'],
-            showCrown: true,
-            showFlag: true,
-            rulesets: BUILTIN_RULESETS,
-          });
+            await saveNutritionSettings(firebaseUser.uid, {
+              visibleRows: [...DEFAULT_NUTRITION_ROWS],
+              rowOrder: [...DEFAULT_NUTRITION_ROWS],
+              showCrown: true,
+              showFlag: true,
+              rulesets: BUILTIN_RULESETS,
+            });
 
-          setUser(newUser);
+            setUser(newUser);
+          } else {
+            setUser(snapshot.data() as FirestoreUser);
+          }
+          setEmailVerified(firebaseUser.emailVerified);
         } else {
-          setUser(snapshot.data() as FirestoreUser);
+          setUser(null);
+          setEmailVerified(false);
         }
-        setEmailVerified(firebaseUser.emailVerified);
-      } else {
+      } catch (err) {
+        console.error('Failed to load user profile:', err);
         setUser(null);
-        setEmailVerified(false);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
     return unsubscribe;

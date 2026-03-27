@@ -529,7 +529,6 @@ export function NutritionTable({
                         allRowValues,
                         j,
                         rules,
-                        visibleRows,
                       );
                     } else {
                       ({ text, className } = renderCell(
@@ -544,7 +543,6 @@ export function NutritionTable({
                         allRowValues,
                         j,
                         rules,
-                        visibleRows,
                       );
                     }
 

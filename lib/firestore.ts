@@ -13,7 +13,7 @@ import {
 
 import { db } from '@/lib/firebase';
 import type { NutritionRule, NutritionSettings, SavedComparison, SavedProduct } from '@/types/firestore';
-import { getDefaultRules } from '@/utils/thresholds';
+import { DEFAULT_NUTRITION_ROWS, getDefaultRules } from '@/utils/thresholds';
 
 const VALID_RATINGS = new Set(['positive', 'info', 'warning', 'negative']);
 
@@ -150,17 +150,6 @@ export async function getSavedComparisons(
   );
 }
 
-const DEFAULT_ROW_KEYS = [
-  'kcals',
-  'protein',
-  'carbohydrates',
-  'sugar',
-  'fat',
-  'saturated_fat',
-  'fiber',
-  'salt',
-];
-
 export async function getNutritionSettings(
   uid: string,
 ): Promise<NutritionSettings | null> {
@@ -172,11 +161,11 @@ export async function getNutritionSettings(
   const visibleRows: string[] =
     (raw.visibleRows as string[] | undefined) ??
     (raw.visibleNutrients as string[] | undefined) ??
-    [...DEFAULT_ROW_KEYS];
+    [...DEFAULT_NUTRITION_ROWS];
   const rowOrder: string[] =
     (raw.rowOrder as string[] | undefined) ??
     (raw.nutrientOrder as string[] | undefined) ??
-    [...DEFAULT_ROW_KEYS];
+    [...DEFAULT_NUTRITION_ROWS];
 
   if (!visibleRows.includes('computed_score')) visibleRows.push('computed_score');
   if (!rowOrder.includes('computed_score')) rowOrder.push('computed_score');
@@ -207,10 +196,10 @@ export async function getNutritionSettings(
 
 export async function deleteAllUserData(uid: string): Promise<void> {
   const productDocs = await getDocs(collection(db, 'users', uid, 'products'));
-  for (const d of productDocs.docs) await deleteDoc(d.ref);
+  await Promise.all(productDocs.docs.map((d) => deleteDoc(d.ref)));
 
   const comparisonDocs = await getDocs(collection(db, 'users', uid, 'comparisons'));
-  for (const d of comparisonDocs.docs) await deleteDoc(d.ref);
+  await Promise.all(comparisonDocs.docs.map((d) => deleteDoc(d.ref)));
 
   await deleteDoc(doc(db, 'users', uid, 'settings', 'nutrition'));
   await deleteDoc(doc(db, 'users', uid));

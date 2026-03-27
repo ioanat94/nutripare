@@ -124,6 +124,7 @@ describe('fetchProduct', () => {
 
   it('returns null when status is 0', async () => {
     vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
       json: async () => ({ status: 0, status_verbose: 'product not found' }),
     } as Response);
 
@@ -134,6 +135,7 @@ describe('fetchProduct', () => {
 
   it('returns ProductNutrition on success', async () => {
     vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
       json: async () => ({
         status: 1,
         status_verbose: 'product found',

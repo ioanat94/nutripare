@@ -22,12 +22,12 @@ export interface OFFProductResponse {
 export interface ProductNutrition {
   code: string;
   product_name: string;
-  kcals: number | undefined;
-  protein: number | undefined;
-  carbohydrates: number | undefined;
-  sugar: number | undefined;
-  fat: number | undefined;
-  saturated_fat: number | undefined;
-  fiber: number | undefined;
-  salt: number | undefined;
+  kcals?: number;
+  protein?: number;
+  carbohydrates?: number;
+  sugar?: number;
+  fat?: number;
+  saturated_fat?: number;
+  fiber?: number;
+  salt?: number;
 }

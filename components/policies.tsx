@@ -1,5 +1,5 @@
 import { PolicyContext, useUI } from '@firebase-oss/ui-react';
-import { cloneElement, useContext } from 'react';
+import { useContext } from 'react';
 
 import { cn } from '@/utils/tailwind';
 import { getTranslation } from '@firebase-oss/ui-core';
@@ -16,36 +16,44 @@ export function Policies() {
   const termsAndPrivacyText = getTranslation(ui, 'messages', 'termsAndPrivacy');
   const parts = termsAndPrivacyText.split(/(\{tos\}|\{privacy\})/);
 
-  const className = cn('hover:underline font-semibold');
-  const Handler = onNavigate ? (
-    <button className={className} />
-  ) : (
-    <a target='_blank' rel='noopener noreferrer' className={className} />
-  );
+  const linkClass = cn('hover:underline font-semibold');
+
+  function PolicyLink({ url, label }: { url: string | URL; label: string }) {
+    if (onNavigate) {
+      return (
+        <button className={linkClass} onClick={() => onNavigate(url)}>
+          {label}
+        </button>
+      );
+    }
+    return (
+      <a href={url.toString()} target='_blank' rel='noopener noreferrer' className={linkClass}>
+        {label}
+      </a>
+    );
+  }
 
   return (
     <div className='text-text-muted text-center text-xs'>
       {parts.map((part: string, index: number) => {
         if (part === '{tos}') {
-          return cloneElement(Handler, {
-            key: index,
-            onClick: onNavigate
-              ? () => onNavigate(termsOfServiceUrl)
-              : undefined,
-            href: onNavigate ? undefined : termsOfServiceUrl,
-            children: getTranslation(ui, 'labels', 'termsOfService'),
-          });
+          return (
+            <PolicyLink
+              key={index}
+              url={termsOfServiceUrl}
+              label={getTranslation(ui, 'labels', 'termsOfService')}
+            />
+          );
         }
 
         if (part === '{privacy}') {
-          return cloneElement(Handler, {
-            key: index,
-            onClick: onNavigate
-              ? () => onNavigate(privacyPolicyUrl)
-              : undefined,
-            href: onNavigate ? undefined : privacyPolicyUrl,
-            children: getTranslation(ui, 'labels', 'privacyPolicy'),
-          });
+          return (
+            <PolicyLink
+              key={index}
+              url={privacyPolicyUrl}
+              label={getTranslation(ui, 'labels', 'privacyPolicy')}
+            />
+          );
         }
 
         return <span key={index}>{part}</span>;

@@ -70,6 +70,7 @@ export function HelpTocMobile({ sections }: HelpTocProps) {
           onClick={() => setOpen((o) => !o)}
           className='flex w-full items-center justify-between px-4 py-3 text-left'
           aria-expanded={open}
+          aria-controls='help-toc-mobile-list'
         >
           <span className='flex items-center gap-2'>
             <span className='text-sm font-semibold text-foreground'>
@@ -86,7 +87,7 @@ export function HelpTocMobile({ sections }: HelpTocProps) {
         </button>
 
         {open && (
-          <div className='border-t border-border px-4 py-3'>
+          <div id='help-toc-mobile-list' className='border-t border-border px-4 py-3'>
             <ul className='space-y-1'>
               {sections.map(({ id, label }) => (
                 <li key={id}>

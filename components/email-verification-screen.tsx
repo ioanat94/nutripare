@@ -24,8 +24,8 @@ export function EmailVerificationScreen({
   onSignOut,
   onVerified,
 }: EmailVerificationScreenProps) {
-  const [checkMessage, setCheckMessage] = useState<string | null>(null);
-  const [resendMessage, setResendMessage] = useState<string | null>(null);
+  const [checkFeedback, setCheckFeedback] = useState<string | null>(null);
+  const [resendFeedback, setResendFeedback] = useState<string | null>(null);
   const [resendDisabled, setResendDisabled] = useState(false);
 
   async function handleCheckAgain() {
@@ -33,18 +33,22 @@ export function EmailVerificationScreen({
     if (auth.currentUser?.emailVerified) {
       onVerified();
     } else {
-      setCheckMessage('Not verified yet.');
+      setCheckFeedback('Not verified yet.');
     }
   }
 
   async function handleResend() {
+    if (!auth.currentUser) {
+      setResendFeedback('Session expired. Please sign in again.');
+      return;
+    }
     try {
-      await sendEmailVerification(auth.currentUser!);
-      setResendMessage('Verification email sent.');
+      await sendEmailVerification(auth.currentUser);
+      setResendFeedback('Verification email sent.');
       setResendDisabled(true);
       setTimeout(() => setResendDisabled(false), 30000);
     } catch {
-      setResendMessage('Failed to send. Please try again later.');
+      setResendFeedback('Failed to send. Please try again later.');
     }
   }
 
@@ -71,9 +75,9 @@ export function EmailVerificationScreen({
             <Button onClick={handleCheckAgain} className='w-full'>
               Check again
             </Button>
-            {checkMessage && (
+            {checkFeedback && (
               <p className='text-center text-sm text-muted-foreground'>
-                {checkMessage}
+                {checkFeedback}
               </p>
             )}
             <Button
@@ -84,9 +88,9 @@ export function EmailVerificationScreen({
             >
               Resend email
             </Button>
-            {resendMessage && (
+            {resendFeedback && (
               <p className='text-center text-sm text-muted-foreground'>
-                {resendMessage}
+                {resendFeedback}
               </p>
             )}
             <Button

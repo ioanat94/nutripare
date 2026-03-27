@@ -96,6 +96,16 @@ const COLOR_CLASS: Record<ThresholdColor, string> = {
   negative: 'text-destructive',
 };
 
+function applyEmojiSettings(
+  emoji: string | null,
+  showCrown: boolean,
+  showFlag: boolean,
+): string | null {
+  if (emoji === '👑' && !showCrown) return null;
+  if (emoji === '🚩' && !showFlag) return null;
+  return emoji;
+}
+
 function renderCell(
   nutrient: string,
   value: number | undefined,
@@ -128,11 +138,13 @@ export function NutritionTable({
   selectedRulesetId,
   onRulesetChange,
 }: NutritionTableProps) {
-  const defaultRules = getDefaultRules();
   const visibleRows = settings?.visibleRows ?? ROWS.map((r) => r.key);
   const activeRuleset =
     rulesets?.find((rs) => rs.id === selectedRulesetId) ?? null;
-  const rules = activeRuleset?.rules ?? defaultRules;
+  const rules = useMemo(
+    () => activeRuleset?.rules ?? getDefaultRules(),
+    [activeRuleset],
+  );
   // undefined = not yet fetched, suppress emojis; null = fetched (no doc), use defaults
   const showCrown =
     settings !== undefined ? (settings?.showCrown ?? true) : false;
@@ -141,7 +153,7 @@ export function NutritionTable({
 
   const [sort, setSort] = useState<SortState>(null);
   const [savingProduct, setSavingProduct] = useState<string | null>(null);
-  const [savingComparison, setSavingComparison] = useState(false);
+  const [comparisonBusy, setComparisonBusy] = useState(false);
 
   const scores = useMemo(
     () => new Map(products.map((p) => [p.code, computeScore(p, rules)])),
@@ -186,8 +198,8 @@ export function NutritionTable({
     )
     .filter(Boolean) as Array<{ label: string; key: string }>;
 
-  function handleShare() {
-    const codes = products.map((p) => p.code).join(',');
+  function handleShare(code?: string) {
+    const codes = code ?? products.map((p) => p.code).join(',');
     const url = `${window.location.origin}/compare?codes=${encodeURIComponent(codes)}`;
     navigator.clipboard.writeText(url).then(
       () => toast.success('Link copied to clipboard'),
@@ -246,13 +258,16 @@ export function NutritionTable({
                 {isDirty && loadedComparisonName && onUpdateComparison && (
                   <DropdownMenuItem
                     onClick={async () => {
-                      setSavingComparison(true);
-                      await onUpdateComparison();
-                      setSavingComparison(false);
+                      setComparisonBusy(true);
+                      try {
+                        await onUpdateComparison();
+                      } finally {
+                        setComparisonBusy(false);
+                      }
                     }}
-                    disabled={savingComparison}
+                    disabled={comparisonBusy}
                   >
-                    {savingComparison ? (
+                    {comparisonBusy ? (
                       <Loader2
                         className='size-4 animate-spin'
                         aria-hidden='true'
@@ -278,13 +293,16 @@ export function NutritionTable({
                 {loadedComparisonName && onUnsaveComparison && (
                   <DropdownMenuItem
                     onClick={async () => {
-                      setSavingComparison(true);
-                      await onUnsaveComparison();
-                      setSavingComparison(false);
+                      setComparisonBusy(true);
+                      try {
+                        await onUnsaveComparison();
+                      } finally {
+                        setComparisonBusy(false);
+                      }
                     }}
-                    disabled={savingComparison}
+                    disabled={comparisonBusy}
                   >
-                    {savingComparison ? (
+                    {comparisonBusy ? (
                       <Loader2
                         className='size-4 animate-spin'
                         aria-hidden='true'
@@ -297,7 +315,7 @@ export function NutritionTable({
                 )}
               </>
             )}
-            <DropdownMenuItem onClick={handleShare}>
+            <DropdownMenuItem onClick={() => handleShare()}>
               <Share2 className='size-4' aria-hidden='true' />
               Share
             </DropdownMenuItem>
@@ -356,8 +374,11 @@ export function NutritionTable({
                               <DropdownMenuItem
                                 onClick={async () => {
                                   setSavingProduct(p.code);
-                                  await onUnsaveProduct(p.code);
-                                  setSavingProduct(null);
+                                  try {
+                                    await onUnsaveProduct(p.code);
+                                  } finally {
+                                    setSavingProduct(null);
+                                  }
                                 }}
                                 disabled={savingProduct === p.code}
                               >
@@ -379,8 +400,11 @@ export function NutritionTable({
                               <DropdownMenuItem
                                 onClick={async () => {
                                   setSavingProduct(p.code);
-                                  await onSaveProduct(p.code);
-                                  setSavingProduct(null);
+                                  try {
+                                    await onSaveProduct(p.code);
+                                  } finally {
+                                    setSavingProduct(null);
+                                  }
                                 }}
                                 disabled={savingProduct === p.code}
                               >
@@ -395,15 +419,7 @@ export function NutritionTable({
                                 Save product
                               </DropdownMenuItem>
                             )}
-                        <DropdownMenuItem
-                          onClick={() => {
-                            const url = `${window.location.origin}/compare?codes=${encodeURIComponent(p.code)}`;
-                            navigator.clipboard.writeText(url).then(
-                              () => toast.success('Link copied to clipboard'),
-                              () => toast.error('Failed to copy link'),
-                            );
-                          }}
-                        >
+                        <DropdownMenuItem onClick={() => handleShare(p.code)}>
                           <Share2 className='size-4' aria-hidden='true' />
                           Share
                         </DropdownMenuItem>
@@ -443,9 +459,14 @@ export function NutritionTable({
                   ? 'bg-muted/30'
                   : '';
               const isScoreRow = row.key === COMPUTED_SCORE_KEY;
-              const allScoreValues = sortedProducts.map(
-                (p) => scores.get(p.code) ?? undefined,
-              );
+              const allRowValues = isScoreRow
+                ? sortedProducts.map((p) => scores.get(p.code) ?? undefined)
+                : sortedProducts.map(
+                    (q) =>
+                      q[row.key as keyof ProductNutrition] as
+                        | number
+                        | undefined,
+                  );
 
               return (
                 <TableRow key={row.key} className={rowBg}>
@@ -461,7 +482,7 @@ export function NutritionTable({
                       >
                         {row.label}
                         {isActive &&
-                          (sort!.dir === 'desc' ? (
+                          (sort.dir === 'desc' ? (
                             <ArrowDown className='size-3 shrink-0' />
                           ) : (
                             <ArrowUp className='size-3 shrink-0' />
@@ -482,6 +503,10 @@ export function NutritionTable({
 
                   {/* Value cells — right-aligned, tabular figures */}
                   {sortedProducts.map((p, j) => {
+                    let text: string;
+                    let className: string;
+                    let rawEmoji: string | null;
+
                     if (isScoreRow) {
                       const scoreVal = scores.get(p.code) ?? null;
                       const color =
@@ -492,66 +517,43 @@ export function NutritionTable({
                               rules,
                             )
                           : null;
-                      const emoji = getExtremeEmoji(
-                        COMPUTED_SCORE_KEY,
-                        allScoreValues,
-                        j,
-                        rules,
-                        visibleRows,
-                      );
-                      const displayEmoji =
-                        emoji === '👑' && !showCrown
-                          ? null
-                          : emoji === '🚩' && !showFlag
-                            ? null
-                            : emoji;
-                      const text = scoreVal === null ? '—' : String(scoreVal);
-                      const className =
+                      text = scoreVal === null ? '—' : String(scoreVal);
+                      className =
                         scoreVal === null
                           ? 'text-muted-foreground'
                           : color
                             ? COLOR_CLASS[color]
                             : '';
-                      return (
-                        <TableCell
-                          key={p.code}
-                          className={`py-3 tabular-nums text-sm font-medium ${className}`}
-                        >
-                          <div className='flex items-center justify-end'>
-                            <span className='w-5 shrink-0 text-center text-base leading-none'>
-                              {displayEmoji}
-                            </span>
-                            <span className='w-12 text-right'>{text}</span>
-                          </div>
-                        </TableCell>
+                      rawEmoji = getExtremeEmoji(
+                        COMPUTED_SCORE_KEY,
+                        allRowValues,
+                        j,
+                        rules,
+                        visibleRows,
+                      );
+                    } else {
+                      ({ text, className } = renderCell(
+                        row.key,
+                        p[row.key as keyof ProductNutrition] as
+                          | number
+                          | undefined,
+                        rules,
+                      ));
+                      rawEmoji = getExtremeEmoji(
+                        row.key,
+                        allRowValues,
+                        j,
+                        rules,
+                        visibleRows,
                       );
                     }
 
-                    const { text, className } = renderCell(
-                      row.key,
-                      p[row.key as keyof ProductNutrition] as
-                        | number
-                        | undefined,
-                      rules,
+                    const emoji = applyEmojiSettings(
+                      rawEmoji,
+                      showCrown,
+                      showFlag,
                     );
-                    const rawEmoji = getExtremeEmoji(
-                      row.key,
-                      sortedProducts.map(
-                        (q) =>
-                          q[row.key as keyof ProductNutrition] as
-                            | number
-                            | undefined,
-                      ),
-                      j,
-                      rules,
-                      visibleRows,
-                    );
-                    const emoji =
-                      rawEmoji === '👑' && !showCrown
-                        ? null
-                        : rawEmoji === '🚩' && !showFlag
-                          ? null
-                          : rawEmoji;
+
                     return (
                       <TableCell
                         key={p.code}

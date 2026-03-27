@@ -5,6 +5,14 @@ function makeParams(code: string) {
 }
 
 describe('GET /api/product/[code]', () => {
+  beforeAll(() => {
+    process.env.OPENFOODFACTS_BASE_URL = 'https://world.openfoodfacts.org';
+  });
+
+  afterAll(() => {
+    delete process.env.OPENFOODFACTS_BASE_URL;
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });

@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server';
 
-const baseUrl = process.env.OPENFOODFACTS_BASE_URL;
-const isStaging = baseUrl?.includes('.net') ?? false;
-const stagingAuth = process.env.OPENFOODFACTS_STAGING_AUTH
-  ? Buffer.from(process.env.OPENFOODFACTS_STAGING_AUTH).toString('base64')
-  : null;
-
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ code: string }> },
 ) {
+  const baseUrl = process.env.OPENFOODFACTS_BASE_URL;
   if (!baseUrl) {
     return NextResponse.json(
       { error: 'Server misconfiguration' },
       { status: 500 },
     );
   }
+
+  const isStaging = baseUrl.includes('.net');
+  const stagingAuth = process.env.OPENFOODFACTS_STAGING_AUTH
+    ? Buffer.from(process.env.OPENFOODFACTS_STAGING_AUTH).toString('base64')
+    : null;
 
   const { code } = await params;
   if (!/^\d{1,14}$/.test(code)) {

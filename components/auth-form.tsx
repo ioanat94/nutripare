@@ -28,6 +28,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 type Schema = { email: string; password: string; confirmPassword: string };
 
+const CONFIRM_PASSWORD_LABEL = 'Confirm password';
+const HAVE_ACCOUNT_PROMPT = 'Already have an account? Sign in';
+
 function buildSchema(mode: 'signIn' | 'signUp') {
   const passwordSchema =
     mode === 'signUp'
@@ -82,10 +85,12 @@ export function AuthForm({
         await signInAction({ email: values.email, password: values.password });
       } else {
         await signUpAction({ email: values.email, password: values.password });
-        try {
-          await sendEmailVerification(auth.currentUser!);
-        } catch {
-          // user can resend from the verification screen
+        if (auth.currentUser) {
+          try {
+            await sendEmailVerification(auth.currentUser);
+          } catch {
+            // user can resend from the verification screen
+          }
         }
       }
     } catch (error) {
@@ -125,7 +130,7 @@ export function AuthForm({
         <FormField
           control={form.control}
           name='password'
-          render={({ field, fieldState }) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel className='flex items-center gap-2'>
                 <span className='grow'>
@@ -147,7 +152,6 @@ export function AuthForm({
               <FormControl>
                 <PasswordInput
                   {...field}
-                  aria-invalid={!!fieldState.error}
                   className='h-10 bg-transparent dark:bg-transparent'
                 />
               </FormControl>
@@ -159,13 +163,12 @@ export function AuthForm({
           <FormField
             control={form.control}
             name='confirmPassword'
-            render={({ field, fieldState }) => (
+            render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm password</FormLabel>
+                <FormLabel>{CONFIRM_PASSWORD_LABEL}</FormLabel>
                 <FormControl>
                   <PasswordInput
                     {...field}
-                    aria-invalid={!!fieldState.error}
                     className='h-10 bg-transparent dark:bg-transparent'
                   />
                 </FormControl>
@@ -199,7 +202,7 @@ export function AuthForm({
             <span className='text-xs'>
               {mode === 'signIn'
                 ? `${getTranslation(ui, 'prompts', 'noAccount')} ${getTranslation(ui, 'labels', 'signUp')}`
-                : 'Already have an account? Sign in'}
+                : HAVE_ACCOUNT_PROMPT}
             </span>
           </Button>
         ) : null}

@@ -18,11 +18,16 @@ export default function BarcodeScanner({
   onClose,
 }: BarcodeScannerProps) {
   const [error, setError] = useState<string | null>(null);
-  const [isDesktop] = useState(
+  const [hasFinePointer] = useState(
     () => window.matchMedia('(pointer: fine)').matches,
   );
   const onScanRef = useRef(onScan);
   const stoppedRef = useRef(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    dialogRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     onScanRef.current = onScan;
@@ -46,7 +51,9 @@ export default function BarcodeScanner({
         (decodedText) => {
           if (!stoppedRef.current) {
             stoppedRef.current = true;
-            scanner.stop().catch(() => {});
+            scanner.stop().catch((err) => {
+              console.warn('Failed to stop scanner after scan:', err);
+            });
           }
           onScanRef.current(decodedText);
         },
@@ -54,7 +61,14 @@ export default function BarcodeScanner({
       )
       .then(() => true)
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : String(err));
+        const raw = err instanceof Error ? err.message : String(err);
+        const isNotFound =
+          raw.includes('NotFoundError') || raw.includes('Requested device not found');
+        setError(
+          isNotFound
+            ? 'No camera found. Please connect a camera and try again.'
+            : raw,
+        );
         return false;
       });
 
@@ -62,23 +76,23 @@ export default function BarcodeScanner({
       const alreadyStopped = stoppedRef.current;
       stoppedRef.current = true;
       startPromise.then((started) => {
-        if (started && !alreadyStopped) {
-          scanner
-            .stop()
-            .catch(() => {})
-            .then(() => {
-              try {
-                scanner.clear();
-              } catch {
-                /* already cleared */
-              }
-            });
-        } else if (started) {
+        if (!started) return;
+        const cleanup = () => {
           try {
             scanner.clear();
-          } catch {
-            /* already cleared */
+          } catch (err) {
+            console.warn('Failed to clear scanner:', err);
           }
+        };
+        if (alreadyStopped) {
+          cleanup();
+        } else {
+          scanner
+            .stop()
+            .catch((err) => {
+              console.warn('Failed to stop scanner on unmount:', err);
+            })
+            .then(cleanup);
         }
       });
     };
@@ -96,7 +110,10 @@ export default function BarcodeScanner({
     <div
       role='dialog'
       aria-label='Barcode scanner'
-      className='fixed inset-0 z-50 flex items-center justify-center bg-black/80'
+      aria-modal='true'
+      tabIndex={-1}
+      ref={dialogRef}
+      className='fixed inset-0 z-50 flex items-center justify-center bg-black/80 outline-none'
     >
       <div className='relative w-full max-w-lg rounded-xl bg-background p-6'>
         <Button
@@ -111,7 +128,7 @@ export default function BarcodeScanner({
         </Button>
         <h2 className='mb-4 text-center text-lg font-semibold'>Scan barcode</h2>
         <div id={CONTAINER_ID} className='rounded-lg' />
-        {isDesktop && !error && (
+        {hasFinePointer && !error && (
           <p className='mt-3 text-xs text-muted-foreground'>
             Scanning may be unreliable with a low-resolution webcam. Try typing
             the code manually if you run into difficulties.

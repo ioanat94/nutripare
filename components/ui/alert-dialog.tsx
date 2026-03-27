@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 import { cn } from '@/utils/tailwind';
 
@@ -12,11 +13,14 @@ function AlertDialogPortal(props: DialogPrimitive.Portal.Props) {
   return <DialogPrimitive.Portal {...props} />;
 }
 
-function AlertDialogBackdrop({ className, ...props }: DialogPrimitive.Backdrop.Props) {
+function AlertDialogBackdrop({
+  className,
+  ...props
+}: DialogPrimitive.Backdrop.Props) {
   return (
     <DialogPrimitive.Backdrop
       className={cn(
-        'fixed inset-0 z-50 bg-black/50 transition-all data-[starting-style]:opacity-0 data-[ending-style]:opacity-0',
+        'fixed inset-0 z-50 bg-black/50 transition-all data-starting-style:opacity-0 data-ending-style:opacity-0',
         className,
       )}
       {...props}
@@ -24,14 +28,18 @@ function AlertDialogBackdrop({ className, ...props }: DialogPrimitive.Backdrop.P
   );
 }
 
-function AlertDialogContent({ className, children, ...props }: DialogPrimitive.Popup.Props) {
+function AlertDialogContent({
+  className,
+  children,
+  ...props
+}: DialogPrimitive.Popup.Props) {
   return (
     <AlertDialogPortal>
       <AlertDialogBackdrop />
       <DialogPrimitive.Popup
         data-slot='alert-dialog-content'
         className={cn(
-          'fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-popover p-6 shadow-lg outline-none transition-all data-[starting-style]:scale-95 data-[starting-style]:opacity-0 data-[ending-style]:scale-95 data-[ending-style]:opacity-0',
+          'fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-popover p-6 shadow-lg outline-none transition-all data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0',
           className,
         )}
         {...props}
@@ -42,7 +50,10 @@ function AlertDialogContent({ className, children, ...props }: DialogPrimitive.P
   );
 }
 
-function AlertDialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
+function AlertDialogHeader({
+  className,
+  ...props
+}: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot='alert-dialog-header'
@@ -52,7 +63,10 @@ function AlertDialogHeader({ className, ...props }: React.ComponentProps<'div'>)
   );
 }
 
-function AlertDialogFooter({ className, ...props }: React.ComponentProps<'div'>) {
+function AlertDialogFooter({
+  className,
+  ...props
+}: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot='alert-dialog-footer'
@@ -62,7 +76,10 @@ function AlertDialogFooter({ className, ...props }: React.ComponentProps<'div'>)
   );
 }
 
-function AlertDialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
+function AlertDialogTitle({
+  className,
+  ...props
+}: DialogPrimitive.Title.Props) {
   return (
     <DialogPrimitive.Title
       data-slot='alert-dialog-title'
@@ -72,7 +89,10 @@ function AlertDialogTitle({ className, ...props }: DialogPrimitive.Title.Props) 
   );
 }
 
-function AlertDialogDescription({ className, ...props }: DialogPrimitive.Description.Props) {
+function AlertDialogDescription({
+  className,
+  ...props
+}: DialogPrimitive.Description.Props) {
   return (
     <DialogPrimitive.Description
       data-slot='alert-dialog-description'

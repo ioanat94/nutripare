@@ -19,7 +19,7 @@ function safeRedirect(value: string | null): string {
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, emailVerified } = useAuth();
+  const { user, emailVerified, refreshEmailVerified } = useAuth();
   const redirect = safeRedirect(searchParams.get('redirect'));
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
 
@@ -34,7 +34,10 @@ function LoginContent() {
       <EmailVerificationScreen
         email={auth.currentUser?.email ?? ''}
         onSignOut={() => signOut(auth)}
-        onVerified={() => router.replace(redirect)}
+        onVerified={async () => {
+          await refreshEmailVerified();
+          router.replace(redirect);
+        }}
       />
     );
   }

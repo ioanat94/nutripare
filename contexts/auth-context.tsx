@@ -20,6 +20,7 @@ interface AuthContextValue {
   user: FirestoreUser | null;
   loading: boolean;
   emailVerified: boolean;
+  refreshEmailVerified: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -29,7 +30,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [emailVerified, setEmailVerified] = useState(false);
 
+  async function refreshEmailVerified() {
+    if (auth.currentUser) {
+      await auth.currentUser.reload();
+      setEmailVerified(auth.currentUser.emailVerified);
+    }
+  }
+
   useEffect(() => {
+    async function reloadIfUnverified() {
+      if (auth.currentUser && !auth.currentUser.emailVerified) {
+        await auth.currentUser.reload();
+        if (auth.currentUser.emailVerified) {
+          setEmailVerified(true);
+        }
+      }
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        reloadIfUnverified();
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
@@ -71,11 +97,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+    };
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, emailVerified }}>
+    <AuthContext.Provider
+      value={{ user, loading, emailVerified, refreshEmailVerified }}
+    >
       {children}
     </AuthContext.Provider>
   );

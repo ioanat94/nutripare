@@ -1,11 +1,5 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { applyActionCode } from 'firebase/auth';
-
-import { auth } from '@/lib/firebase';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -13,12 +7,20 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+import { Button } from '@/components/ui/button';
+import { applyActionCode } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useAuth } from '@/contexts/auth-context';
 
 type Status = 'loading' | 'success' | 'error';
 
 function ActionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { refreshEmailVerified } = useAuth();
   const mode = searchParams.get('mode');
   const oobCode = searchParams.get('oobCode');
   const [status, setStatus] = useState<Status>(
@@ -28,10 +30,10 @@ function ActionContent() {
   useEffect(() => {
     if (!oobCode || mode !== 'verifyEmail') return;
     applyActionCode(auth, oobCode)
-      .then(() => auth.currentUser?.reload())
+      .then(() => refreshEmailVerified())
       .then(() => setStatus('success'))
       .catch(() => setStatus('error'));
-  }, [mode, oobCode]);
+  }, [mode, oobCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className='flex flex-1 items-center justify-center'>
@@ -56,10 +58,7 @@ function ActionContent() {
                 </CardDescription>
               </CardHeader>
               <CardContent className='px-10'>
-                <Button
-                  className='w-full'
-                  onClick={() => router.push('/')}
-                >
+                <Button className='w-full' onClick={() => router.push('/')}>
                   Go to app
                 </Button>
               </CardContent>

@@ -1,7 +1,11 @@
 import { MoreHorizontal } from 'lucide-react';
 import { ReactNode } from 'react';
 
-export type CellData = { value: string; className: string; emoji: '👑' | '🚩' | null };
+export type CellData = {
+  value: string;
+  className: string;
+  emoji: '👑' | '🚩' | null;
+};
 export type RowData = { label: string; cells: CellData[] };
 
 export const PRODUCTS = [
@@ -96,14 +100,12 @@ export const DEFAULT_ROWS: RowData[] = [
 interface DemoTableProps {
   rows: RowData[];
   toolbar?: ReactNode;
-  showProductMenu?: boolean;
   tableTopPadding?: boolean;
 }
 
 export function DemoTable({
   rows,
   toolbar,
-  showProductMenu = false,
   tableTopPadding = false,
 }: DemoTableProps) {
   return (
@@ -126,7 +128,9 @@ export function DemoTable({
       {toolbar}
 
       {/* Table area */}
-      <div className={`overflow-x-auto bg-background${tableTopPadding ? ' pt-3' : ''}`}>
+      <div
+        className={`overflow-x-auto bg-background ${tableTopPadding ? ' pt-3' : ''}`}
+      >
         <table
           style={{
             width: '100%',
@@ -141,29 +145,21 @@ export function DemoTable({
                 per 100g
               </th>
               {PRODUCTS.map((p) => (
-                <th key={p.code} className='w-48 px-4 pb-1 align-top text-left'>
-                  {showProductMenu ? (
-                    <div className='flex items-start justify-between gap-2'>
-                      <div className='min-w-0 flex-1'>
-                        <span className='block truncate text-sm font-semibold text-foreground'>
-                          {p.name}
-                        </span>
-                        <span className='font-mono text-xs text-muted-foreground'>
-                          {p.code}
-                        </span>
-                      </div>
-                      <MoreHorizontal className='mt-0.5 size-4 shrink-0 text-muted-foreground' />
-                    </div>
-                  ) : (
-                    <>
+                <th
+                  key={p.code}
+                  className='w-48 px-4 pb-1 align-top text-left border-l border-border/40'
+                >
+                  <div className='flex items-start justify-between gap-2'>
+                    <div className='min-w-0 flex-1'>
                       <span className='block truncate text-sm font-semibold text-foreground'>
                         {p.name}
                       </span>
                       <span className='font-mono text-xs text-muted-foreground'>
                         {p.code}
                       </span>
-                    </>
-                  )}
+                    </div>
+                    <MoreHorizontal className='mt-0.5 size-4 shrink-0 text-muted-foreground' />
+                  </div>
                 </th>
               ))}
             </tr>
@@ -185,13 +181,14 @@ export function DemoTable({
                 {row.cells.map((cell, j) => (
                   <td
                     key={j}
-                    className={`py-0 pr-4 text-sm font-medium tabular-nums ${cell.className}`}
+                    className={`py-0 text-sm font-medium tabular-nums border-l border-border/40 ${cell.className}`}
                   >
-                    <div className='flex items-center justify-end'>
-                      <span className='w-5 shrink-0 text-center text-base leading-none'>
+                    <div className='grid grid-cols-[1.25rem_min-content_1.25rem] items-center justify-center gap-3'>
+                      <span className='text-center text-base leading-none'>
                         {cell.emoji}
                       </span>
-                      <span className='w-12 text-right'>{cell.value}</span>
+                      <span className='text-center'>{cell.value}</span>
+                      <span />
                     </div>
                   </td>
                 ))}

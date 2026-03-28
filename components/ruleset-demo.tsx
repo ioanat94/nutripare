@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-
 import { DEFAULT_ROWS, DemoTable, RowData } from '@/components/demo-table';
+
+import { useState } from 'react';
 
 // Low Carb: penalises high carbs and sugar; protein is neutral
 // carbs >60 → warning, >75 → negative; sugar <3 → positive, >3 → warning, >15 → negative

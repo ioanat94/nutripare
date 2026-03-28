@@ -338,7 +338,7 @@ export function NutritionTable({
         <TableHeader>
           <TableRow className='hover:bg-transparent'>
             {/* Corner cell — table-wide qualifier */}
-            <TableHead className='sticky left-0 z-10 bg-background w-32 align-bottom pb-3 text-right text-xs font-normal text-muted-foreground'>
+            <TableHead className='sticky left-0 z-10 bg-background w-36 align-bottom pb-3 text-right text-xs font-normal text-muted-foreground'>
               per 100g
             </TableHead>
             {sortedProducts.map((p) => {
@@ -347,7 +347,7 @@ export function NutritionTable({
                 <TableHead
                   key={p.code}
                   scope='col'
-                  className='w-48 align-top pb-3'
+                  className='w-48 align-top pb-3 border-l border-border/40'
                 >
                   <div className='flex items-start justify-between gap-2'>
                     <div className='min-w-0 flex-1'>
@@ -473,7 +473,7 @@ export function NutritionTable({
                   {/* Row label — sticky, clickable to sort */}
                   <TableCell
                     scope='row'
-                    className={`sticky left-0 z-10 w-32 py-3 ${isActive ? 'bg-primary/10' : 'bg-background'}`}
+                    className={`sticky left-0 z-10 w-32 py-3 ${isActive ? 'bg-[color-mix(in_oklch,var(--primary)_10%,var(--background))]' : 'bg-background'}`}
                   >
                     <div className='flex items-center gap-1'>
                       <button
@@ -555,13 +555,14 @@ export function NutritionTable({
                     return (
                       <TableCell
                         key={p.code}
-                        className={`py-3 tabular-nums text-sm font-medium ${className}`}
+                        className={`py-3 tabular-nums text-sm font-medium border-l border-border/40 ${className}`}
                       >
-                        <div className='flex items-center justify-end'>
-                          <span className='w-5 shrink-0 text-center text-base leading-none'>
+                        <div className='grid grid-cols-[1.25rem_min-content_1.25rem] items-center justify-center gap-3'>
+                          <span className='text-center text-base leading-none'>
                             {emoji}
                           </span>
-                          <span className='w-12 text-right'>{text}</span>
+                          <span className='text-center'>{text}</span>
+                          <span />
                         </div>
                       </TableCell>
                     );

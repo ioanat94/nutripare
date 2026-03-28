@@ -53,6 +53,7 @@ Nutripare lets you look up food products by barcode or name, view their nutritio
 - **Saved products** — save products to your account for quick access later
 - **Saved comparisons** — save product comparisons to revisit them
 - **Custom nutrition settings** — configure which nutrients matter and set your own thresholds
+- **Expandable comparison table** — expand the table to fit all products (or full viewport width on wide comparisons) with a toolbar toggle; preference is persisted across sessions
 - **Dark / light mode** — toggle between themes, persisted across sessions
 - **Authentication** — sign in with email/password or Google via Firebase Auth
 

@@ -5,6 +5,8 @@ import {
   ArrowUp,
   HelpCircle,
   Loader2,
+  Maximize2,
+  Minimize2,
   MoreHorizontal,
   Save,
   SaveAll,
@@ -50,6 +52,7 @@ import { useMemo, useState } from 'react';
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import type { ThresholdColor } from '@/utils/thresholds';
 import { toast } from 'sonner';
+import { useExpandedTable } from '@/hooks/use-expanded-table';
 
 type SortDir = 'desc' | 'asc';
 type SortState = { key: string; dir: SortDir } | null;
@@ -154,6 +157,7 @@ export function NutritionTable({
   const [sort, setSort] = useState<SortState>(null);
   const [savingProduct, setSavingProduct] = useState<string | null>(null);
   const [comparisonBusy, setComparisonBusy] = useState(false);
+  const { expanded, toggleExpanded } = useExpandedTable();
 
   const scores = useMemo(
     () => new Map(products.map((p) => [p.code, computeScore(p, rules)])),
@@ -207,128 +211,156 @@ export function NutritionTable({
     );
   }
 
+  const tableNaturalWidth = `calc(8rem + ${sortedProducts.length} * 14rem)`;
+
   return (
-    <div className='overflow-x-auto'>
+    <div
+      className='overflow-x-auto'
+      style={
+        expanded
+          ? {
+              width: `min(calc(${tableNaturalWidth} + 3rem), 100vw)`,
+              marginLeft: `calc(50% - min(calc(${tableNaturalWidth} + 3rem), 100vw) / 2)`,
+              paddingLeft: '1.5rem',
+              paddingRight: '1.5rem',
+            }
+          : undefined
+      }
+    >
       {/* Toolbar */}
       <div className='mb-3 flex items-center justify-between'>
         <p className='text-sm text-muted-foreground'>
           {products.length} {products.length === 1 ? 'product' : 'products'}
         </p>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label='More options'
-            className='flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+        <div className='flex items-center gap-1'>
+          <button
+            onClick={toggleExpanded}
+            aria-label={expanded ? 'Collapse table' : 'Expand table'}
+            className='hidden md:flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
           >
-            <MoreHorizontal className='size-4' aria-hidden='true' />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align='end' className='w-52'>
-            {rulesets && rulesets.length > 0 && (
-              <>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className='flex max-w-full gap-1'>
-                    <span className='shrink-0'>Ruleset:</span>
-                    <span className='truncate'>
-                      {rulesets.find((rs) => rs.id === selectedRulesetId)
-                        ?.name ?? 'None'}
-                    </span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className='max-w-48'>
-                    <DropdownMenuRadioGroup
-                      value={selectedRulesetId ?? ''}
-                      onValueChange={onRulesetChange}
-                    >
-                      {rulesets.map((rs) => (
-                        <DropdownMenuRadioItem
-                          key={rs.id}
-                          value={rs.id}
-                          disabled={!onRulesetChange}
-                        >
-                          <span className='truncate'>{rs.name}</span>
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-                <DropdownMenuSeparator />
-              </>
+            {expanded ? (
+              <Minimize2 className='size-4' aria-hidden='true' />
+            ) : (
+              <Maximize2 className='size-4' aria-hidden='true' />
             )}
-            {products.length >= 2 && (
-              <>
-                {isDirty && loadedComparisonName && onUpdateComparison && (
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      setComparisonBusy(true);
-                      try {
-                        await onUpdateComparison();
-                      } finally {
-                        setComparisonBusy(false);
-                      }
-                    }}
-                    disabled={comparisonBusy}
-                  >
-                    {comparisonBusy ? (
-                      <Loader2
-                        className='size-4 animate-spin'
-                        aria-hidden='true'
-                      />
-                    ) : (
-                      <Save className='size-4' aria-hidden='true' />
-                    )}
-                    Update &ldquo;{loadedComparisonName}&rdquo;
-                  </DropdownMenuItem>
-                )}
-                {isDirty && loadedComparisonName && onSaveAsNew && (
-                  <DropdownMenuItem onClick={onSaveAsNew}>
-                    <SaveAll className='size-4' aria-hidden='true' />
-                    Save as new comparison
-                  </DropdownMenuItem>
-                )}
-                {!loadedComparisonName && onSaveComparison && (
-                  <DropdownMenuItem onClick={onSaveComparison}>
-                    <Save className='size-4' aria-hidden='true' />
-                    Save comparison
-                  </DropdownMenuItem>
-                )}
-                {loadedComparisonName && onUnsaveComparison && (
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      setComparisonBusy(true);
-                      try {
-                        await onUnsaveComparison();
-                      } finally {
-                        setComparisonBusy(false);
-                      }
-                    }}
-                    disabled={comparisonBusy}
-                  >
-                    {comparisonBusy ? (
-                      <Loader2
-                        className='size-4 animate-spin'
-                        aria-hidden='true'
-                      />
-                    ) : (
-                      <SaveOff className='size-4' aria-hidden='true' />
-                    )}
-                    Delete &ldquo;{loadedComparisonName}&rdquo;
-                  </DropdownMenuItem>
-                )}
-              </>
-            )}
-            <DropdownMenuItem onClick={() => handleShare()}>
-              <Share2 className='size-4' aria-hidden='true' />
-              Share
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={onClearAll}
-              className='text-destructive focus:text-destructive'
+          </button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label='More options'
+              className='flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
             >
-              <Trash2 className='size-4' aria-hidden='true' />
-              Clear all
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <MoreHorizontal className='size-4' aria-hidden='true' />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end' className='w-52'>
+              {rulesets && rulesets.length > 0 && (
+                <>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className='flex max-w-full gap-1'>
+                      <span className='shrink-0'>Ruleset:</span>
+                      <span className='truncate'>
+                        {rulesets.find((rs) => rs.id === selectedRulesetId)
+                          ?.name ?? 'None'}
+                      </span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent className='max-w-48'>
+                      <DropdownMenuRadioGroup
+                        value={selectedRulesetId ?? ''}
+                        onValueChange={onRulesetChange}
+                      >
+                        {rulesets.map((rs) => (
+                          <DropdownMenuRadioItem
+                            key={rs.id}
+                            value={rs.id}
+                            disabled={!onRulesetChange}
+                          >
+                            <span className='truncate'>{rs.name}</span>
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              {products.length >= 2 && (
+                <>
+                  {isDirty && loadedComparisonName && onUpdateComparison && (
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        setComparisonBusy(true);
+                        try {
+                          await onUpdateComparison();
+                        } finally {
+                          setComparisonBusy(false);
+                        }
+                      }}
+                      disabled={comparisonBusy}
+                    >
+                      {comparisonBusy ? (
+                        <Loader2
+                          className='size-4 animate-spin'
+                          aria-hidden='true'
+                        />
+                      ) : (
+                        <Save className='size-4' aria-hidden='true' />
+                      )}
+                      Update &ldquo;{loadedComparisonName}&rdquo;
+                    </DropdownMenuItem>
+                  )}
+                  {isDirty && loadedComparisonName && onSaveAsNew && (
+                    <DropdownMenuItem onClick={onSaveAsNew}>
+                      <SaveAll className='size-4' aria-hidden='true' />
+                      Save as new comparison
+                    </DropdownMenuItem>
+                  )}
+                  {!loadedComparisonName && onSaveComparison && (
+                    <DropdownMenuItem onClick={onSaveComparison}>
+                      <Save className='size-4' aria-hidden='true' />
+                      Save comparison
+                    </DropdownMenuItem>
+                  )}
+                  {loadedComparisonName && onUnsaveComparison && (
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        setComparisonBusy(true);
+                        try {
+                          await onUnsaveComparison();
+                        } finally {
+                          setComparisonBusy(false);
+                        }
+                      }}
+                      disabled={comparisonBusy}
+                    >
+                      {comparisonBusy ? (
+                        <Loader2
+                          className='size-4 animate-spin'
+                          aria-hidden='true'
+                        />
+                      ) : (
+                        <SaveOff className='size-4' aria-hidden='true' />
+                      )}
+                      Delete &ldquo;{loadedComparisonName}&rdquo;
+                    </DropdownMenuItem>
+                  )}
+                </>
+              )}
+              <DropdownMenuItem onClick={() => handleShare()}>
+                <Share2 className='size-4' aria-hidden='true' />
+                Share
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={onClearAll}
+                className='text-destructive focus:text-destructive'
+              >
+                <Trash2 className='size-4' aria-hidden='true' />
+                Clear all
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <Table

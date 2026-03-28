@@ -1,8 +1,20 @@
 'use client';
 
-import { ExternalLink, Loader2, ScanBarcode, TriangleAlert } from 'lucide-react';
-import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
-import { getDefaultRules } from '@/utils/thresholds';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  ExternalLink,
+  Loader2,
+  ScanBarcode,
+  TriangleAlert,
+} from 'lucide-react';
+import { Suspense, useEffect, useState } from 'react';
 import {
   deleteComparisonById,
   deleteProduct,
@@ -14,24 +26,17 @@ import {
   updateComparisonEans,
   updateComparisonRuleset,
 } from '@/lib/firestore';
-import type { NutritionSettings } from '@/types/firestore';
+import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
 
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import type { NutritionSettings } from '@/types/firestore';
 import { NutritionTable } from '@/components/nutrition-table';
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import dynamic from 'next/dynamic';
+import { getDefaultRules } from '@/utils/thresholds';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
-import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 const BarcodeScanner = dynamic(() => import('@/components/barcode-scanner'), {
@@ -63,12 +68,21 @@ function ComparePageContent() {
   const [savedProductCodes, setSavedProductCodes] = useState<Set<string>>(
     new Set(),
   );
-  const [savedComparisonId, setSavedComparisonId] = useState<string | null>(null);
-  const [loadedComparison, setLoadedComparison] = useState<{ id: string; name: string } | null>(null);
-  const [selectedRulesetId, setSelectedRulesetId] = useState<string | null>(null);
+  const [savedComparisonId, setSavedComparisonId] = useState<string | null>(
+    null,
+  );
+  const [loadedComparison, setLoadedComparison] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [selectedRulesetId, setSelectedRulesetId] = useState<string | null>(
+    null,
+  );
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveDialogName, setSaveDialogName] = useState('');
-  const [nutritionSettings, setNutritionSettings] = useState<NutritionSettings | null | undefined>(undefined);
+  const [nutritionSettings, setNutritionSettings] = useState<
+    NutritionSettings | null | undefined
+  >(undefined);
 
   useEffect(() => {
     if (authLoading) return;
@@ -95,7 +109,9 @@ function ComparePageContent() {
       if (savedComp) {
         setSavedComparisonId(savedComp.id);
         if (savedComp.rulesetId) setSelectedRulesetId(savedComp.rulesetId);
-        setLoadedComparison((prev) => prev ?? { id: savedComp.id, name: savedComp.name });
+        setLoadedComparison(
+          (prev) => prev ?? { id: savedComp.id, name: savedComp.name },
+        );
       } else {
         setSavedComparisonId(null);
       }
@@ -215,9 +231,10 @@ function ComparePageContent() {
   function handleSaveComparison() {
     if (!user) return;
     const firstName = products[0]?.product_name || products[0]?.code || '';
-    const defaultName = products.length > 1
-      ? `${firstName} + ${products.length - 1} others`
-      : firstName;
+    const defaultName =
+      products.length > 1
+        ? `${firstName} + ${products.length - 1} others`
+        : firstName;
     setSaveDialogName(defaultName);
     setSaveDialogOpen(true);
   }
@@ -305,7 +322,9 @@ function ComparePageContent() {
 
   const rulesets =
     nutritionSettings !== undefined
-      ? (nutritionSettings?.rulesets ?? [{ id: 'default', name: 'Default', rules: getDefaultRules() }])
+      ? (nutritionSettings?.rulesets ?? [
+          { id: 'default', name: 'Default', rules: getDefaultRules() },
+        ])
       : undefined;
 
   return (
@@ -313,7 +332,7 @@ function ComparePageContent() {
       {/* Header */}
       <div className='mb-8'>
         <h1 className='text-3xl font-bold tracking-tight'>Compare products</h1>
-        <p className='mt-1.5 max-w-xl text-muted-foreground'>
+        <p className='mt-1.5 text-muted-foreground'>
           Enter EAN barcodes to see nutritional values side by side. Add
           multiple codes at once by separating them with commas.
         </p>
@@ -415,7 +434,10 @@ function ComparePageContent() {
             onUpdateComparison={user ? handleUpdateComparison : undefined}
             savedProductCodes={savedProductCodes}
             loadedComparisonName={loadedComparison?.name}
-            isDirty={loadedComparison !== null && savedComparisonId !== loadedComparison.id}
+            isDirty={
+              loadedComparison !== null &&
+              savedComparisonId !== loadedComparison.id
+            }
             onUnsaveProduct={user ? handleUnsaveProduct : undefined}
             onUnsaveComparison={user ? handleUnsaveComparison : undefined}
             settings={nutritionSettings}
@@ -452,7 +474,8 @@ function ComparePageContent() {
             value={saveDialogName}
             onChange={(e) => setSaveDialogName(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && saveDialogName.trim()) handleConfirmSaveComparison();
+              if (e.key === 'Enter' && saveDialogName.trim())
+                handleConfirmSaveComparison();
             }}
             autoFocus
           />
@@ -460,7 +483,10 @@ function ComparePageContent() {
             <Button variant='outline' onClick={() => setSaveDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleConfirmSaveComparison} disabled={!saveDialogName.trim()}>
+            <Button
+              onClick={handleConfirmSaveComparison}
+              disabled={!saveDialogName.trim()}
+            >
               Save
             </Button>
           </AlertDialogFooter>

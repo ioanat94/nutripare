@@ -7,6 +7,7 @@ import {
 import {
   Check,
   ExternalLink,
+  Maximize2,
   MoreHorizontal,
   UserCheck,
   UserX,
@@ -336,6 +337,19 @@ export default function HelpPage() {
             <section id='table-actions'>
               <h2 className='mb-4 text-2xl font-semibold'>Table Actions</h2>
               <div className='space-y-3 text-base text-muted-foreground'>
+                <p>
+                  On desktop, the{' '}
+                  <span className='font-medium text-foreground'>
+                    <Maximize2
+                      className='mb-0.5 inline size-4 align-middle'
+                      aria-hidden='true'
+                    />{' '}
+                    expand button
+                  </span>{' '}
+                  in the toolbar widens the table to fit all product columns (up
+                  to the full viewport width). Click it again to collapse back.
+                  Your preference is remembered across sessions.
+                </p>
                 <p>
                   The{' '}
                   <span className='font-medium text-foreground'>

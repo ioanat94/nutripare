@@ -2,12 +2,12 @@ import './globals.css';
 
 import { Geist, Geist_Mono } from 'next/font/google';
 
-import type { Metadata } from 'next';
-
-import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
+import type { Metadata } from 'next';
+import { Navbar } from '@/components/navbar';
 import { Providers } from '@/app/providers';
 import { Toaster } from '@/components/ui/sonner';
+import { cn } from '@/utils/tailwind';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,7 +30,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en' className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html
+      lang='en'
+      className={cn(geistSans.variable, geistMono.variable)}
+      suppressHydrationWarning
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{

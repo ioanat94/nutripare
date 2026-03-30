@@ -23,6 +23,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+import { cn } from '@/utils/tailwind';
+
 const SECTIONS = [
   { id: 'overview', label: 'Overview' },
   { id: 'searching', label: 'Searching for Products' },
@@ -185,7 +187,10 @@ export default function HelpPage() {
                   ].map(({ dot, label, desc }) => (
                     <li key={label} className='flex items-start gap-2'>
                       <span
-                        className={`mt-1.5 size-2 shrink-0 rounded-full ${dot}`}
+                        className={cn(
+                          'mt-1.5 size-2 shrink-0 rounded-full',
+                          dot,
+                        )}
                       />
                       <span>
                         <span className='text-foreground font-medium'>
@@ -264,7 +269,10 @@ export default function HelpPage() {
                           <TableCell>
                             <span className='flex items-center gap-1.5'>
                               <span
-                                className={`size-2 shrink-0 rounded-full ${ratingDot[row.rating]}`}
+                                className={cn(
+                                  'size-2 shrink-0 rounded-full',
+                                  ratingDot[row.rating],
+                                )}
                               />
                               {row.rating}
                             </span>
@@ -544,7 +552,8 @@ export default function HelpPage() {
                     <span className='text-foreground font-medium'>
                       New ruleset
                     </span>{' '}
-                    creates a blank ruleset and opens the editor immediately, and{' '}
+                    creates a blank ruleset and opens the editor immediately,
+                    and{' '}
                     <span className='text-foreground font-medium'>
                       From template
                     </span>{' '}
@@ -876,12 +885,12 @@ export default function HelpPage() {
                           variable-weight produce
                         </span>{' '}
                         — when you weigh bananas or deli items at the counter,
-                        or buy freshly baked goods priced by weight, the
-                        printed barcode encodes the item number and weight
-                        for that specific package. These codes are unique to the
-                        store and change with every purchase, so Open Food Facts
-                        has no record of them. Nutripare only works with
-                        standard EAN barcodes for packaged branded goods.
+                        or buy freshly baked goods priced by weight, the printed
+                        barcode encodes the item number and weight for that
+                        specific package. These codes are unique to the store
+                        and change with every purchase, so Open Food Facts has
+                        no record of them. Nutripare only works with standard
+                        EAN barcodes for packaged branded goods.
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
@@ -1043,7 +1052,13 @@ export default function HelpPage() {
                         display name, saved products, saved comparisons, and
                         nutrition settings. No tracking, analytics, or
                         advertising data is collected. See the{' '}
-                        <a href='/privacy' className='underline underline-offset-4 hover:text-primary'>Privacy Policy</a> for full details.
+                        <a
+                          href='/privacy'
+                          className='underline underline-offset-4 hover:text-primary'
+                        >
+                          Privacy Policy
+                        </a>{' '}
+                        for full details.
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value='multiple-devices'>

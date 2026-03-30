@@ -65,6 +65,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { cn } from '@/utils/tailwind';
 import { toast } from 'sonner';
 
 const ALL_ROWS = [...ROWS, SCORE_ROW];
@@ -350,7 +351,10 @@ function SortableRuleRow({
               {selectedRating ? (
                 <>
                   <span
-                    className={`inline-block size-2 shrink-0 rounded-full ${selectedRating.colorClass}`}
+                    className={cn(
+                      'inline-block size-2 shrink-0 rounded-full',
+                      selectedRating.colorClass,
+                    )}
                   />
                   {selectedRating.label}
                 </>
@@ -364,7 +368,10 @@ function SortableRuleRow({
               <SelectItem key={opt.value} value={opt.value}>
                 <span className='flex w-full items-center gap-2'>
                   <span
-                    className={`inline-block size-2 shrink-0 rounded-full ${opt.colorClass}`}
+                    className={cn(
+                      'inline-block size-2 shrink-0 rounded-full',
+                      opt.colorClass,
+                    )}
                   />
                   {opt.label}
                 </span>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { ChevronDown } from 'lucide-react';
+import { cn } from '@/utils/tailwind';
 
 interface Section {
   id: string;
@@ -81,13 +82,19 @@ export function HelpTocMobile({ sections }: HelpTocProps) {
             </span>
           </span>
           <ChevronDown
-            className={`size-4 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            className={cn(
+              'size-4 text-muted-foreground transition-transform duration-200',
+              open && 'rotate-180',
+            )}
             aria-hidden='true'
           />
         </button>
 
         {open && (
-          <div id='help-toc-mobile-list' className='border-t border-border px-4 py-3'>
+          <div
+            id='help-toc-mobile-list'
+            className='border-t border-border px-4 py-3'
+          >
             <ul className='space-y-1'>
               {sections.map(({ id, label }) => (
                 <li key={id}>

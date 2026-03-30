@@ -1,5 +1,6 @@
 import { MoreHorizontal } from 'lucide-react';
 import { ReactNode } from 'react';
+import { cn } from '@/utils/tailwind';
 
 export type CellData = {
   value: string;
@@ -129,25 +130,32 @@ export function DemoTable({
 
       {/* Table area */}
       <div
-        className={`overflow-x-auto bg-background ${tableTopPadding ? ' pt-3' : ''}`}
+        className={cn(
+          'overflow-x-auto bg-background',
+          tableTopPadding && 'pt-3',
+        )}
       >
         <table
           style={{
             width: '100%',
             minWidth: 'calc(8rem + 3 * 14rem)',
             tableLayout: 'fixed',
-            borderCollapse: 'collapse',
+            borderCollapse: 'separate',
+            borderSpacing: 0,
           }}
         >
           <thead>
-            <tr className='border-b border-border'>
-              <th className='sticky left-0 z-10 w-32 bg-background px-4 pb-1 text-right align-bottom text-xs font-normal text-muted-foreground'>
+            <tr>
+              <th className='sticky left-0 z-10 w-32 bg-background px-4 pb-1 text-right align-bottom text-xs font-normal text-muted-foreground border-r border-r-border/40 border-b border-b-border'>
                 per 100g
               </th>
-              {PRODUCTS.map((p) => (
+              {PRODUCTS.map((p, idx) => (
                 <th
                   key={p.code}
-                  className='w-48 px-4 pb-1 align-top text-left border-l border-border/40'
+                  className={cn(
+                    'w-48 px-4 pb-1 align-top text-left border-b border-b-border',
+                    idx > 0 && 'border-l border-l-border/40',
+                  )}
                 >
                   <div className='flex items-start justify-between gap-2'>
                     <div className='min-w-0 flex-1'>
@@ -168,11 +176,17 @@ export function DemoTable({
             {rows.map((row, i) => (
               <tr
                 key={row.label}
-                className={`${i < rows.length - 1 ? 'border-b border-border' : ''} ${i % 2 === 0 ? 'bg-muted/30' : ''}`}
+                className={cn(i % 2 === 0 && 'bg-muted/30')}
                 style={{ height: '45px' }}
               >
                 <td
-                  className={`sticky left-0 z-10 w-32 bg-background py-0 pl-4 text-left ${i < rows.length - 1 ? 'border-b border-border' : ''}`}
+                  className={cn(
+                    'sticky left-0 z-10 w-32 py-0 pl-4 text-left border-r border-border/40',
+                    i < rows.length - 1 && 'border-b border-border/40',
+                    i % 2 === 0
+                      ? 'bg-[color-mix(in_srgb,var(--muted)_30%,var(--background))]'
+                      : 'bg-background',
+                  )}
                 >
                   <span className='text-sm font-medium text-muted-foreground'>
                     {row.label}
@@ -181,7 +195,12 @@ export function DemoTable({
                 {row.cells.map((cell, j) => (
                   <td
                     key={j}
-                    className={`py-0 text-sm font-medium tabular-nums border-l border-border/40 ${cell.className}`}
+                    className={cn(
+                      'py-0 text-sm font-medium tabular-nums',
+                      i < rows.length - 1 && 'border-b border-border/40',
+                      j > 0 && 'border-l border-border/40',
+                      cell.className,
+                    )}
                   >
                     <div className='grid grid-cols-[1.25rem_min-content_1.25rem] items-center justify-center gap-3'>
                       <span className='text-center text-base leading-none'>

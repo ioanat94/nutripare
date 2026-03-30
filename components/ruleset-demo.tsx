@@ -2,6 +2,7 @@
 
 import { DEFAULT_ROWS, DemoTable, RowData } from '@/components/demo-table';
 
+import { cn } from '@/utils/tailwind';
 import { useState } from 'react';
 
 // Low Carb: penalises high carbs and sugar; protein is neutral
@@ -183,11 +184,12 @@ export function RulesetDemo() {
               <button
                 key={r.id}
                 onClick={() => setActiveId(r.id)}
-                className={`cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+                className={cn(
+                  'cursor-pointer rounded-md px-3 py-1 text-xs font-medium transition-colors',
                   r.id === activeId
                     ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:text-foreground'
-                }`}
+                    : 'bg-muted text-muted-foreground hover:text-foreground',
+                )}
               >
                 {r.name}
               </button>

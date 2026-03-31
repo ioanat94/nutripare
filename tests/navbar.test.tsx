@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
 
-import { Navbar } from '@/components/navbar';
 import type { FirestoreUser } from '@/types/firestore';
+import { Navbar } from '@/components/navbar';
+import { vi } from 'vitest';
 
 const mockPush = vi.fn();
 const mockUseAuth = vi.fn();
@@ -22,7 +22,12 @@ beforeEach(() => {
   document.documentElement.classList.remove('dark');
   mockPush.mockClear();
   mockPathname = '/';
-  mockUseAuth.mockReturnValue({ user: null, loading: false });
+  mockUseAuth.mockReturnValue({
+    user: null,
+    loading: false,
+    emailVerified: false,
+    refreshEmailVerified: vi.fn(),
+  });
 });
 
 const mockUser: FirestoreUser = {
@@ -38,7 +43,7 @@ describe('Navbar', () => {
   it('has a theme toggle button', () => {
     render(<Navbar />);
     expect(
-      screen.getByRole('button', { name: /toggle theme/i })
+      screen.getByRole('button', { name: /toggle theme/i }),
     ).toBeInTheDocument();
   });
 
@@ -83,21 +88,36 @@ describe('Navbar', () => {
   });
 
   it('user icon has text-foreground class when logged out', () => {
-    mockUseAuth.mockReturnValue({ user: null, loading: false });
+    mockUseAuth.mockReturnValue({
+      user: null,
+      loading: false,
+      emailVerified: false,
+      refreshEmailVerified: vi.fn(),
+    });
     render(<Navbar />);
     const link = screen.getByRole('link', { name: /sign in/i });
     expect(link.querySelector('svg')).toHaveClass('text-foreground');
   });
 
   it('user icon has text-primary class when logged in', () => {
-    mockUseAuth.mockReturnValue({ user: mockUser, loading: false });
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      emailVerified: true,
+      refreshEmailVerified: vi.fn(),
+    });
     render(<Navbar />);
     const link = screen.getByRole('link', { name: /account settings/i });
     expect(link.querySelector('svg')).toHaveClass('text-primary');
   });
 
   it('user icon while logged out links to /login with redirect param', () => {
-    mockUseAuth.mockReturnValue({ user: null, loading: false });
+    mockUseAuth.mockReturnValue({
+      user: null,
+      loading: false,
+      emailVerified: false,
+      refreshEmailVerified: vi.fn(),
+    });
     render(<Navbar />);
     expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute(
       'href',
@@ -107,7 +127,12 @@ describe('Navbar', () => {
 
   it('user icon while logged out on /login links to /login?redirect=/', () => {
     mockPathname = '/login';
-    mockUseAuth.mockReturnValue({ user: null, loading: false });
+    mockUseAuth.mockReturnValue({
+      user: null,
+      loading: false,
+      emailVerified: false,
+      refreshEmailVerified: vi.fn(),
+    });
     render(<Navbar />);
     expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute(
       'href',
@@ -116,11 +141,15 @@ describe('Navbar', () => {
   });
 
   it('user icon while logged in links to /settings/account', () => {
-    mockUseAuth.mockReturnValue({ user: mockUser, loading: false });
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      loading: false,
+      emailVerified: true,
+      refreshEmailVerified: vi.fn(),
+    });
     render(<Navbar />);
-    expect(screen.getByRole('link', { name: /account settings/i })).toHaveAttribute(
-      'href',
-      '/settings/account',
-    );
+    expect(
+      screen.getByRole('link', { name: /account settings/i }),
+    ).toHaveAttribute('href', '/settings/account');
   });
 });

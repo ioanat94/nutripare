@@ -1,9 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import type { User } from 'firebase/auth';
-import { useOnUserAuthenticated } from '@firebase-oss/ui-react';
-
 import {
   Card,
   CardContent,
@@ -11,7 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+
+import type { ReactNode } from 'react';
 import { Separator } from '@/components/ui/separator';
+import type { User } from 'firebase/auth';
+import { useOnUserAuthenticated } from '@firebase-oss/ui-react';
 
 interface AuthScreenProps {
   title: string;

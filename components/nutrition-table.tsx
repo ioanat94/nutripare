@@ -5,7 +5,11 @@ import {
   ArrowUp,
   HelpCircle,
   Loader2,
+  Maximize2,
+  Minimize2,
   MoreHorizontal,
+  Pin,
+  PinOff,
   Save,
   SaveAll,
   SaveOff,
@@ -13,7 +17,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { COMPUTED_SCORE_KEY, computeScore } from '@/utils/score';
+import { COMPUTED_SCORE_KEY, ROWS, SCORE_ROW } from '@/utils/constants';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +30,11 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { NutritionRuleset, NutritionSettings } from '@/types/firestore';
+import type {
+  NutritionRuleset,
+  NutritionSettings,
+  ThresholdColor,
+} from '@/types/firestore';
 import {
   Table,
   TableBody,
@@ -40,16 +48,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  getDefaultRules,
-  getExtremeEmoji,
-  getThresholdColor,
-} from '@/utils/thresholds';
+import { getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
 import { useMemo, useState } from 'react';
 
 import type { ProductNutrition } from '@/types/openfoodfacts';
-import type { ThresholdColor } from '@/utils/thresholds';
+import { cn } from '@/utils/tailwind';
+import { computeScore } from '@/utils/score';
+import { getDefaultRules } from '@/utils/getDefaultRules';
 import { toast } from 'sonner';
+import { useExpandedTable } from '@/hooks/use-expanded-table';
 
 type SortDir = 'desc' | 'asc';
 type SortState = { key: string; dir: SortDir } | null;
@@ -72,22 +79,6 @@ interface NutritionTableProps {
   selectedRulesetId?: string | null;
   onRulesetChange?: (id: string) => void;
 }
-
-export const ROWS = [
-  { label: 'Calories (kcal)', key: 'kcals' },
-  { label: 'Protein (g)', key: 'protein' },
-  { label: 'Carbohydrates (g)', key: 'carbohydrates' },
-  { label: 'Sugar (g)', key: 'sugar' },
-  { label: 'Fat (g)', key: 'fat' },
-  { label: 'Saturated Fat (g)', key: 'saturated_fat' },
-  { label: 'Fiber (g)', key: 'fiber' },
-  { label: 'Salt (g)', key: 'salt' },
-] as const;
-
-export const SCORE_ROW = {
-  label: 'Computed Score',
-  key: COMPUTED_SCORE_KEY,
-} as const;
 
 const COLOR_CLASS: Record<ThresholdColor, string> = {
   positive: 'text-positive',
@@ -152,8 +143,10 @@ export function NutritionTable({
     settings !== undefined ? (settings?.showFlag ?? true) : false;
 
   const [sort, setSort] = useState<SortState>(null);
+  const [pinnedCode, setPinnedCode] = useState<string | null>(null);
   const [savingProduct, setSavingProduct] = useState<string | null>(null);
   const [comparisonBusy, setComparisonBusy] = useState(false);
+  const { expanded, toggleExpanded } = useExpandedTable();
 
   const scores = useMemo(
     () => new Map(products.map((p) => [p.code, computeScore(p, rules)])),
@@ -187,6 +180,14 @@ export function NutritionTable({
       })
     : products;
 
+  const pinnedProduct = pinnedCode
+    ? (sortedProducts.find((p) => p.code === pinnedCode) ?? null)
+    : null;
+
+  const displayProducts = pinnedProduct
+    ? [pinnedProduct, ...sortedProducts.filter((p) => p.code !== pinnedCode)]
+    : sortedProducts;
+
   const allKeysOrdered = settings?.rowOrder ?? [
     ...ROWS.map((r) => r.key),
     COMPUTED_SCORE_KEY,
@@ -207,371 +208,505 @@ export function NutritionTable({
     );
   }
 
+  const tableNaturalWidth = `calc(11rem + ${displayProducts.length} * 14rem)`;
+
   return (
-    <div className='overflow-x-auto'>
+    <div
+      style={
+        expanded
+          ? {
+              width: `min(calc(${tableNaturalWidth} + 3rem), 100vw)`,
+              marginLeft: `calc(50% - min(calc(${tableNaturalWidth} + 3rem), 100vw) / 2)`,
+              paddingLeft: '1.5rem',
+              paddingRight: '1.5rem',
+            }
+          : undefined
+      }
+    >
       {/* Toolbar */}
       <div className='mb-3 flex items-center justify-between'>
         <p className='text-sm text-muted-foreground'>
           {products.length} {products.length === 1 ? 'product' : 'products'}
         </p>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label='More options'
-            className='flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+        <div className='flex items-center gap-1'>
+          <button
+            onClick={toggleExpanded}
+            aria-label={expanded ? 'Collapse table' : 'Expand table'}
+            className='hidden md:flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
           >
-            <MoreHorizontal className='size-4' aria-hidden='true' />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align='end' className='w-52'>
-            {rulesets && rulesets.length > 0 && (
-              <>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className='flex max-w-full gap-1'>
-                    <span className='shrink-0'>Ruleset:</span>
-                    <span className='truncate'>
-                      {rulesets.find((rs) => rs.id === selectedRulesetId)
-                        ?.name ?? 'None'}
-                    </span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className='max-w-48'>
-                    <DropdownMenuRadioGroup
-                      value={selectedRulesetId ?? ''}
-                      onValueChange={onRulesetChange}
-                    >
-                      {rulesets.map((rs) => (
-                        <DropdownMenuRadioItem
-                          key={rs.id}
-                          value={rs.id}
-                          disabled={!onRulesetChange}
-                        >
-                          <span className='truncate'>{rs.name}</span>
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-                <DropdownMenuSeparator />
-              </>
+            {expanded ? (
+              <Minimize2 className='size-4' aria-hidden='true' />
+            ) : (
+              <Maximize2 className='size-4' aria-hidden='true' />
             )}
-            {products.length >= 2 && (
-              <>
-                {isDirty && loadedComparisonName && onUpdateComparison && (
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      setComparisonBusy(true);
-                      try {
-                        await onUpdateComparison();
-                      } finally {
-                        setComparisonBusy(false);
-                      }
-                    }}
-                    disabled={comparisonBusy}
-                  >
-                    {comparisonBusy ? (
-                      <Loader2
-                        className='size-4 animate-spin'
-                        aria-hidden='true'
-                      />
-                    ) : (
-                      <Save className='size-4' aria-hidden='true' />
-                    )}
-                    Update &ldquo;{loadedComparisonName}&rdquo;
-                  </DropdownMenuItem>
-                )}
-                {isDirty && loadedComparisonName && onSaveAsNew && (
-                  <DropdownMenuItem onClick={onSaveAsNew}>
-                    <SaveAll className='size-4' aria-hidden='true' />
-                    Save as new comparison
-                  </DropdownMenuItem>
-                )}
-                {!loadedComparisonName && onSaveComparison && (
-                  <DropdownMenuItem onClick={onSaveComparison}>
-                    <Save className='size-4' aria-hidden='true' />
-                    Save comparison
-                  </DropdownMenuItem>
-                )}
-                {loadedComparisonName && onUnsaveComparison && (
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      setComparisonBusy(true);
-                      try {
-                        await onUnsaveComparison();
-                      } finally {
-                        setComparisonBusy(false);
-                      }
-                    }}
-                    disabled={comparisonBusy}
-                  >
-                    {comparisonBusy ? (
-                      <Loader2
-                        className='size-4 animate-spin'
-                        aria-hidden='true'
-                      />
-                    ) : (
-                      <SaveOff className='size-4' aria-hidden='true' />
-                    )}
-                    Delete &ldquo;{loadedComparisonName}&rdquo;
-                  </DropdownMenuItem>
-                )}
-              </>
-            )}
-            <DropdownMenuItem onClick={() => handleShare()}>
-              <Share2 className='size-4' aria-hidden='true' />
-              Share
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={onClearAll}
-              className='text-destructive focus:text-destructive'
+          </button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label='More options'
+              className='flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
             >
-              <Trash2 className='size-4' aria-hidden='true' />
-              Clear all
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <MoreHorizontal className='size-4' aria-hidden='true' />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end' className='w-52'>
+              {rulesets && rulesets.length > 0 && (
+                <>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className='flex max-w-full gap-1'>
+                      <span className='shrink-0'>Ruleset:</span>
+                      <span className='truncate'>
+                        {rulesets.find((rs) => rs.id === selectedRulesetId)
+                          ?.name ?? 'None'}
+                      </span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent className='max-w-48'>
+                      <DropdownMenuRadioGroup
+                        value={selectedRulesetId ?? ''}
+                        onValueChange={onRulesetChange}
+                      >
+                        {rulesets.map((rs) => (
+                          <DropdownMenuRadioItem
+                            key={rs.id}
+                            value={rs.id}
+                            disabled={!onRulesetChange}
+                          >
+                            <span className='truncate'>{rs.name}</span>
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              {products.length >= 2 && (
+                <>
+                  {isDirty && loadedComparisonName && onUpdateComparison && (
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        setComparisonBusy(true);
+                        try {
+                          await onUpdateComparison();
+                        } finally {
+                          setComparisonBusy(false);
+                        }
+                      }}
+                      disabled={comparisonBusy}
+                    >
+                      {comparisonBusy ? (
+                        <Loader2
+                          className='size-4 animate-spin'
+                          aria-hidden='true'
+                        />
+                      ) : (
+                        <Save className='size-4' aria-hidden='true' />
+                      )}
+                      Update &ldquo;{loadedComparisonName}&rdquo;
+                    </DropdownMenuItem>
+                  )}
+                  {isDirty && loadedComparisonName && onSaveAsNew && (
+                    <DropdownMenuItem onClick={onSaveAsNew}>
+                      <SaveAll className='size-4' aria-hidden='true' />
+                      Save as new comparison
+                    </DropdownMenuItem>
+                  )}
+                  {!loadedComparisonName && onSaveComparison && (
+                    <DropdownMenuItem onClick={onSaveComparison}>
+                      <Save className='size-4' aria-hidden='true' />
+                      Save comparison
+                    </DropdownMenuItem>
+                  )}
+                  {loadedComparisonName && onUnsaveComparison && (
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        setComparisonBusy(true);
+                        try {
+                          await onUnsaveComparison();
+                        } finally {
+                          setComparisonBusy(false);
+                        }
+                      }}
+                      disabled={comparisonBusy}
+                    >
+                      {comparisonBusy ? (
+                        <Loader2
+                          className='size-4 animate-spin'
+                          aria-hidden='true'
+                        />
+                      ) : (
+                        <SaveOff className='size-4' aria-hidden='true' />
+                      )}
+                      Delete &ldquo;{loadedComparisonName}&rdquo;
+                    </DropdownMenuItem>
+                  )}
+                </>
+              )}
+              <DropdownMenuItem onClick={() => handleShare()}>
+                <Share2 className='size-4' aria-hidden='true' />
+                Share
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={onClearAll}
+                className='text-destructive focus:text-destructive'
+              >
+                <Trash2 className='size-4' aria-hidden='true' />
+                Clear all
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      <Table
-        className='table-fixed'
-        style={{ width: `calc(8rem + ${sortedProducts.length} * 14rem)` }}
-      >
-        <TableHeader>
-          <TableRow className='hover:bg-transparent'>
-            {/* Corner cell — table-wide qualifier */}
-            <TableHead className='sticky left-0 z-10 bg-background w-32 align-bottom pb-3 text-right text-xs font-normal text-muted-foreground'>
-              per 100g
-            </TableHead>
-            {sortedProducts.map((p) => {
-              const name = p.product_name || 'Unknown product';
-              return (
-                <TableHead
-                  key={p.code}
-                  scope='col'
-                  className='w-48 align-top pb-3'
-                >
-                  <div className='flex items-start justify-between gap-2'>
-                    <div className='min-w-0 flex-1'>
-                      <span
-                        title={name}
-                        className='block truncate text-sm font-semibold text-foreground'
-                      >
-                        {name}
-                      </span>
-                      <span className='font-mono text-xs text-muted-foreground'>
-                        {p.code}
-                      </span>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        aria-label={`Options for ${name}`}
-                        className='flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
-                      >
-                        <MoreHorizontal className='size-4' aria-hidden='true' />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align='end' className='w-32'>
-                        {savedProductCodes?.has(p.code)
-                          ? onUnsaveProduct && (
-                              <DropdownMenuItem
-                                onClick={async () => {
-                                  setSavingProduct(p.code);
-                                  try {
-                                    await onUnsaveProduct(p.code);
-                                  } finally {
-                                    setSavingProduct(null);
-                                  }
-                                }}
-                                disabled={savingProduct === p.code}
-                              >
-                                {savingProduct === p.code ? (
-                                  <Loader2
-                                    className='size-4 animate-spin'
-                                    aria-hidden='true'
-                                  />
-                                ) : (
-                                  <SaveOff
+      <div className='overflow-x-auto'>
+        <Table
+          className='table-fixed border-separate border-spacing-0 [&_td]:border-b [&_th]:border-b [&_td]:border-border/40 [&_th]:border-border/40 [&_tbody_tr:last-child_td]:border-b-0'
+          containerClassName='overflow-visible'
+          style={{ width: `calc(11rem + ${displayProducts.length} * 14rem)` }}
+        >
+          <TableHeader>
+            <TableRow className='hover:bg-transparent'>
+              {/* Corner cell — table-wide qualifier */}
+              <TableHead
+                className={cn(
+                  'sticky left-0 z-10 bg-background w-44 align-bottom pb-3 text-right text-xs font-normal text-muted-foreground',
+                  pinnedCode === null && 'border-r',
+                )}
+              >
+                per 100g
+              </TableHead>
+              {displayProducts.map((p, idx) => {
+                const name = p.product_name || 'Unknown product';
+                const isPinned = pinnedCode === p.code;
+                return (
+                  <TableHead
+                    key={p.code}
+                    scope='col'
+                    className={cn(
+                      'w-56 align-top pb-3',
+                      isPinned
+                        ? 'sticky left-44 z-10 bg-background border-r'
+                        : (pinnedCode !== null ? idx > 1 : idx > 0) &&
+                            'border-l border-border/40',
+                    )}
+                    style={
+                      isPinned
+                        ? {
+                            boxShadow: 'var(--table-pin-shadow)',
+                          }
+                        : undefined
+                    }
+                  >
+                    <div className='flex items-start justify-between gap-2'>
+                      <div className='min-w-0 flex-1'>
+                        <span
+                          title={name}
+                          className='block truncate text-sm font-semibold text-foreground'
+                        >
+                          {name}
+                        </span>
+                        <span className='font-mono text-xs text-muted-foreground'>
+                          {p.code}
+                        </span>
+                      </div>
+                      {isPinned && (
+                        <button
+                          onClick={() => setPinnedCode(null)}
+                          aria-label='Unpin column'
+                          className='hidden landscape:inline-flex md:inline-flex cursor-pointer text-primary hover:text-primary/70 transition-colors mt-0.75'
+                        >
+                          <Pin
+                            className='size-3.5 shrink-0'
+                            aria-hidden='true'
+                          />
+                        </button>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          aria-label={`Options for ${name}`}
+                          className='flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+                        >
+                          <MoreHorizontal
+                            className='size-4'
+                            aria-hidden='true'
+                          />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align='end' className='w-36'>
+                          {savedProductCodes?.has(p.code)
+                            ? onUnsaveProduct && (
+                                <DropdownMenuItem
+                                  onClick={async () => {
+                                    setSavingProduct(p.code);
+                                    try {
+                                      await onUnsaveProduct(p.code);
+                                    } finally {
+                                      setSavingProduct(null);
+                                    }
+                                  }}
+                                  disabled={savingProduct === p.code}
+                                >
+                                  {savingProduct === p.code ? (
+                                    <Loader2
+                                      className='size-4 animate-spin'
+                                      aria-hidden='true'
+                                    />
+                                  ) : (
+                                    <SaveOff
+                                      className='size-4'
+                                      aria-hidden='true'
+                                    />
+                                  )}
+                                  Unsave product
+                                </DropdownMenuItem>
+                              )
+                            : onSaveProduct && (
+                                <DropdownMenuItem
+                                  onClick={async () => {
+                                    setSavingProduct(p.code);
+                                    try {
+                                      await onSaveProduct(p.code);
+                                    } finally {
+                                      setSavingProduct(null);
+                                    }
+                                  }}
+                                  disabled={savingProduct === p.code}
+                                >
+                                  {savingProduct === p.code ? (
+                                    <Loader2
+                                      className='size-4 animate-spin'
+                                      aria-hidden='true'
+                                    />
+                                  ) : (
+                                    <Save
+                                      className='size-4'
+                                      aria-hidden='true'
+                                    />
+                                  )}
+                                  Save product
+                                </DropdownMenuItem>
+                              )}
+                          <DropdownMenuItem onClick={() => handleShare(p.code)}>
+                            <Share2 className='size-4' aria-hidden='true' />
+                            Share
+                          </DropdownMenuItem>
+                          {products.length >= 2 && (
+                            <DropdownMenuItem
+                              className='hidden landscape:flex md:flex'
+                              onClick={() =>
+                                setPinnedCode(isPinned ? null : p.code)
+                              }
+                            >
+                              {isPinned ? (
+                                <>
+                                  <PinOff
                                     className='size-4'
                                     aria-hidden='true'
                                   />
-                                )}
-                                Unsave product
-                              </DropdownMenuItem>
-                            )
-                          : onSaveProduct && (
-                              <DropdownMenuItem
-                                onClick={async () => {
-                                  setSavingProduct(p.code);
-                                  try {
-                                    await onSaveProduct(p.code);
-                                  } finally {
-                                    setSavingProduct(null);
-                                  }
-                                }}
-                                disabled={savingProduct === p.code}
-                              >
-                                {savingProduct === p.code ? (
-                                  <Loader2
-                                    className='size-4 animate-spin'
-                                    aria-hidden='true'
-                                  />
-                                ) : (
-                                  <Save className='size-4' aria-hidden='true' />
-                                )}
-                                Save product
-                              </DropdownMenuItem>
-                            )}
-                        <DropdownMenuItem onClick={() => handleShare(p.code)}>
-                          <Share2 className='size-4' aria-hidden='true' />
-                          Share
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => onDismiss(p.code)}
-                          className='text-destructive focus:text-destructive'
-                        >
-                          <X className='size-4' aria-hidden='true' />
-                          Remove
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </TableHead>
-              );
-            })}
-          </TableRow>
-        </TableHeader>
-
-        <TableBody>
-          {visibleRows.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={sortedProducts.length + 1}
-                className='py-6 text-center text-sm text-muted-foreground'
-              >
-                No nutrients visible. Enable some in Settings → Nutrition.
-              </TableCell>
-            </TableRow>
-          ) : (
-            displayRows.map((row, i) => {
-              const isActive = sort?.key === row.key;
-              const rowBg = isActive
-                ? 'bg-primary/10'
-                : i % 2 === 0
-                  ? 'bg-muted/30'
-                  : '';
-              const isScoreRow = row.key === COMPUTED_SCORE_KEY;
-              const allRowValues = isScoreRow
-                ? sortedProducts.map((p) => scores.get(p.code) ?? undefined)
-                : sortedProducts.map(
-                    (q) =>
-                      q[row.key as keyof ProductNutrition] as
-                        | number
-                        | undefined,
-                  );
-
-              return (
-                <TableRow key={row.key} className={rowBg}>
-                  {/* Row label — sticky, clickable to sort */}
-                  <TableCell
-                    scope='row'
-                    className={`sticky left-0 z-10 w-32 py-3 ${isActive ? 'bg-primary/10' : 'bg-background'}`}
-                  >
-                    <div className='flex items-center gap-1'>
-                      <button
-                        onClick={() => handleRowClick(row.key)}
-                        className={`flex cursor-pointer items-center gap-1 text-left text-sm transition-colors ${isActive ? 'font-semibold text-foreground' : 'font-medium text-muted-foreground hover:text-foreground'}`}
-                      >
-                        {row.label}
-                        {isActive &&
-                          (sort.dir === 'desc' ? (
-                            <ArrowDown className='size-3 shrink-0' />
-                          ) : (
-                            <ArrowUp className='size-3 shrink-0' />
-                          ))}
-                      </button>
-                      {isScoreRow && (
-                        <Tooltip>
-                          <TooltipTrigger className='inline-flex cursor-default'>
-                            <HelpCircle className='size-4 shrink-0 text-muted-foreground' />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            Score from 0–100 based on your nutrition rules.
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
+                                  Unpin column
+                                </>
+                              ) : (
+                                <>
+                                  <Pin className='size-4' aria-hidden='true' />
+                                  Pin column
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => {
+                              if (pinnedCode === p.code) setPinnedCode(null);
+                              onDismiss(p.code);
+                            }}
+                            className='text-destructive focus:text-destructive'
+                          >
+                            <X className='size-4' aria-hidden='true' />
+                            Remove
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                  </TableCell>
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          </TableHeader>
 
-                  {/* Value cells — right-aligned, tabular figures */}
-                  {sortedProducts.map((p, j) => {
-                    let text: string;
-                    let className: string;
-                    let rawEmoji: string | null;
-
-                    if (isScoreRow) {
-                      const scoreVal = scores.get(p.code) ?? null;
-                      const color =
-                        scoreVal !== null
-                          ? getThresholdColor(
-                              COMPUTED_SCORE_KEY,
-                              scoreVal,
-                              rules,
-                            )
-                          : null;
-                      text = scoreVal === null ? '—' : String(scoreVal);
-                      className =
-                        scoreVal === null
-                          ? 'text-muted-foreground'
-                          : color
-                            ? COLOR_CLASS[color]
-                            : '';
-                      rawEmoji = getExtremeEmoji(
-                        COMPUTED_SCORE_KEY,
-                        allRowValues,
-                        j,
-                        rules,
-                      );
-                    } else {
-                      ({ text, className } = renderCell(
-                        row.key,
-                        p[row.key as keyof ProductNutrition] as
+          <TableBody>
+            {visibleRows.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={displayProducts.length + 1}
+                  className='py-6 text-center text-sm text-muted-foreground'
+                >
+                  No nutrients visible. Enable some in Settings → Nutrition.
+                </TableCell>
+              </TableRow>
+            ) : (
+              displayRows.map((row, i) => {
+                const isActive = sort?.key === row.key;
+                const rowBg = isActive
+                  ? 'bg-primary/10 hover:bg-primary/10'
+                  : i % 2 === 0
+                    ? 'bg-muted/30'
+                    : '';
+                const isScoreRow = row.key === COMPUTED_SCORE_KEY;
+                const allRowValues = isScoreRow
+                  ? displayProducts.map((p) => scores.get(p.code) ?? undefined)
+                  : displayProducts.map(
+                      (q) =>
+                        q[row.key as keyof ProductNutrition] as
                           | number
                           | undefined,
-                        rules,
-                      ));
-                      rawEmoji = getExtremeEmoji(
-                        row.key,
-                        allRowValues,
-                        j,
-                        rules,
+                    );
+
+                const cellBgBase = isActive
+                  ? 'bg-table-active'
+                  : i % 2 === 0
+                    ? 'bg-table-stripe'
+                    : 'bg-background';
+
+                const stickyBg = cn(
+                  'transition-colors',
+                  !isActive && 'group-hover:bg-table-stripe-hover',
+                  cellBgBase,
+                );
+
+                return (
+                  <TableRow key={row.key} className={cn('group', rowBg)}>
+                    {/* Row label — sticky, clickable to sort */}
+                    <TableCell
+                      scope='row'
+                      className={cn(
+                        'sticky left-0 z-10 w-44 py-3',
+                        { 'border-r': pinnedCode === null },
+                        stickyBg,
+                      )}
+                    >
+                      <div className='flex items-center gap-1'>
+                        <button
+                          onClick={() => handleRowClick(row.key)}
+                          className={cn(
+                            'flex cursor-pointer items-center gap-1 text-left text-sm transition-colors',
+                            isActive
+                              ? 'font-semibold text-foreground'
+                              : 'font-medium text-muted-foreground hover:text-foreground',
+                          )}
+                        >
+                          {row.label}
+                          {isActive &&
+                            (sort.dir === 'desc' ? (
+                              <ArrowDown className='size-3 shrink-0' />
+                            ) : (
+                              <ArrowUp className='size-3 shrink-0' />
+                            ))}
+                        </button>
+                        {isScoreRow && (
+                          <Tooltip>
+                            <TooltipTrigger className='inline-flex cursor-default'>
+                              <HelpCircle className='size-4 shrink-0 text-muted-foreground' />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Score from 0–100 based on your nutrition rules.
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
+                    </TableCell>
+
+                    {/* Value cells — right-aligned, tabular figures */}
+                    {displayProducts.map((p, j) => {
+                      let text: string;
+                      let className: string;
+                      let rawEmoji: string | null;
+
+                      if (isScoreRow) {
+                        const scoreVal = scores.get(p.code) ?? null;
+                        const color =
+                          scoreVal !== null
+                            ? getThresholdColor(
+                                COMPUTED_SCORE_KEY,
+                                scoreVal,
+                                rules,
+                              )
+                            : null;
+                        text = scoreVal === null ? '—' : String(scoreVal);
+                        className =
+                          scoreVal === null
+                            ? 'text-muted-foreground'
+                            : color
+                              ? COLOR_CLASS[color]
+                              : '';
+                        rawEmoji = getExtremeEmoji(
+                          COMPUTED_SCORE_KEY,
+                          allRowValues,
+                          j,
+                          rules,
+                        );
+                      } else {
+                        ({ text, className } = renderCell(
+                          row.key,
+                          p[row.key as keyof ProductNutrition] as
+                            | number
+                            | undefined,
+                          rules,
+                        ));
+                        rawEmoji = getExtremeEmoji(
+                          row.key,
+                          allRowValues,
+                          j,
+                          rules,
+                        );
+                      }
+
+                      const emoji = applyEmojiSettings(
+                        rawEmoji,
+                        showCrown,
+                        showFlag,
                       );
-                    }
 
-                    const emoji = applyEmojiSettings(
-                      rawEmoji,
-                      showCrown,
-                      showFlag,
-                    );
+                      const isCellPinned = pinnedCode === p.code;
+                      const pinnedBase = isCellPinned
+                        ? 'sticky left-44 z-10 border-r'
+                        : (pinnedCode !== null ? j > 1 : j > 0)
+                          ? 'border-l'
+                          : '';
 
-                    return (
-                      <TableCell
-                        key={p.code}
-                        className={`py-3 tabular-nums text-sm font-medium ${className}`}
-                      >
-                        <div className='flex items-center justify-end'>
-                          <span className='w-5 shrink-0 text-center text-base leading-none'>
-                            {emoji}
-                          </span>
-                          <span className='w-12 text-right'>{text}</span>
-                        </div>
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
+                      return (
+                        <TableCell
+                          key={p.code}
+                          className={cn(
+                            'py-3 tabular-nums text-sm font-medium border-border/40',
+                            pinnedBase,
+                            stickyBg,
+                            className,
+                          )}
+                          style={
+                            isCellPinned
+                              ? {
+                                  boxShadow: 'var(--table-pin-shadow)',
+                                }
+                              : undefined
+                          }
+                        >
+                          <div className='grid grid-cols-[1.25rem_min-content_1.25rem] items-center justify-center gap-3'>
+                            <span className='text-center text-base leading-none'>
+                              {emoji}
+                            </span>
+                            <span className='text-center'>{text}</span>
+                            <span />
+                          </div>
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

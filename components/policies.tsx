@@ -1,8 +1,8 @@
 import { PolicyContext, useUI } from '@firebase-oss/ui-react';
-import { useContext } from 'react';
 
 import { cn } from '@/utils/tailwind';
 import { getTranslation } from '@firebase-oss/ui-core';
+import { useContext } from 'react';
 
 export function Policies() {
   const ui = useUI();
@@ -27,7 +27,12 @@ export function Policies() {
       );
     }
     return (
-      <a href={url.toString()} target='_blank' rel='noopener noreferrer' className={linkClass}>
+      <a
+        href={url.toString()}
+        target='_blank'
+        rel='noopener noreferrer'
+        className={linkClass}
+      >
         {label}
       </a>
     );

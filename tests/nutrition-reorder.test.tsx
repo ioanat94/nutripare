@@ -1,6 +1,17 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
+
+import type { NutritionSettings } from '@/types/firestore';
+import { NutritionTable } from '@/components/nutrition-table';
+import type { ProductNutrition } from '@/types/openfoodfacts';
+import { ROWS } from '@/utils/constants';
 import type { ReactNode } from 'react';
+import { vi } from 'vitest';
 
 // ---- Mock dnd-kit ----
 const dragEndHandlers: Array<
@@ -8,7 +19,16 @@ const dragEndHandlers: Array<
 > = [];
 
 vi.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children, onDragEnd }: { children: ReactNode; onDragEnd: (event: { active: { id: unknown }; over: { id: unknown } | null }) => void }) => {
+  DndContext: ({
+    children,
+    onDragEnd,
+  }: {
+    children: ReactNode;
+    onDragEnd: (event: {
+      active: { id: unknown };
+      over: { id: unknown } | null;
+    }) => void;
+  }) => {
     dragEndHandlers.push(onDragEnd);
     return <>{children}</>;
   },
@@ -57,15 +77,14 @@ vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
 
-const { getNutritionSettings, saveNutritionSettings } = await import('@/lib/firestore');
+const { getNutritionSettings, saveNutritionSettings } =
+  await import('@/lib/firestore');
 const mockGetNutritionSettings = vi.mocked(getNutritionSettings);
 const mockSaveNutritionSettings = vi.mocked(saveNutritionSettings);
 
-import { ROWS, NutritionTable } from '@/components/nutrition-table';
-import type { NutritionSettings } from '@/types/firestore';
-import type { ProductNutrition } from '@/types/openfoodfacts';
-
-function makeSettings(overrides: Partial<NutritionSettings> = {}): NutritionSettings {
+function makeSettings(
+  overrides: Partial<NutritionSettings> = {},
+): NutritionSettings {
   return {
     visibleRows: [...ROWS.map((r) => r.key), 'computed_score'],
     showCrown: true,
@@ -76,7 +95,9 @@ function makeSettings(overrides: Partial<NutritionSettings> = {}): NutritionSett
   };
 }
 
-function makeProduct(overrides: Partial<ProductNutrition> = {}): ProductNutrition {
+function makeProduct(
+  overrides: Partial<ProductNutrition> = {},
+): ProductNutrition {
   return {
     code: '111',
     product_name: 'Test Product',
@@ -102,13 +123,17 @@ beforeEach(() => {
 async function renderTab() {
   const { NutritionTab } = await import('@/components/settings/nutrition-tab');
   render(<NutritionTab userId='uid-123' />);
-  await waitFor(() => expect(screen.queryByText(/visible rows/i)).toBeInTheDocument());
+  await waitFor(() =>
+    expect(screen.queryByText(/visible rows/i)).toBeInTheDocument(),
+  );
 }
 
 describe('NutritionTab reorder', () => {
   it('renders visible rows as a single-column list (no grid-cols-2)', async () => {
     await renderTab();
-    const section = screen.getByRole('heading', { name: /visible rows/i }).closest('section')!;
+    const section = screen
+      .getByRole('heading', { name: /visible rows/i })
+      .closest('section')!;
     expect(section.querySelector('.grid-cols-2')).not.toBeInTheDocument();
   });
 
@@ -121,10 +146,26 @@ describe('NutritionTab reorder', () => {
   it('renders a drag handle for each rule row in detail view', async () => {
     mockGetNutritionSettings.mockResolvedValue(
       makeSettings({
-        rulesets: [{ id: 'default', name: 'Default', rules: [
-          { nutrient: 'protein', direction: 'above', value: 20, rating: 'positive' },
-          { nutrient: 'salt', direction: 'above', value: 1.5, rating: 'negative' },
-        ]}],
+        rulesets: [
+          {
+            id: 'default',
+            name: 'Default',
+            rules: [
+              {
+                nutrient: 'protein',
+                direction: 'above',
+                value: 20,
+                rating: 'positive',
+              },
+              {
+                nutrient: 'salt',
+                direction: 'above',
+                value: 1.5,
+                rating: 'negative',
+              },
+            ],
+          },
+        ],
       }),
     );
     await renderTab();
@@ -136,13 +177,25 @@ describe('NutritionTab reorder', () => {
   });
 
   it('renders nutrients in the order from saved settings', async () => {
-    const customOrder = ['protein', 'kcals', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt', 'computed_score'];
-    mockGetNutritionSettings.mockResolvedValue(makeSettings({ rowOrder: customOrder, rulesets: [] }));
+    const customOrder = [
+      'protein',
+      'kcals',
+      'carbohydrates',
+      'sugar',
+      'fat',
+      'saturated_fat',
+      'fiber',
+      'salt',
+      'computed_score',
+    ];
+    mockGetNutritionSettings.mockResolvedValue(
+      makeSettings({ rowOrder: customOrder, rulesets: [] }),
+    );
     await renderTab();
 
-    const labels = screen.getAllByRole('checkbox').map(
-      (cb) => cb.closest('label')?.textContent?.trim() ?? '',
-    );
+    const labels = screen
+      .getAllByRole('checkbox')
+      .map((cb) => cb.closest('label')?.textContent?.trim() ?? '');
     expect(labels[0]).toMatch(/protein/i);
     expect(labels[1]).toMatch(/calories/i);
   });
@@ -150,10 +203,26 @@ describe('NutritionTab reorder', () => {
   it('renders rules in the order from saved settings (in detail view)', async () => {
     mockGetNutritionSettings.mockResolvedValue(
       makeSettings({
-        rulesets: [{ id: 'default', name: 'Default', rules: [
-          { nutrient: 'salt', direction: 'above', value: 1.5, rating: 'negative' },
-          { nutrient: 'protein', direction: 'above', value: 20, rating: 'positive' },
-        ]}],
+        rulesets: [
+          {
+            id: 'default',
+            name: 'Default',
+            rules: [
+              {
+                nutrient: 'salt',
+                direction: 'above',
+                value: 1.5,
+                rating: 'negative',
+              },
+              {
+                nutrient: 'protein',
+                direction: 'above',
+                value: 20,
+                rating: 'positive',
+              },
+            ],
+          },
+        ],
       }),
     );
     await renderTab();
@@ -228,10 +297,26 @@ describe('NutritionTab reorder', () => {
   it('saves rules in new order after rule reorder in detail view', async () => {
     mockGetNutritionSettings.mockResolvedValue(
       makeSettings({
-        rulesets: [{ id: 'default', name: 'Default', rules: [
-          { nutrient: 'protein', direction: 'above', value: 20, rating: 'positive' },
-          { nutrient: 'salt', direction: 'above', value: 1.5, rating: 'negative' },
-        ]}],
+        rulesets: [
+          {
+            id: 'default',
+            name: 'Default',
+            rules: [
+              {
+                nutrient: 'protein',
+                direction: 'above',
+                value: 20,
+                rating: 'positive',
+              },
+              {
+                nutrient: 'salt',
+                direction: 'above',
+                value: 1.5,
+                rating: 'negative',
+              },
+            ],
+          },
+        ],
       }),
     );
     await renderTab();
@@ -259,7 +344,17 @@ describe('NutritionTab reorder', () => {
 
 describe('NutritionTable rowOrder', () => {
   it('renders rows in the order specified by rowOrder', () => {
-    const customOrder = ['protein', 'kcals', 'carbohydrates', 'sugar', 'fat', 'saturated_fat', 'fiber', 'salt', 'computed_score'];
+    const customOrder = [
+      'protein',
+      'kcals',
+      'carbohydrates',
+      'sugar',
+      'fat',
+      'saturated_fat',
+      'fiber',
+      'salt',
+      'computed_score',
+    ];
     render(
       <NutritionTable
         products={[makeProduct()]}

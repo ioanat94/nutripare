@@ -1,5 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import { cn } from '@/utils/tailwind';
 
 function GithubIcon() {
   return (
@@ -26,7 +27,7 @@ export function Footer() {
           href='https://world.openfoodfacts.org'
           target='_blank'
           rel='noopener noreferrer'
-          className={`${linkClass} flex items-center gap-1`}
+          className={cn(linkClass, 'flex items-center gap-1')}
         >
           Open Food Facts
           <ExternalLink className='size-3' aria-hidden='true' />
@@ -40,7 +41,7 @@ export function Footer() {
           href='https://github.com/ioanat94/nutripare'
           target='_blank'
           rel='noopener noreferrer'
-          className={`${linkClass} flex items-center gap-1.5`}
+          className={cn(linkClass, 'flex items-center gap-1.5')}
           aria-label='GitHub repository'
         >
           <GithubIcon />

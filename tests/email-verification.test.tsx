@@ -1,4 +1,11 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
+
 import { Suspense } from 'react';
 import { vi } from 'vitest';
 
@@ -48,7 +55,8 @@ const mockUseAuth = vi.mocked(useAuth);
 const { useRouter } = await import('next/navigation');
 const mockUseRouter = vi.mocked(useRouter);
 
-const { sendEmailVerification, signOut, applyActionCode } = await import('firebase/auth');
+const { sendEmailVerification, signOut, applyActionCode } =
+  await import('firebase/auth');
 const mockSendEmailVerification = vi.mocked(sendEmailVerification);
 const mockSignOut = vi.mocked(signOut);
 const mockApplyActionCode = vi.mocked(applyActionCode);
@@ -56,11 +64,23 @@ const mockApplyActionCode = vi.mocked(applyActionCode);
 const mockReplace = vi.fn();
 const mockUser = { id: 'uid-1', displayName: 'Test' };
 
+const mockRefreshEmailVerified = vi.fn().mockResolvedValue(undefined);
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockCurrentUser.emailVerified = false;
   mockCurrentUser.reload.mockResolvedValue(undefined);
-  mockUseRouter.mockReturnValue({ replace: mockReplace, push: vi.fn() } as never);
+  mockRefreshEmailVerified.mockResolvedValue(undefined);
+  mockUseRouter.mockReturnValue({
+    replace: mockReplace,
+    push: vi.fn(),
+  } as never);
+  mockUseAuth.mockReturnValue({
+    user: null,
+    loading: false,
+    emailVerified: false,
+    refreshEmailVerified: mockRefreshEmailVerified,
+  } as never);
 });
 
 async function renderLoginPage() {
@@ -75,9 +95,8 @@ async function renderLoginPage() {
 }
 
 async function renderVerificationScreen() {
-  const { EmailVerificationScreen } = await import(
-    '@/components/email-verification-screen'
-  );
+  const { EmailVerificationScreen } =
+    await import('@/components/email-verification-screen');
   const onVerified = vi.fn();
   const onSignOut = vi.fn();
   await act(async () => {
@@ -100,6 +119,7 @@ describe('Email verification — login page rendering', () => {
       user: mockUser as never,
       loading: false,
       emailVerified: false,
+      refreshEmailVerified: mockRefreshEmailVerified,
     });
     await renderLoginPage();
     await waitFor(() =>
@@ -113,6 +133,7 @@ describe('Email verification — login page rendering', () => {
       user: mockUser as never,
       loading: false,
       emailVerified: true,
+      refreshEmailVerified: mockRefreshEmailVerified,
     });
     await renderLoginPage();
     expect(screen.queryByText(/check your inbox/i)).toBeNull();
@@ -123,6 +144,7 @@ describe('Email verification — login page rendering', () => {
       user: mockUser as never,
       loading: false,
       emailVerified: true,
+      refreshEmailVerified: mockRefreshEmailVerified,
     });
     await renderLoginPage();
     expect(screen.queryByText(/check your inbox/i)).toBeNull();
@@ -140,9 +162,7 @@ describe('Email verification — verification screen buttons', () => {
     await waitFor(() =>
       expect(mockSendEmailVerification).toHaveBeenCalledOnce(),
     );
-    expect(
-      screen.getByText(/verification email sent/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/verification email sent/i)).toBeInTheDocument();
   });
 
   it('"Check again" calls onVerified when email is now verified', async () => {
@@ -175,6 +195,37 @@ describe('Email verification — verification screen buttons', () => {
     });
     await waitFor(() => expect(mockSignOut).toHaveBeenCalledOnce());
     expect(onSignOut).toHaveBeenCalledOnce();
+  });
+});
+
+// ─── Login page — Check again flow ───────────────────────────────────────────
+
+describe('Email verification — login page Check again flow', () => {
+  it('calls refreshEmailVerified then navigates when Check again confirms verification', async () => {
+    mockUseAuth.mockReturnValue({
+      user: mockUser as never,
+      loading: false,
+      emailVerified: false,
+      refreshEmailVerified: mockRefreshEmailVerified,
+    });
+    mockCurrentUser.reload.mockImplementation(() => {
+      mockCurrentUser.emailVerified = true;
+      return Promise.resolve(undefined);
+    });
+
+    await renderLoginPage();
+    await waitFor(() =>
+      expect(screen.getByText(/check your inbox/i)).toBeInTheDocument(),
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /check again/i }));
+    });
+
+    await waitFor(() =>
+      expect(mockRefreshEmailVerified).toHaveBeenCalledOnce(),
+    );
+    expect(mockReplace).toHaveBeenCalledWith('/');
   });
 });
 
@@ -217,7 +268,20 @@ describe('Auth action page — email verification', () => {
     await waitFor(() =>
       expect(screen.getByText(/email verified/i)).toBeInTheDocument(),
     );
-    expect(screen.getByRole('button', { name: /go to app/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /go to app/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('calls refreshEmailVerified after applyActionCode so the auth context is updated', async () => {
+    mockApplyActionCode.mockResolvedValue(undefined);
+    mockUseSearchParams.mockReturnValue(
+      makeSearchParams({ mode: 'verifyEmail', oobCode: 'abc123' }),
+    );
+    await renderActionPage();
+    await waitFor(() =>
+      expect(mockRefreshEmailVerified).toHaveBeenCalledOnce(),
+    );
   });
 
   it('shows error state when applyActionCode rejects', async () => {
@@ -229,7 +293,9 @@ describe('Auth action page — email verification', () => {
     await waitFor(() =>
       expect(screen.getByText(/link invalid/i)).toBeInTheDocument(),
     );
-    expect(screen.getByRole('button', { name: /go to sign in/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /go to sign in/i }),
+    ).toBeInTheDocument();
   });
 
   it('shows error state when mode or oobCode is missing', async () => {

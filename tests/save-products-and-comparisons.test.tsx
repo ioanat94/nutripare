@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
 
 import { NutritionTable } from '@/components/nutrition-table';
 import type { ProductNutrition } from '@/types/openfoodfacts';
+import { vi } from 'vitest';
 
 // Mock auth context
 vi.mock('@/contexts/auth-context', () => ({
@@ -50,7 +50,9 @@ const mockUpdateComparisonEans = vi.mocked(updateComparisonEans);
 
 const { toast } = await import('sonner');
 
-function makeProduct(overrides: Partial<ProductNutrition> = {}): ProductNutrition {
+function makeProduct(
+  overrides: Partial<ProductNutrition> = {},
+): ProductNutrition {
   return {
     code: '111',
     product_name: 'Test Product',
@@ -83,8 +85,12 @@ describe('NutritionTable — save buttons', () => {
         onClearAll={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /options for test product/i }));
-    expect(screen.queryByRole('menuitem', { name: /save product/i })).toBeNull();
+    fireEvent.click(
+      screen.getByRole('button', { name: /options for test product/i }),
+    );
+    expect(
+      screen.queryByRole('menuitem', { name: /save product/i }),
+    ).toBeNull();
   });
 
   it('renders save product button when onSaveProduct is provided', () => {
@@ -96,8 +102,12 @@ describe('NutritionTable — save buttons', () => {
         onSaveProduct={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /options for test product/i }));
-    expect(screen.getByRole('menuitem', { name: /save product/i })).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('button', { name: /options for test product/i }),
+    );
+    expect(
+      screen.getByRole('menuitem', { name: /save product/i }),
+    ).toBeInTheDocument();
   });
 
   it('does not render save comparison button for fewer than 2 products', () => {
@@ -110,7 +120,9 @@ describe('NutritionTable — save buttons', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
-    expect(screen.queryByRole('menuitem', { name: /save comparison/i })).toBeNull();
+    expect(
+      screen.queryByRole('menuitem', { name: /save comparison/i }),
+    ).toBeNull();
   });
 
   it('renders save comparison button when 2+ products and onSaveComparison is provided', () => {
@@ -127,7 +139,9 @@ describe('NutritionTable — save buttons', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
-    expect(screen.getByRole('menuitem', { name: /save comparison/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: /save comparison/i }),
+    ).toBeInTheDocument();
   });
 
   it('calls onSaveProduct with the correct product code when clicked', async () => {
@@ -140,7 +154,9 @@ describe('NutritionTable — save buttons', () => {
         onSaveProduct={onSaveProduct}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /options for test product/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /options for test product/i }),
+    );
     fireEvent.click(screen.getByRole('menuitem', { name: /save product/i }));
     await waitFor(() => expect(onSaveProduct).toHaveBeenCalledWith('999'));
   });
@@ -167,7 +183,10 @@ describe('NutritionTable — save buttons', () => {
   it('item is disabled while save product is in progress', async () => {
     let resolve!: () => void;
     const onSaveProduct = vi.fn(
-      () => new Promise<void>((res) => { resolve = res; }),
+      () =>
+        new Promise<void>((res) => {
+          resolve = res;
+        }),
     );
     render(
       <NutritionTable
@@ -177,16 +196,24 @@ describe('NutritionTable — save buttons', () => {
         onSaveProduct={onSaveProduct}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /options for test product/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /options for test product/i }),
+    );
     fireEvent.click(screen.getByRole('menuitem', { name: /save product/i }));
     // Re-open dropdown to inspect disabled state
-    fireEvent.click(screen.getByRole('button', { name: /options for test product/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /options for test product/i }),
+    );
     await waitFor(() =>
-      expect(screen.getByRole('menuitem', { name: /save product/i })).toHaveAttribute('data-disabled'),
+      expect(
+        screen.getByRole('menuitem', { name: /save product/i }),
+      ).toHaveAttribute('data-disabled'),
     );
     resolve();
     await waitFor(() =>
-      expect(screen.getByRole('menuitem', { name: /save product/i })).not.toHaveAttribute('data-disabled'),
+      expect(
+        screen.getByRole('menuitem', { name: /save product/i }),
+      ).not.toHaveAttribute('data-disabled'),
     );
   });
 });
@@ -205,7 +232,9 @@ vi.mock('@/lib/openfoodfacts', async (importOriginal) => {
 const { fetchProduct } = await import('@/lib/openfoodfacts');
 const mockFetchProduct = vi.mocked(fetchProduct);
 
-async function renderCompareWithProducts(productOverrides: Partial<ProductNutrition>[] = [{}]) {
+async function renderCompareWithProducts(
+  productOverrides: Partial<ProductNutrition>[] = [{}],
+) {
   const { default: ComparePage } = await import('@/app/compare/page');
   render(<ComparePage />);
 
@@ -217,20 +246,31 @@ async function renderCompareWithProducts(productOverrides: Partial<ProductNutrit
       target: { value: product.code },
     });
     fireEvent.submit(screen.getByRole('textbox').closest('form')!);
-    await waitFor(() => expect(screen.getByText(product.product_name!)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(product.product_name!)).toBeInTheDocument(),
+    );
   }
 }
 
 describe('Compare page — save handlers', () => {
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
+    mockUseAuth.mockReturnValue({
+      user: mockUser as never,
+      loading: false,
+      emailVerified: true,
+      refreshEmailVerified: vi.fn(),
+    });
     mockSaveProduct.mockResolvedValue(undefined);
     mockSaveComparison.mockResolvedValue('comparison-id-abc');
   });
 
   it('calls saveProduct with correct name and ean, then shows success toast', async () => {
-    await renderCompareWithProducts([{ code: '5000112637922', product_name: 'Nutella' }]);
-    fireEvent.click(screen.getByRole('button', { name: /options for nutella/i }));
+    await renderCompareWithProducts([
+      { code: '5000112637922', product_name: 'Nutella' },
+    ]);
+    fireEvent.click(
+      screen.getByRole('button', { name: /options for nutella/i }),
+    );
     fireEvent.click(screen.getByRole('menuitem', { name: /save product/i }));
     await waitFor(() =>
       expect(mockSaveProduct).toHaveBeenCalledWith('uid-123', {
@@ -238,23 +278,37 @@ describe('Compare page — save handlers', () => {
         ean: '5000112637922',
       }),
     );
-    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Product saved'));
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith('Product saved'),
+    );
   });
 
   it('shows "Product already saved" info toast on duplicate', async () => {
     mockSaveProduct.mockRejectedValueOnce(new Error('DUPLICATE'));
-    await renderCompareWithProducts([{ code: '11111111', product_name: 'Nutella' }]);
-    fireEvent.click(screen.getByRole('button', { name: /options for nutella/i }));
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Nutella' },
+    ]);
+    fireEvent.click(
+      screen.getByRole('button', { name: /options for nutella/i }),
+    );
     fireEvent.click(screen.getByRole('menuitem', { name: /save product/i }));
-    await waitFor(() => expect(toast.info).toHaveBeenCalledWith('Product already saved'));
+    await waitFor(() =>
+      expect(toast.info).toHaveBeenCalledWith('Product already saved'),
+    );
   });
 
   it('shows error toast when saveProduct fails with unknown error', async () => {
     mockSaveProduct.mockRejectedValueOnce(new Error('network'));
-    await renderCompareWithProducts([{ code: '11111111', product_name: 'Nutella' }]);
-    fireEvent.click(screen.getByRole('button', { name: /options for nutella/i }));
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Nutella' },
+    ]);
+    fireEvent.click(
+      screen.getByRole('button', { name: /options for nutella/i }),
+    );
     fireEvent.click(screen.getByRole('menuitem', { name: /save product/i }));
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Failed to save product'));
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith('Failed to save product'),
+    );
   });
 
   it('opens a dialog with pre-filled name when save comparison is clicked', async () => {
@@ -264,9 +318,7 @@ describe('Compare page — save handlers', () => {
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
-    await waitFor(() =>
-      expect(screen.getByRole('dialog')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
     expect(screen.getByRole('textbox')).toHaveValue('Nutella + 1 others');
   });
 
@@ -286,7 +338,9 @@ describe('Compare page — save handlers', () => {
         eans: ['11111111', '22222222', '33333333'],
       }),
     );
-    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Comparison saved'));
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith('Comparison saved'),
+    );
   });
 
   it('calls saveComparison with a custom name when the user edits it', async () => {
@@ -297,7 +351,9 @@ describe('Compare page — save handlers', () => {
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'My custom name' } });
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'My custom name' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
     await waitFor(() =>
       expect(mockSaveComparison).toHaveBeenCalledWith('uid-123', {
@@ -328,7 +384,9 @@ describe('Compare page — save handlers', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
     expect(mockSaveComparison).not.toHaveBeenCalled();
   });
 
@@ -354,14 +412,27 @@ describe('Compare page — save handlers', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
-    await waitFor(() => expect(toast.info).toHaveBeenCalledWith('Comparison already saved'));
+    await waitFor(() =>
+      expect(toast.info).toHaveBeenCalledWith('Comparison already saved'),
+    );
   });
 
   it('does not render save buttons when user is not authenticated', async () => {
-    mockUseAuth.mockReturnValue({ user: null, loading: false });
-    await renderCompareWithProducts([{ code: '11111111', product_name: 'Nutella' }]);
-    fireEvent.click(screen.getByRole('button', { name: /options for nutella/i }));
-    expect(screen.queryByRole('menuitem', { name: /save product/i })).toBeNull();
+    mockUseAuth.mockReturnValue({
+      user: null,
+      loading: false,
+      emailVerified: false,
+      refreshEmailVerified: vi.fn(),
+    });
+    await renderCompareWithProducts([
+      { code: '11111111', product_name: 'Nutella' },
+    ]);
+    fireEvent.click(
+      screen.getByRole('button', { name: /options for nutella/i }),
+    );
+    expect(
+      screen.queryByRole('menuitem', { name: /save product/i }),
+    ).toBeNull();
   });
 });
 
@@ -386,7 +457,9 @@ describe('NutritionTable — loaded comparison menu states', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
-    expect(screen.getByRole('menuitem', { name: /save comparison/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: /save comparison/i }),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('menuitem', { name: /update/i })).toBeNull();
     expect(screen.queryByRole('menuitem', { name: /save as new/i })).toBeNull();
     expect(screen.queryByRole('menuitem', { name: /delete/i })).toBeNull();
@@ -407,8 +480,12 @@ describe('NutritionTable — loaded comparison menu states', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
-    expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: /save comparison/i })).toBeNull();
+    expect(
+      screen.getByRole('menuitem', { name: /delete/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: /save comparison/i }),
+    ).toBeNull();
     expect(screen.queryByRole('menuitem', { name: /update/i })).toBeNull();
     expect(screen.queryByRole('menuitem', { name: /save as new/i })).toBeNull();
   });
@@ -428,10 +505,18 @@ describe('NutritionTable — loaded comparison menu states', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
-    expect(screen.getByRole('menuitem', { name: /update/i })).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: /save as new/i })).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: /save comparison/i })).toBeNull();
+    expect(
+      screen.getByRole('menuitem', { name: /update/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: /save as new/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: /delete/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: /save comparison/i }),
+    ).toBeNull();
   });
 
   it('calls onUpdateComparison when Update is clicked', async () => {
@@ -511,7 +596,10 @@ describe('NutritionTable — loaded comparison menu states', () => {
   it('Update button is disabled while in progress', async () => {
     let resolve!: () => void;
     const onUpdateComparison = vi.fn(
-      () => new Promise<void>((res) => { resolve = res; }),
+      () =>
+        new Promise<void>((res) => {
+          resolve = res;
+        }),
     );
     render(
       <NutritionTable
@@ -529,11 +617,15 @@ describe('NutritionTable — loaded comparison menu states', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: /update/i }));
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     await waitFor(() =>
-      expect(screen.getByRole('menuitem', { name: /update/i })).toHaveAttribute('data-disabled'),
+      expect(screen.getByRole('menuitem', { name: /update/i })).toHaveAttribute(
+        'data-disabled',
+      ),
     );
     resolve();
     await waitFor(() =>
-      expect(screen.getByRole('menuitem', { name: /update/i })).not.toHaveAttribute('data-disabled'),
+      expect(
+        screen.getByRole('menuitem', { name: /update/i }),
+      ).not.toHaveAttribute('data-disabled'),
     );
   });
 });
@@ -542,7 +634,12 @@ describe('NutritionTable — loaded comparison menu states', () => {
 
 describe('Compare page — update and delete comparison handlers', () => {
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({ user: mockUser as never, loading: false });
+    mockUseAuth.mockReturnValue({
+      user: mockUser as never,
+      loading: false,
+      emailVerified: true,
+      refreshEmailVerified: vi.fn(),
+    });
     mockFindSavedComparison.mockResolvedValue(null);
   });
 
@@ -557,8 +654,12 @@ describe('Compare page — update and delete comparison handlers', () => {
       { code: '22222222', product_name: 'Milk B' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
-    expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: /save comparison/i })).toBeNull();
+    expect(
+      screen.getByRole('menuitem', { name: /delete/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: /save comparison/i }),
+    ).toBeNull();
   });
 
   it('shows Update and Save as new when a product is added to a loaded comparison', async () => {
@@ -577,16 +678,27 @@ describe('Compare page — update and delete comparison handlers', () => {
     ]);
 
     // Add a third product
-    const extraProduct = makeProduct({ code: '33333333', product_name: 'Milk C' });
+    const extraProduct = makeProduct({
+      code: '33333333',
+      product_name: 'Milk C',
+    });
     mockFetchProduct.mockResolvedValueOnce(extraProduct);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: '33333333' } });
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: '33333333' },
+    });
     fireEvent.submit(screen.getByRole('textbox').closest('form')!);
     await waitFor(() => expect(screen.getByText('Milk C')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
-    expect(screen.getByRole('menuitem', { name: /update/i })).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: /save as new/i })).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: /update/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: /save as new/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', { name: /delete/i }),
+    ).toBeInTheDocument();
   });
 
   it('calls updateComparisonEans and shows success toast when Update is clicked', async () => {
@@ -602,9 +714,14 @@ describe('Compare page — update and delete comparison handlers', () => {
       { code: '22222222', product_name: 'Milk B' },
     ]);
 
-    const extraProduct = makeProduct({ code: '33333333', product_name: 'Milk C' });
+    const extraProduct = makeProduct({
+      code: '33333333',
+      product_name: 'Milk C',
+    });
     mockFetchProduct.mockResolvedValueOnce(extraProduct);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: '33333333' } });
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: '33333333' },
+    });
     fireEvent.submit(screen.getByRole('textbox').closest('form')!);
     await waitFor(() => expect(screen.getByText('Milk C')).toBeInTheDocument());
 
@@ -612,13 +729,15 @@ describe('Compare page — update and delete comparison handlers', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: /update/i }));
 
     await waitFor(() =>
-      expect(mockUpdateComparisonEans).toHaveBeenCalledWith('uid-123', 'cmp-1', [
-        '11111111',
-        '22222222',
-        '33333333',
-      ]),
+      expect(mockUpdateComparisonEans).toHaveBeenCalledWith(
+        'uid-123',
+        'cmp-1',
+        ['11111111', '22222222', '33333333'],
+      ),
     );
-    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Comparison updated'));
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith('Comparison updated'),
+    );
   });
 
   it('calls deleteComparisonById and shows success toast when Delete is clicked', async () => {
@@ -638,6 +757,8 @@ describe('Compare page — update and delete comparison handlers', () => {
     await waitFor(() =>
       expect(mockDeleteComparisonById).toHaveBeenCalledWith('uid-123', 'cmp-1'),
     );
-    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Comparison removed'));
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith('Comparison removed'),
+    );
   });
 });

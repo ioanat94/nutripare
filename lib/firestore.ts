@@ -1,3 +1,9 @@
+import type {
+  NutritionRule,
+  NutritionSettings,
+  SavedComparison,
+  SavedProduct,
+} from '@/types/firestore';
 import {
   addDoc,
   collection,
@@ -11,9 +17,9 @@ import {
   where,
 } from 'firebase/firestore';
 
+import { DEFAULT_NUTRITION_ROWS } from '@/utils/constants';
 import { db } from '@/lib/firebase';
-import type { NutritionRule, NutritionSettings, SavedComparison, SavedProduct } from '@/types/firestore';
-import { DEFAULT_NUTRITION_ROWS, getDefaultRules } from '@/utils/thresholds';
+import { getDefaultRules } from '@/utils/getDefaultRules';
 
 const VALID_RATINGS = new Set(['positive', 'info', 'warning', 'negative']);
 
@@ -35,8 +41,7 @@ export async function saveComparison(
   const snapshot = await getDocs(col);
   const sortedInput = [...comparison.eans].sort().join(',');
   const isDuplicate = snapshot.docs.some(
-    (d) =>
-      [...(d.data().eans as string[])].sort().join(',') === sortedInput,
+    (d) => [...(d.data().eans as string[])].sort().join(',') === sortedInput,
   );
   if (isDuplicate) throw new Error('DUPLICATE');
   const docRef = await addDoc(col, comparison);
@@ -62,7 +67,11 @@ export async function findSavedComparison(
   const sortedInput = [...eans].sort().join(',');
   for (const d of snapshot.docs) {
     if ([...(d.data().eans as string[])].sort().join(',') === sortedInput) {
-      return { id: d.id, name: d.data().name as string, rulesetId: d.data().rulesetId as string | undefined };
+      return {
+        id: d.id,
+        name: d.data().name as string,
+        rulesetId: d.data().rulesetId as string | undefined,
+      };
     }
   }
   return null;
@@ -94,7 +103,10 @@ export async function updateComparisonEans(
   await updateDoc(ref, { eans });
 }
 
-export async function deleteComparisonById(uid: string, id: string): Promise<void> {
+export async function deleteComparisonById(
+  uid: string,
+  id: string,
+): Promise<void> {
   const ref = doc(db, 'users', uid, 'comparisons', id);
   await deleteDoc(ref);
 }
@@ -115,9 +127,7 @@ export async function deleteComparison(
   const snapshot = await getDocs(col);
   const sortedInput = [...eans].sort().join(',');
   for (const doc of snapshot.docs) {
-    if (
-      [...(doc.data().eans as string[])].sort().join(',') === sortedInput
-    ) {
+    if ([...(doc.data().eans as string[])].sort().join(',') === sortedInput) {
       await deleteDoc(doc.ref);
     }
   }
@@ -135,9 +145,7 @@ export async function renameComparison(
 export async function getSavedProducts(uid: string): Promise<SavedProduct[]> {
   const col = collection(db, 'users', uid, 'products');
   const snapshot = await getDocs(col);
-  return snapshot.docs.map(
-    (d) => ({ id: d.id, ...d.data() }) as SavedProduct,
-  );
+  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }) as SavedProduct);
 }
 
 export async function getSavedComparisons(
@@ -158,31 +166,33 @@ export async function getNutritionSettings(
   if (!snap.exists()) return null;
   const raw = snap.data() as Record<string, unknown>;
 
-  const visibleRows: string[] =
-    (raw.visibleRows as string[] | undefined) ??
-    (raw.visibleNutrients as string[] | undefined) ??
-    [...DEFAULT_NUTRITION_ROWS];
-  const rowOrder: string[] =
-    (raw.rowOrder as string[] | undefined) ??
-    (raw.nutrientOrder as string[] | undefined) ??
-    [...DEFAULT_NUTRITION_ROWS];
+  const visibleRows: string[] = (raw.visibleRows as string[] | undefined) ??
+    (raw.visibleNutrients as string[] | undefined) ?? [
+      ...DEFAULT_NUTRITION_ROWS,
+    ];
+  const rowOrder: string[] = (raw.rowOrder as string[] | undefined) ??
+    (raw.nutrientOrder as string[] | undefined) ?? [...DEFAULT_NUTRITION_ROWS];
 
-  if (!visibleRows.includes('computed_score')) visibleRows.push('computed_score');
+  if (!visibleRows.includes('computed_score'))
+    visibleRows.push('computed_score');
   if (!rowOrder.includes('computed_score')) rowOrder.push('computed_score');
 
   let rulesets: NutritionSettings['rulesets'];
   if (raw.rulesets) {
     rulesets = (raw.rulesets as NutritionSettings['rulesets']).map((rs) => ({
       ...rs,
-      rules: (rs.rules ?? []).filter((r: NutritionRule) => VALID_RATINGS.has(r.rating)),
+      rules: (rs.rules ?? []).filter((r: NutritionRule) =>
+        VALID_RATINGS.has(r.rating),
+      ),
     }));
   } else {
-    const oldRules = ((raw.rules ?? []) as NutritionRule[]).filter(
-      (r) => VALID_RATINGS.has(r.rating),
+    const oldRules = ((raw.rules ?? []) as NutritionRule[]).filter((r) =>
+      VALID_RATINGS.has(r.rating),
     );
-    rulesets = oldRules.length > 0
-      ? [{ id: 'default', name: 'Default', rules: oldRules }]
-      : [{ id: 'default', name: 'Default', rules: getDefaultRules() }];
+    rulesets =
+      oldRules.length > 0
+        ? [{ id: 'default', name: 'Default', rules: oldRules }]
+        : [{ id: 'default', name: 'Default', rules: getDefaultRules() }];
   }
 
   return {
@@ -198,7 +208,9 @@ export async function deleteAllUserData(uid: string): Promise<void> {
   const productDocs = await getDocs(collection(db, 'users', uid, 'products'));
   await Promise.all(productDocs.docs.map((d) => deleteDoc(d.ref)));
 
-  const comparisonDocs = await getDocs(collection(db, 'users', uid, 'comparisons'));
+  const comparisonDocs = await getDocs(
+    collection(db, 'users', uid, 'comparisons'),
+  );
   await Promise.all(comparisonDocs.docs.map((d) => deleteDoc(d.ref)));
 
   await deleteDoc(doc(db, 'users', uid, 'settings', 'nutrition'));

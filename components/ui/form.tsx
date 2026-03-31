@@ -21,7 +21,9 @@ type FormFieldContextValue<
   name: TName;
 };
 
-const FormFieldContext = React.createContext<FormFieldContextValue | null>(null);
+const FormFieldContext = React.createContext<FormFieldContextValue | null>(
+  null,
+);
 
 function FormField<
   TFieldValues extends FieldValues = FieldValues,
@@ -117,10 +119,7 @@ function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
   );
 }
 
-function FormDescription({
-  className,
-  ...props
-}: React.ComponentProps<'p'>) {
+function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
   const { formDescriptionId } = useFormField();
 
   return (
@@ -145,7 +144,10 @@ function FormMessage({
     <p
       data-slot='form-message'
       id={formMessageId}
-      className={cn('text-destructive text-sm leading-5 empty:hidden', className)}
+      className={cn(
+        'text-destructive text-sm leading-5 empty:hidden',
+        className,
+      )}
       {...props}
     >
       {body}

@@ -1,15 +1,16 @@
 'use client';
 
+import { Loader2, LogOut } from 'lucide-react';
 import { use, useEffect } from 'react';
 
 import { AccountTab } from '@/components/settings/account-tab';
 import { Button } from '@/components/ui/button';
 import { ComparisonsTab } from '@/components/settings/comparisons-tab';
 import Link from 'next/link';
-import { Loader2, LogOut } from 'lucide-react';
 import { NutritionTab } from '@/components/settings/nutrition-tab';
 import { ProductsTab } from '@/components/settings/products-tab';
 import { auth } from '@/lib/firebase';
+import { cn } from '@/utils/tailwind';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
@@ -76,11 +77,12 @@ export default function SettingsPage({
           <Link
             key={tab}
             href={`/settings/${tab}`}
-            className={`flex-1 border-b-2 px-2 pb-3 text-center text-sm font-medium capitalize transition-colors ${
+            className={cn(
+              'flex-1 border-b-2 px-2 pb-3 text-center text-sm font-medium capitalize transition-colors',
               activeTab === tab
                 ? 'border-foreground text-foreground'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
+                : 'border-transparent text-muted-foreground hover:text-foreground',
+            )}
           >
             {tab}
           </Link>
@@ -95,11 +97,12 @@ export default function SettingsPage({
               <Link
                 key={tab}
                 href={`/settings/${tab}`}
-                className={`rounded-md px-3 py-2 text-left text-sm font-medium capitalize transition-colors ${
+                className={cn(
+                  'rounded-md px-3 py-2 text-left text-sm font-medium capitalize transition-colors',
                   activeTab === tab
                     ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
               >
                 {tab}
               </Link>

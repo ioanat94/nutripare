@@ -1,7 +1,20 @@
-import type { OFFProductResponse, ProductNutrition } from '@/types/openfoodfacts';
+import type {
+  OFFProductResponse,
+  ProductNutrition,
+} from '@/types/openfoodfacts';
 
-export function parseEanInput(raw: string): { valid: string[]; invalid: string[] } {
-  const tokens = [...new Set(raw.split(',').map((s) => s.trim()).filter(Boolean))];
+export function parseEanInput(raw: string): {
+  valid: string[];
+  invalid: string[];
+} {
+  const tokens = [
+    ...new Set(
+      raw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
+  ];
   const valid: string[] = [];
   const invalid: string[] = [];
   for (const token of tokens) {
@@ -14,7 +27,10 @@ export function parseEanInput(raw: string): { valid: string[]; invalid: string[]
   return { valid, invalid };
 }
 
-export function mapProduct(raw: OFFProductResponse, code: string): ProductNutrition {
+export function mapProduct(
+  raw: OFFProductResponse,
+  code: string,
+): ProductNutrition {
   const n = raw.product?.nutriments ?? {};
   return {
     code,
@@ -30,7 +46,9 @@ export function mapProduct(raw: OFFProductResponse, code: string): ProductNutrit
   };
 }
 
-export async function fetchProduct(code: string): Promise<ProductNutrition | null> {
+export async function fetchProduct(
+  code: string,
+): Promise<ProductNutrition | null> {
   const res = await fetch(`/api/product/${code}`);
   if (!res.ok) throw new Error(`Product fetch failed: ${res.status}`);
   const json: OFFProductResponse = await res.json();

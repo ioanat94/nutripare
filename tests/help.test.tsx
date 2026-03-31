@@ -56,25 +56,24 @@ describe('Help page', () => {
     ).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders table of contents with anchor links for all 10 sections', () => {
+  it('renders table of contents with buttons for all 10 sections', () => {
     render(<HelpPage />);
-    const expectedSections: [string, string][] = [
-      ['#overview', 'Overview'],
-      ['#searching', 'Searching for Products'],
-      ['#nutrition-table', 'The Nutrition Table'],
-      ['#table-actions', 'Table Actions'],
-      ['#saving', 'Saving Products and Comparisons'],
-      ['#settings-account', 'Settings \u2014 Account'],
-      ['#settings-nutrition', 'Settings \u2014 Nutrition'],
-      ['#settings-products', 'Settings \u2014 Products'],
-      ['#settings-comparisons', 'Settings \u2014 Comparisons'],
-      ['#account-features', 'Signed-in vs. Signed-out'],
+    const expectedLabels = [
+      'Overview',
+      'Searching for Products',
+      'The Nutrition Table',
+      'Table Actions',
+      'Saving Products and Comparisons',
+      'Settings \u2014 Account',
+      'Settings \u2014 Nutrition',
+      'Settings \u2014 Products',
+      'Settings \u2014 Comparisons',
+      'Signed-in vs. Signed-out',
     ];
-    // Two ToC navs exist (desktop sidebar + mobile inline); verify at least one link per section
-    for (const [href, label] of expectedSections) {
-      const links = screen.getAllByRole('link', { name: label });
-      expect(links.length).toBeGreaterThanOrEqual(1);
-      expect(links[0]).toHaveAttribute('href', href);
+    // Two ToC navs exist (desktop sidebar + mobile inline); verify at least one button per section
+    for (const label of expectedLabels) {
+      const buttons = screen.getAllByRole('button', { name: label });
+      expect(buttons.length).toBeGreaterThanOrEqual(1);
     }
   });
 

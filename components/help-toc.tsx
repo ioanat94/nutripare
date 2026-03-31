@@ -1,9 +1,18 @@
 'use client';
 
+import { ArrowUp, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { ChevronDown } from 'lucide-react';
 import { cn } from '@/utils/tailwind';
+
+function scrollToSection(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const navbar = document.querySelector('nav');
+  const offset = (navbar?.getBoundingClientRect().height ?? 0) + 16;
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top, behavior: 'smooth' });
+}
 
 interface Section {
   id: string;
@@ -44,17 +53,17 @@ export function HelpToc({ sections }: HelpTocProps) {
           On this page
         </p>
         {sections.map(({ id, label }) => (
-          <a
+          <button
             key={id}
-            href={`#${id}`}
+            onClick={() => scrollToSection(id)}
             className={
               activeId === id
-                ? 'block rounded-md bg-primary/15 px-2 py-1 text-sm font-semibold text-primary transition-colors'
-                : 'block rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+                ? 'block w-full text-left rounded-md bg-primary/15 px-2 py-1 text-sm font-semibold text-primary transition-colors'
+                : 'block w-full text-left rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
             }
           >
             {label}
-          </a>
+          </button>
         ))}
       </nav>
     </aside>
@@ -98,13 +107,16 @@ export function HelpTocMobile({ sections }: HelpTocProps) {
             <ul className='space-y-1'>
               {sections.map(({ id, label }) => (
                 <li key={id}>
-                  <a
-                    href={`#${id}`}
-                    onClick={() => setOpen(false)}
-                    className='block rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      // Defer scroll until after the dropdown collapses to get a correct offset
+                      setTimeout(() => scrollToSection(id), 0);
+                    }}
+                    className='block w-full text-left rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
                   >
                     {label}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -112,5 +124,30 @@ export function HelpTocMobile({ sections }: HelpTocProps) {
         )}
       </div>
     </nav>
+  );
+}
+
+export function BackToTop() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 300);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      aria-label='Back to top'
+      className={cn(
+        'lg:hidden fixed bottom-6 right-6 z-50 flex items-center justify-center size-10 rounded-full bg-primary text-primary-foreground shadow-lg transition-all duration-200',
+        visible
+          ? 'opacity-100 translate-y-0'
+          : 'opacity-0 translate-y-4 pointer-events-none',
+      )}
+    >
+      <ArrowUp className='size-4' />
+    </button>
   );
 }

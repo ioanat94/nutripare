@@ -16,15 +16,18 @@ const rule = (
 // ---------------------------------------------------------------------------
 
 describe('BUILTIN_RULESETS', () => {
-  it('exports exactly 3 rulesets', () => {
-    expect(BUILTIN_RULESETS).toHaveLength(3);
+  it('exports exactly 6 rulesets', () => {
+    expect(BUILTIN_RULESETS).toHaveLength(6);
   });
 
-  it('contains Default, Low Carb, and High Protein rulesets', () => {
+  it('contains all built-in rulesets', () => {
     const ids = BUILTIN_RULESETS.map((r) => r.id);
     expect(ids).toContain('default');
     expect(ids).toContain('low-carb');
     expect(ids).toContain('high-protein');
+    expect(ids).toContain('high-fiber');
+    expect(ids).toContain('low-fat');
+    expect(ids).toContain('low-salt');
   });
 
   it('Default ruleset rules match getDefaultRules()', () => {

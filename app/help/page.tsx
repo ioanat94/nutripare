@@ -5,6 +5,14 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import {
+  BUILTIN_RULESETS,
+  HELP_SECTIONS,
+  NUTRIENT_LABEL,
+  RATING_LABEL,
+  RULESET_DESCRIPTION,
+} from '@/utils/constants';
+import { BackToTop, HelpToc, HelpTocMobile } from '@/components/help-toc';
+import {
   Check,
   ExternalLink,
   Maximize2,
@@ -13,7 +21,6 @@ import {
   UserX,
   X,
 } from 'lucide-react';
-import { HelpToc, HelpTocMobile } from '@/components/help-toc';
 import {
   Table,
   TableBody,
@@ -25,35 +32,30 @@ import {
 
 import { cn } from '@/utils/tailwind';
 
-const SECTIONS = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'searching', label: 'Searching for Products' },
-  { id: 'nutrition-table', label: 'The Nutrition Table' },
-  { id: 'table-actions', label: 'Table Actions' },
-  { id: 'saving', label: 'Saving Products and Comparisons' },
-  { id: 'settings-account', label: 'Settings — Account' },
-  { id: 'settings-nutrition', label: 'Settings — Nutrition' },
-  { id: 'settings-products', label: 'Settings — Products' },
-  { id: 'settings-comparisons', label: 'Settings — Comparisons' },
-  { id: 'account-features', label: 'Signed-in vs. Signed-out' },
-  { id: 'faq', label: 'FAQ' },
-];
+const toDisplayRow = (rule: {
+  nutrient: string;
+  direction: string;
+  value: number;
+  rating: string;
+}) => ({
+  nutrient: NUTRIENT_LABEL[rule.nutrient] ?? rule.nutrient,
+  threshold: rule.direction,
+  value: `${rule.value}g`,
+  rating: RATING_LABEL[rule.rating] ?? rule.rating,
+});
 
-const defaultThresholds = [
-  { nutrient: 'Protein', threshold: 'above', value: '20g', rating: 'Great' },
-  { nutrient: 'Sugar', threshold: 'below', value: '5g', rating: 'Great' },
-  { nutrient: 'Sugar', threshold: 'above', value: '22.5g', rating: 'Bad' },
-  {
-    nutrient: 'Saturated Fat',
-    threshold: 'below',
-    value: '1.5g',
-    rating: 'Great',
-  },
-  { nutrient: 'Saturated Fat', threshold: 'above', value: '5g', rating: 'Bad' },
-  { nutrient: 'Fiber', threshold: 'above', value: '6g', rating: 'Great' },
-  { nutrient: 'Salt', threshold: 'below', value: '0.3g', rating: 'Great' },
-  { nutrient: 'Salt', threshold: 'above', value: '1.5g', rating: 'Bad' },
-];
+const defaultThresholds = BUILTIN_RULESETS.find(
+  (r) => r.id === 'default',
+)!.rules.map(toDisplayRow);
+
+const builtinRulesets = BUILTIN_RULESETS.filter((r) => r.id !== 'default').map(
+  (r) => ({
+    id: r.id,
+    name: r.name,
+    description: RULESET_DESCRIPTION[r.id] ?? '',
+    rules: r.rules.map(toDisplayRow),
+  }),
+);
 
 const ratingDot: Record<string, string> = {
   Great: 'bg-[var(--positive)]',
@@ -67,11 +69,11 @@ export default function HelpPage() {
     <main className='mx-auto w-full max-w-5xl px-6 py-12'>
       <h1 className='mb-10 text-3xl font-bold tracking-tight'>User Guide</h1>
       <div className='flex gap-12'>
-        <HelpToc sections={SECTIONS} />
+        <HelpToc sections={HELP_SECTIONS} />
 
         <div className='min-w-0 flex-1'>
           {/* Mobile ToC */}
-          <HelpTocMobile sections={SECTIONS} />
+          <HelpTocMobile sections={HELP_SECTIONS} />
 
           <div className='mt-10 space-y-16 lg:mt-0'>
             {/* 1. Overview */}
@@ -271,7 +273,7 @@ export default function HelpPage() {
                               <span
                                 className={cn(
                                   'size-2 shrink-0 rounded-full',
-                                  ratingDot[row.rating],
+                                  ratingDot[row.rating] ?? 'bg-muted',
                                 )}
                               />
                               {row.rating}
@@ -282,6 +284,55 @@ export default function HelpPage() {
                     </TableBody>
                   </Table>
                 </div>
+
+                <h3 className='text-base font-semibold text-foreground pt-2'>
+                  Built-in rulesets
+                </h3>
+                <p>
+                  In addition to the Default ruleset above, the app ships with
+                  five focused rulesets. Each one scores products based on a
+                  specific nutritional goal.
+                </p>
+                {builtinRulesets.map((ruleset) => (
+                  <div key={ruleset.id}>
+                    <h4 className='text-sm font-semibold text-foreground pt-2 pb-1'>
+                      {ruleset.name}
+                    </h4>
+                    <p>{ruleset.description}</p>
+                    <div className='overflow-x-auto rounded-md border border-border mt-2'>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Nutrient</TableHead>
+                            <TableHead>Threshold</TableHead>
+                            <TableHead>Value (per 100g)</TableHead>
+                            <TableHead>Rating</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {ruleset.rules.map((row, i) => (
+                            <TableRow key={i}>
+                              <TableCell>{row.nutrient}</TableCell>
+                              <TableCell>{row.threshold}</TableCell>
+                              <TableCell>{row.value}</TableCell>
+                              <TableCell>
+                                <span className='flex items-center gap-1.5'>
+                                  <span
+                                    className={cn(
+                                      'size-2 shrink-0 rounded-full',
+                                      ratingDot[row.rating] ?? 'bg-muted',
+                                    )}
+                                  />
+                                  {row.rating}
+                                </span>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                ))}
 
                 <h3 className='text-base font-semibold text-foreground pt-2'>
                   Sorting
@@ -524,10 +575,10 @@ export default function HelpPage() {
                 <p>
                   <span className='text-foreground font-medium'>Rulesets</span>{' '}
                   — a list of saved rulesets. Each ruleset defines which
-                  nutrients are highlighted and how. New accounts start with
-                  three built-in rulesets: Default, Low Carb, and High Protein.
-                  Use the search box to filter by name; drag handles allow
-                  reordering the list.
+                  nutrients are highlighted and how. New accounts start with six
+                  built-in rulesets: Default, Low Carb, High Protein, High
+                  Fiber, Low Fat, and Low Salt. Use the search box to filter by
+                  name; drag handles allow reordering the list.
                 </p>
                 <ul className='list-disc space-y-1.5 pl-5'>
                   <li>
@@ -557,7 +608,7 @@ export default function HelpPage() {
                     <span className='text-foreground font-medium'>
                       From template
                     </span>{' '}
-                    lets you restore any of the three built-in rulesets
+                    lets you restore any of the six built-in rulesets
                     individually.
                   </li>
                 </ul>
@@ -605,7 +656,7 @@ export default function HelpPage() {
                     Reset to defaults
                   </span>{' '}
                   (next to Save) restores all nutrition settings to their
-                  original state, including the three built-in rulesets.
+                  original state, including the six built-in rulesets.
                 </p>
               </div>
             </section>
@@ -1013,10 +1064,11 @@ export default function HelpPage() {
                         button at the bottom of the Nutrition tab restores all
                         nutrition settings to their original state — visible
                         rows, row order, highlight toggles, and all rulesets
-                        (Default, Low Carb, High Protein). Any custom rulesets
-                        or changes you&apos;ve made will be lost. If you only
-                        want to restore a specific built-in ruleset without
-                        affecting everything else, use{' '}
+                        (Default, Low Carb, High Protein, High Fiber, Low Fat,
+                        Low Salt). Any custom rulesets or changes you&apos;ve
+                        made will be lost. If you only want to restore a
+                        specific built-in ruleset without affecting everything
+                        else, use{' '}
                         <span className='text-foreground font-medium'>
                           Add ruleset → From template
                         </span>{' '}
@@ -1119,6 +1171,7 @@ export default function HelpPage() {
           </div>
         </div>
       </div>
+      <BackToTop />
     </main>
   );
 }

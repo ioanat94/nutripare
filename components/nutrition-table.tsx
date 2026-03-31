@@ -3,6 +3,7 @@
 import {
   ArrowDown,
   ArrowUp,
+  Flag,
   HelpCircle,
   Loader2,
   Maximize2,
@@ -74,6 +75,7 @@ interface NutritionTableProps {
   isDirty?: boolean;
   onUnsaveProduct?: (code: string) => Promise<void>;
   onUnsaveComparison?: () => Promise<void>;
+  onReport?: (code: string) => void;
   settings?: NutritionSettings | null;
   rulesets?: NutritionRuleset[];
   selectedRulesetId?: string | null;
@@ -124,6 +126,7 @@ export function NutritionTable({
   isDirty,
   onUnsaveProduct,
   onUnsaveComparison,
+  onReport,
   settings,
   rulesets,
   selectedRulesetId,
@@ -513,6 +516,13 @@ export function NutritionTable({
                               )}
                             </DropdownMenuItem>
                           )}
+                          <DropdownMenuItem
+                            onClick={() => onReport?.(p.code)}
+                            className='text-warning focus:text-warning'
+                          >
+                            <Flag className='size-4' aria-hidden='true' />
+                            Report
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => {

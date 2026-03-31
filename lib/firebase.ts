@@ -1,7 +1,7 @@
 import { getApps, initializeApp } from 'firebase/app';
+
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-
 import { initializeUI } from '@firebase-oss/ui-core';
 
 const firebaseConfig = {

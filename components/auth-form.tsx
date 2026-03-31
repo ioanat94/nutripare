@@ -19,10 +19,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Policies } from './policies';
-import { useForm } from 'react-hook-form';
-import { sendEmailVerification } from 'firebase/auth';
-import { useMemo } from 'react';
 import { auth } from '@/lib/firebase';
+import { sendEmailVerification } from 'firebase/auth';
+import { useForm } from 'react-hook-form';
+import { useMemo } from 'react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 

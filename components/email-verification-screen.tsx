@@ -1,9 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { sendEmailVerification, signOut } from 'firebase/auth';
-
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -11,7 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { sendEmailVerification, signOut } from 'firebase/auth';
+
+import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/firebase';
+import { useState } from 'react';
 
 interface EmailVerificationScreenProps {
   email: string;
@@ -67,8 +67,8 @@ export function EmailVerificationScreen({
             </CardTitle>
             <CardDescription>
               We sent a verification link to{' '}
-              <span className='font-medium text-foreground'>{email}</span>. Click
-              the link to verify your account.
+              <span className='font-medium text-foreground'>{email}</span>.
+              Click the link to verify your account.
             </CardDescription>
           </CardHeader>
           <CardContent className='flex flex-col gap-3 px-10'>

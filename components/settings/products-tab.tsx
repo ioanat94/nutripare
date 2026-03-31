@@ -26,13 +26,15 @@ export function ProductsTab({ userId }: { userId: string }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    getSavedProducts(userId).then((data) => {
-      setProducts(data);
-      setLoading(false);
-    }).catch(() => {
-      toast.error('Failed to load products');
-      setLoading(false);
-    });
+    getSavedProducts(userId)
+      .then((data) => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        toast.error('Failed to load products');
+        setLoading(false);
+      });
   }, [userId]);
 
   function toggleSelected(ean: string, checked: boolean) {
@@ -111,8 +113,12 @@ export function ProductsTab({ userId }: { userId: string }) {
                     aria-label={`Select ${product.name}`}
                   />
                 </TableCell>
-                <TableCell className='max-w-48 whitespace-normal'>{product.name}</TableCell>
-                <TableCell className='max-w-48 whitespace-normal font-mono'>{product.ean}</TableCell>
+                <TableCell className='max-w-48 whitespace-normal'>
+                  {product.name}
+                </TableCell>
+                <TableCell className='max-w-48 whitespace-normal font-mono'>
+                  {product.ean}
+                </TableCell>
                 <TableCell>
                   <div className='flex gap-1'>
                     <Link
@@ -144,26 +150,26 @@ export function ProductsTab({ userId }: { userId: string }) {
       )}
       {selected.size >= 2 && (
         <div className='flex items-center justify-between border-t pt-3'>
-            <span className='text-sm text-muted-foreground'>
-              {selected.size} products selected
-            </span>
-            <div className='flex items-center gap-2'>
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={() => setSelected(new Set())}
-              >
-                Clear
-              </Button>
-              <Link
-                href={compareUrl}
-                target='_blank'
-                className={buttonVariants({ size: 'sm' })}
-              >
-                <GitCompareArrows className='size-4' />
-                Compare
-              </Link>
-            </div>
+          <span className='text-sm text-muted-foreground'>
+            {selected.size} products selected
+          </span>
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => setSelected(new Set())}
+            >
+              Clear
+            </Button>
+            <Link
+              href={compareUrl}
+              target='_blank'
+              className={buttonVariants({ size: 'sm' })}
+            >
+              <GitCompareArrows className='size-4' />
+              Compare
+            </Link>
+          </div>
         </div>
       )}
     </div>

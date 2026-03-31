@@ -152,7 +152,9 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <div className='mt-6'><RulesetDemo /></div>
+        <div className='mt-6'>
+          <RulesetDemo />
+        </div>
       </section>
     </main>
   );

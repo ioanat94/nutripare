@@ -9,8 +9,12 @@ export default function Error({ reset }: { reset: () => void }) {
       <h1 className='text-2xl font-bold'>Something went wrong</h1>
       <p className='text-muted-foreground'>An unexpected error occurred.</p>
       <div className='flex gap-2'>
-        <button onClick={reset} className={buttonVariants()}>Try again</button>
-        <Link href='/' className={buttonVariants({ variant: 'outline' })}>Go home</Link>
+        <button onClick={reset} className={buttonVariants()}>
+          Try again
+        </button>
+        <Link href='/' className={buttonVariants({ variant: 'outline' })}>
+          Go home
+        </Link>
       </div>
     </main>
   );

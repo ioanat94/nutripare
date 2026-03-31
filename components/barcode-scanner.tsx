@@ -63,7 +63,8 @@ export default function BarcodeScanner({
       .catch((err: unknown) => {
         const raw = err instanceof Error ? err.message : String(err);
         const isNotFound =
-          raw.includes('NotFoundError') || raw.includes('Requested device not found');
+          raw.includes('NotFoundError') ||
+          raw.includes('Requested device not found');
         setError(
           isNotFound
             ? 'No camera found. Please connect a camera and try again.'

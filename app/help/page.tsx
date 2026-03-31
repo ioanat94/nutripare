@@ -467,12 +467,28 @@ export default function HelpPage() {
                     (signed-in users only).
                   </li>
                   <li>
+                    <span className='text-foreground font-medium'>
+                      Pin column / Unpin column
+                    </span>{' '}
+                    — sticks the column to the left of the table so it stays
+                    visible when scrolling horizontally. Only one column can be
+                    pinned at a time; selecting another column&apos;s pin option
+                    moves the pin. A filled pin icon appears in the column
+                    header while it is pinned.
+                  </li>
+                  <li>
                     <span className='text-foreground font-medium'>Share</span> —
                     copies a shareable URL for just that product.
                   </li>
                   <li>
                     <span className='text-foreground font-medium'>Remove</span>{' '}
                     — removes the product column from the table.
+                  </li>
+                  <li>
+                    <span className='text-foreground font-medium'>Report</span>{' '}
+                    — shown in amber. Opens a confirmation dialog to flag the
+                    product&apos;s data as missing or incorrect. Reports are
+                    anonymous.
                   </li>
                 </ul>
               </div>

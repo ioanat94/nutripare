@@ -1,5 +1,5 @@
-import { DEFAULT_ROWS, DemoTable } from '@/components/demo-table';
-
+import { DEFAULT_ROWS } from '@/utils/constants';
+import { DemoTable } from '@/components/demo-table';
 import { MoreHorizontal } from 'lucide-react';
 
 export function HomeDemo() {

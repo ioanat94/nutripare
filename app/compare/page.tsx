@@ -34,7 +34,7 @@ import type { NutritionSettings } from '@/types/firestore';
 import { NutritionTable } from '@/components/nutrition-table';
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import dynamic from 'next/dynamic';
-import { getDefaultRules } from '@/utils/thresholds';
+import { getDefaultRules } from '@/utils/getDefaultRules';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useSearchParams } from 'next/navigation';

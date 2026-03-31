@@ -14,7 +14,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { saveNutritionSettings } from '@/lib/firestore';
 import type { FirestoreUser } from '@/types/firestore';
-import { BUILTIN_RULESETS, DEFAULT_NUTRITION_ROWS } from '@/utils/thresholds';
+import { BUILTIN_RULESETS, DEFAULT_NUTRITION_ROWS } from '@/utils/constants';
 
 interface AuthContextValue {
   user: FirestoreUser | null;

@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { BUILTIN_RULESETS, ROWS, SCORE_ROW } from '@/utils/constants';
 import {
   DndContext,
   KeyboardSensor,
@@ -41,7 +42,6 @@ import type {
   NutritionSettings,
   ThresholdColor,
 } from '@/types/firestore';
-import { ROWS, SCORE_ROW } from '@/components/nutrition-table';
 import {
   Select,
   SelectContent,
@@ -58,7 +58,6 @@ import {
 import { getNutritionSettings, saveNutritionSettings } from '@/lib/firestore';
 import { useEffect, useMemo, useState } from 'react';
 
-import { BUILTIN_RULESETS } from '@/utils/thresholds';
 import { Button } from '@/components/ui/button';
 import { CSS } from '@dnd-kit/utilities';
 import { Checkbox } from '@/components/ui/checkbox';

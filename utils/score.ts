@@ -1,7 +1,6 @@
+import { COMPUTED_SCORE_KEY } from './constants';
 import type { NutritionRule } from '@/types/firestore';
 import type { ProductNutrition } from '@/types/openfoodfacts';
-
-export const COMPUTED_SCORE_KEY = 'computed_score';
 
 const RATING_WEIGHT: Record<string, number> = {
   positive: 3,
@@ -19,7 +18,9 @@ export function computeScore(
 
   let rawScore = 0;
   for (const rule of scoringRules) {
-    const value = product[rule.nutrient as keyof ProductNutrition] as number | undefined;
+    const value = product[rule.nutrient as keyof ProductNutrition] as
+      | number
+      | undefined;
     if (value === undefined || isNaN(value)) continue;
 
     const fires =

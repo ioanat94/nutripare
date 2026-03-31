@@ -36,6 +36,9 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-table-stripe: var(--table-stripe);
+  --color-table-stripe-hover: var(--table-stripe-hover);
+  --color-table-active: var(--table-active);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -58,6 +61,12 @@
 }
 
 :root {
+  --table-stripe: color-mix(in srgb, var(--muted) 30%, var(--background));
+  --table-stripe-hover: color-mix(in srgb, var(--muted) 50%, var(--background));
+  --table-active: color-mix(in srgb, var(--primary) 10%, var(--background));
+  --table-pin-shadow: inset 1px 0 0
+    color-mix(in oklch, var(--color-border) 40%, transparent);
+
   --background: oklch(0.98 0 0);
   --foreground: oklch(0.13 0.02 220);
   --card: oklch(1 0 0);

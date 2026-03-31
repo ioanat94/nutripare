@@ -1,102 +1,8 @@
 import { MoreHorizontal } from 'lucide-react';
+import { PRODUCTS } from '@/utils/constants';
 import { ReactNode } from 'react';
+import { RowData } from '@/types/table';
 import { cn } from '@/utils/tailwind';
-
-export type CellData = {
-  value: string;
-  className: string;
-  emoji: '👑' | '🚩' | null;
-};
-export type RowData = { label: string; cells: CellData[] };
-
-export const PRODUCTS = [
-  { name: 'Choco Crunch', code: '5000112637922' },
-  { name: 'Grain Flakes', code: '5000159461122' },
-  { name: 'Morning Oats', code: '5010029211258' },
-];
-
-// Default ruleset thresholds (per 100g) — same rules used for computed scores:
-// protein >20 → positive (none qualify)
-// sugar <5 → positive, >22.5 → negative
-// sat_fat <1.5 → positive, >5 → negative
-// fiber >6 → positive
-// salt <0.3 → positive
-// Calories computed as protein×4 + carbs×4 + fat×9: CC=381, GF=336, MO=379
-// Scores computed via computeScore(): CC=52, GF=91, MO=95
-export const DEFAULT_ROWS: RowData[] = [
-  {
-    label: 'Calories (kcal)',
-    cells: [
-      { value: '381', className: '', emoji: null },
-      { value: '336', className: '', emoji: null },
-      { value: '379', className: '', emoji: null },
-    ],
-  },
-  {
-    label: 'Protein (g)',
-    cells: [
-      { value: '5.8', className: '', emoji: null },
-      { value: '11.0', className: '', emoji: null },
-      { value: '13.0', className: '', emoji: null },
-    ],
-  },
-  {
-    label: 'Carbohydrates (g)',
-    cells: [
-      { value: '84', className: '', emoji: null },
-      { value: '68', className: '', emoji: null },
-      { value: '66', className: '', emoji: null },
-    ],
-  },
-  {
-    label: 'Sugar (g)',
-    cells: [
-      { value: '36.0', className: 'text-destructive', emoji: '🚩' }, // >22.5, highest
-      { value: '4.4', className: 'text-positive', emoji: null }, // <5
-      { value: '1.1', className: 'text-positive', emoji: '👑' }, // <5, lowest
-    ],
-  },
-  {
-    label: 'Fat (g)',
-    cells: [
-      { value: '2.4', className: '', emoji: null },
-      { value: '2.2', className: '', emoji: null },
-      { value: '7.0', className: '', emoji: null },
-    ],
-  },
-  {
-    label: 'Saturated Fat (g)',
-    cells: [
-      { value: '0.5', className: 'text-positive', emoji: null }, // <1.5
-      { value: '0.4', className: 'text-positive', emoji: '👑' }, // <1.5, lowest
-      { value: '1.3', className: 'text-positive', emoji: null }, // <1.5
-    ],
-  },
-  {
-    label: 'Fiber (g)',
-    cells: [
-      { value: '2.9', className: '', emoji: null }, // <6, neutral
-      { value: '10.0', className: 'text-positive', emoji: '👑' }, // >6, highest
-      { value: '8.0', className: 'text-positive', emoji: null }, // >6
-    ],
-  },
-  {
-    label: 'Salt (g)',
-    cells: [
-      { value: '0.5', className: '', emoji: null },
-      { value: '0.4', className: '', emoji: null },
-      { value: '0.1', className: 'text-positive', emoji: '👑' }, // <0.3, only one
-    ],
-  },
-  {
-    label: 'Computed Score',
-    cells: [
-      { value: '52', className: '', emoji: null },
-      { value: '91', className: '', emoji: null },
-      { value: '95', className: '', emoji: null },
-    ],
-  },
-];
 
 interface DemoTableProps {
   rows: RowData[];
@@ -183,9 +89,7 @@ export function DemoTable({
                   className={cn(
                     'sticky left-0 z-10 w-32 py-0 pl-4 text-left border-r border-border/40',
                     i < rows.length - 1 && 'border-b border-border/40',
-                    i % 2 === 0
-                      ? 'bg-[color-mix(in_srgb,var(--muted)_30%,var(--background))]'
-                      : 'bg-background',
+                    i % 2 === 0 ? 'bg-table-stripe' : 'bg-background',
                   )}
                 >
                   <span className='text-sm font-medium text-muted-foreground'>

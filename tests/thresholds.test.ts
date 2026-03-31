@@ -1,5 +1,8 @@
-import { BUILTIN_RULESETS, getDefaultRules, getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
+import { getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
+
+import { BUILTIN_RULESETS } from '@/utils/constants';
 import type { NutritionRule } from '@/types/firestore';
+import { getDefaultRules } from '@/utils/getDefaultRules';
 
 const rule = (
   nutrient: string,
@@ -37,16 +40,28 @@ describe('BUILTIN_RULESETS', () => {
 
   it('Low Carb ruleset penalises high carbohydrates', () => {
     const lowCarb = BUILTIN_RULESETS.find((r) => r.id === 'low-carb')!;
-    const carbRules = lowCarb.rules.filter((r) => r.nutrient === 'carbohydrates');
+    const carbRules = lowCarb.rules.filter(
+      (r) => r.nutrient === 'carbohydrates',
+    );
     expect(carbRules.length).toBeGreaterThan(0);
     expect(carbRules.some((r) => r.rating === 'negative')).toBe(true);
   });
 
   it('High Protein ruleset rewards high protein', () => {
     const highProtein = BUILTIN_RULESETS.find((r) => r.id === 'high-protein')!;
-    const proteinRules = highProtein.rules.filter((r) => r.nutrient === 'protein');
-    expect(proteinRules.some((r) => r.direction === 'above' && r.rating === 'positive')).toBe(true);
-    expect(proteinRules.some((r) => r.direction === 'below' && r.rating === 'negative')).toBe(true);
+    const proteinRules = highProtein.rules.filter(
+      (r) => r.nutrient === 'protein',
+    );
+    expect(
+      proteinRules.some(
+        (r) => r.direction === 'above' && r.rating === 'positive',
+      ),
+    ).toBe(true);
+    expect(
+      proteinRules.some(
+        (r) => r.direction === 'below' && r.rating === 'negative',
+      ),
+    ).toBe(true);
   });
 });
 
@@ -57,35 +72,67 @@ describe('BUILTIN_RULESETS', () => {
 describe('getThresholdColor', () => {
   describe('basic matching', () => {
     it('returns the rating when value is above threshold', () => {
-      expect(getThresholdColor('protein', 25, [rule('protein', 'above', 20, 'positive')])).toBe('positive');
+      expect(
+        getThresholdColor('protein', 25, [
+          rule('protein', 'above', 20, 'positive'),
+        ]),
+      ).toBe('positive');
     });
 
     it('returns the rating when value is below threshold', () => {
-      expect(getThresholdColor('salt', 0.2, [rule('salt', 'below', 0.3, 'positive')])).toBe('positive');
+      expect(
+        getThresholdColor('salt', 0.2, [
+          rule('salt', 'below', 0.3, 'positive'),
+        ]),
+      ).toBe('positive');
     });
 
     it('returns null when value equals the threshold (not strictly above)', () => {
-      expect(getThresholdColor('protein', 20, [rule('protein', 'above', 20, 'positive')])).toBeNull();
+      expect(
+        getThresholdColor('protein', 20, [
+          rule('protein', 'above', 20, 'positive'),
+        ]),
+      ).toBeNull();
     });
 
     it('returns null when value equals the threshold (not strictly below)', () => {
-      expect(getThresholdColor('salt', 0.3, [rule('salt', 'below', 0.3, 'positive')])).toBeNull();
+      expect(
+        getThresholdColor('salt', 0.3, [
+          rule('salt', 'below', 0.3, 'positive'),
+        ]),
+      ).toBeNull();
     });
 
     it('returns null when no rule matches', () => {
-      expect(getThresholdColor('protein', 10, [rule('protein', 'above', 20, 'positive')])).toBeNull();
+      expect(
+        getThresholdColor('protein', 10, [
+          rule('protein', 'above', 20, 'positive'),
+        ]),
+      ).toBeNull();
     });
 
     it('returns null when nutrient has no rules', () => {
-      expect(getThresholdColor('kcals', 500, [rule('protein', 'above', 20, 'positive')])).toBeNull();
+      expect(
+        getThresholdColor('kcals', 500, [
+          rule('protein', 'above', 20, 'positive'),
+        ]),
+      ).toBeNull();
     });
 
     it('returns null for undefined value', () => {
-      expect(getThresholdColor('protein', undefined, [rule('protein', 'above', 20, 'positive')])).toBeNull();
+      expect(
+        getThresholdColor('protein', undefined, [
+          rule('protein', 'above', 20, 'positive'),
+        ]),
+      ).toBeNull();
     });
 
     it('returns null for NaN value', () => {
-      expect(getThresholdColor('protein', NaN, [rule('protein', 'above', 20, 'positive')])).toBeNull();
+      expect(
+        getThresholdColor('protein', NaN, [
+          rule('protein', 'above', 20, 'positive'),
+        ]),
+      ).toBeNull();
     });
 
     it('returns null for empty rules array', () => {
@@ -184,7 +231,9 @@ describe('getExtremeEmoji', () => {
     });
 
     it('returns null when value is undefined', () => {
-      expect(getExtremeEmoji('protein', [undefined, 30], 0, defaultRules)).toBeNull();
+      expect(
+        getExtremeEmoji('protein', [undefined, 30], 0, defaultRules),
+      ).toBeNull();
     });
 
     it('returns null when no rule applies (value below threshold)', () => {
@@ -288,8 +337,12 @@ describe('getExtremeEmoji', () => {
   describe('rounding', () => {
     it('considers values equal when they round to the same 1 decimal place', () => {
       // 30.01 and 30.04 both round to 30.0 — should both get crown
-      expect(getExtremeEmoji('protein', [30.01, 30.04], 0, defaultRules)).toBe('👑');
-      expect(getExtremeEmoji('protein', [30.01, 30.04], 1, defaultRules)).toBe('👑');
+      expect(getExtremeEmoji('protein', [30.01, 30.04], 0, defaultRules)).toBe(
+        '👑',
+      );
+      expect(getExtremeEmoji('protein', [30.01, 30.04], 1, defaultRules)).toBe(
+        '👑',
+      );
     });
   });
 });

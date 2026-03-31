@@ -17,7 +17,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { COMPUTED_SCORE_KEY, computeScore } from '@/utils/score';
+import { COMPUTED_SCORE_KEY, ROWS, SCORE_ROW } from '@/utils/constants';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +30,11 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { NutritionRuleset, NutritionSettings } from '@/types/firestore';
+import type {
+  NutritionRuleset,
+  NutritionSettings,
+  ThresholdColor,
+} from '@/types/firestore';
 import {
   Table,
   TableBody,
@@ -44,16 +48,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  getDefaultRules,
-  getExtremeEmoji,
-  getThresholdColor,
-} from '@/utils/thresholds';
+import { getExtremeEmoji, getThresholdColor } from '@/utils/thresholds';
 import { useMemo, useState } from 'react';
 
 import type { ProductNutrition } from '@/types/openfoodfacts';
-import type { ThresholdColor } from '@/utils/thresholds';
 import { cn } from '@/utils/tailwind';
+import { computeScore } from '@/utils/score';
+import { getDefaultRules } from '@/utils/getDefaultRules';
 import { toast } from 'sonner';
 import { useExpandedTable } from '@/hooks/use-expanded-table';
 
@@ -78,22 +79,6 @@ interface NutritionTableProps {
   selectedRulesetId?: string | null;
   onRulesetChange?: (id: string) => void;
 }
-
-export const ROWS = [
-  { label: 'Calories (kcal)', key: 'kcals' },
-  { label: 'Protein (g)', key: 'protein' },
-  { label: 'Carbohydrates (g)', key: 'carbohydrates' },
-  { label: 'Sugar (g)', key: 'sugar' },
-  { label: 'Fat (g)', key: 'fat' },
-  { label: 'Saturated Fat (g)', key: 'saturated_fat' },
-  { label: 'Fiber (g)', key: 'fiber' },
-  { label: 'Salt (g)', key: 'salt' },
-] as const;
-
-export const SCORE_ROW = {
-  label: 'Computed Score',
-  key: COMPUTED_SCORE_KEY,
-} as const;
 
 const COLOR_CLASS: Record<ThresholdColor, string> = {
   positive: 'text-positive',
@@ -408,8 +393,7 @@ export function NutritionTable({
                     style={
                       isPinned
                         ? {
-                            boxShadow:
-                              'inset 1px 0 0 color-mix(in oklch, var(--color-border) 40%, transparent)',
+                            boxShadow: 'var(--table-pin-shadow)',
                           }
                         : undefined
                     }
@@ -577,15 +561,16 @@ export function NutritionTable({
                           | undefined,
                     );
 
+                const cellBgBase = isActive
+                  ? 'bg-table-active'
+                  : i % 2 === 0
+                    ? 'bg-table-stripe'
+                    : 'bg-background';
+
                 const stickyBg = cn(
                   'transition-colors',
-                  !isActive &&
-                    'group-hover:bg-[color-mix(in_srgb,var(--muted)_50%,var(--background))]',
-                  isActive
-                    ? 'bg-[color-mix(in_srgb,var(--primary)_10%,var(--background))]'
-                    : i % 2 === 0
-                      ? 'bg-[color-mix(in_srgb,var(--muted)_30%,var(--background))]'
-                      : 'bg-background',
+                  !isActive && 'group-hover:bg-table-stripe-hover',
+                  cellBgBase,
                 );
 
                 return (
@@ -687,21 +672,20 @@ export function NutritionTable({
                         : (pinnedCode !== null ? j > 1 : j > 0)
                           ? 'border-l'
                           : '';
-                      const pinnedBg = isCellPinned ? stickyBg : '';
+
                       return (
                         <TableCell
                           key={p.code}
                           className={cn(
                             'py-3 tabular-nums text-sm font-medium border-border/40',
                             pinnedBase,
-                            pinnedBg,
+                            stickyBg,
                             className,
                           )}
                           style={
                             isCellPinned
                               ? {
-                                  boxShadow:
-                                    'inset 1px 0 0 color-mix(in oklch, var(--color-border) 40%, transparent)',
+                                  boxShadow: 'var(--table-pin-shadow)',
                                 }
                               : undefined
                           }

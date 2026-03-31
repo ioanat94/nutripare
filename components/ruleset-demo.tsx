@@ -1,7 +1,8 @@
 'use client';
 
-import { DEFAULT_ROWS, DemoTable, RowData } from '@/components/demo-table';
-
+import { DEFAULT_ROWS } from '@/utils/constants';
+import { DemoTable } from '@/components/demo-table';
+import { RowData } from '@/types/table';
 import { cn } from '@/utils/tailwind';
 import { useState } from 'react';
 

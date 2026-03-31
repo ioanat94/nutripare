@@ -35,6 +35,7 @@ import { NutritionTable } from '@/components/nutrition-table';
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import dynamic from 'next/dynamic';
 import { getDefaultRules } from '@/utils/getDefaultRules';
+import { submitReport } from '@/lib/reports';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useSearchParams } from 'next/navigation';
@@ -80,6 +81,7 @@ function ComparePageContent() {
   );
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveDialogName, setSaveDialogName] = useState('');
+  const [reportCode, setReportCode] = useState<string | null>(null);
   const [nutritionSettings, setNutritionSettings] = useState<
     NutritionSettings | null | undefined
   >(undefined);
@@ -159,6 +161,9 @@ function ComparePageContent() {
     }
     setInvalidCodes(invalid);
     setNotFoundCodes(notFound);
+    notFound.forEach((code) =>
+      submitReport(code, 'missing product').catch(() => {}),
+    );
     setInput('');
     setLoading(false);
   }
@@ -309,6 +314,7 @@ function ComparePageContent() {
       const product = await fetchProduct(code);
       if (product === null) {
         setNotFoundCodes([code]);
+        submitReport(code, 'missing product').catch(() => {});
       } else {
         setProducts((prev) => replaceOrAppend(prev, product));
         setNotFoundCodes([]);
@@ -444,6 +450,7 @@ function ComparePageContent() {
             rulesets={rulesets}
             selectedRulesetId={selectedRulesetId}
             onRulesetChange={user ? handleRulesetChange : undefined}
+            onReport={setReportCode}
           />
           <p className='mt-4 text-xs text-muted-foreground'>
             Data sourced from{' '}
@@ -461,6 +468,39 @@ function ComparePageContent() {
           </p>
         </div>
       )}
+      <AlertDialog
+        open={reportCode !== null}
+        onOpenChange={(open) => {
+          if (!open) setReportCode(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Report product data</AlertDialogTitle>
+            <AlertDialogDescription>
+              Report missing or incorrect product data? Your report is
+              anonymous.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant='outline' onClick={() => setReportCode(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant='warning'
+              onClick={async () => {
+                if (reportCode) {
+                  await submitReport(reportCode, 'incorrect data');
+                  toast.success('Report submitted');
+                }
+                setReportCode(null);
+              }}
+            >
+              Confirm
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <AlertDialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

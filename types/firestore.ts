@@ -38,3 +38,12 @@ export interface NutritionSettings {
   rulesets: NutritionRuleset[];
   rowOrder?: string[];
 }
+
+export type ReportStatus = 'open' | 'solved' | 'dismissed';
+export type ReportReason = 'incorrect data' | 'missing product';
+export interface Report {
+  code: string;
+  date: import('firebase/firestore').Timestamp;
+  reason: ReportReason;
+  status: ReportStatus;
+}

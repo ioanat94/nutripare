@@ -1,6 +1,8 @@
 import type {
   NutritionRule,
   NutritionSettings,
+  Report,
+  ReportStatus,
   SavedComparison,
   SavedProduct,
 } from '@/types/firestore';
@@ -223,4 +225,16 @@ export async function saveNutritionSettings(
 ): Promise<void> {
   const ref = doc(db, 'users', uid, 'settings', 'nutrition');
   await setDoc(ref, settings);
+}
+
+export async function getAllReports(): Promise<Report[]> {
+  const snapshot = await getDocs(collection(db, 'reports'));
+  return snapshot.docs.map((d) => ({ code: d.id, ...d.data() }) as Report);
+}
+
+export async function updateReportStatus(
+  code: string,
+  status: ReportStatus,
+): Promise<void> {
+  await updateDoc(doc(db, 'reports', code), { status });
 }

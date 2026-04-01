@@ -341,7 +341,7 @@ function ComparePageContent() {
     : undefined;
 
   return (
-    <main className='mx-auto w-full max-w-5xl px-6 py-12'>
+    <main className='mx-auto w-full max-w-262 px-6 py-12'>
       {/* Header */}
       <div className='mb-8'>
         <h1 className='text-3xl font-bold tracking-tight'>Compare products</h1>

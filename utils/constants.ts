@@ -11,13 +11,13 @@ export const PRODUCTS = [
 ];
 
 // Default ruleset thresholds (per 100g) — same rules used for computed scores:
-// protein >20 → positive, >10 → info, <10 → warning, <5 → negative
+// protein >20 → positive, >10 → info (no penalty for low values)
 // sugar <5 → positive, <12.5 → info, >12.5 → warning, >22.5 → negative
 // sat_fat <1.5 → positive, <3 → info, >3 → warning, >5 → negative
-// fiber >6 → positive, >3 → info, <3 → warning, <1.5 → negative
+// fiber >6 → positive, >3 → info (no penalty for low values)
 // salt <0.3 → positive, <0.75 → info, >0.75 → warning, >1.5 → negative
 // Calories computed as protein×4 + carbs×4 + fat×9: CC=381, GF=336, MO=379
-// Scores computed via computeScore(): CC=43, GF=99, MO=99
+// Scores computed via computeScore(): CC=48, GF=99, MO=99
 export const DEFAULT_ROWS: RowData[] = [
   {
     label: 'Calories (kcal)',
@@ -30,7 +30,7 @@ export const DEFAULT_ROWS: RowData[] = [
   {
     label: 'Protein (g)',
     cells: [
-      { value: '5.8', className: 'text-warning', emoji: null }, // <10 warning
+      { value: '5.8', className: '', emoji: null }, // no rule matches
       { value: '11.0', className: 'text-info', emoji: null }, // >10 info
       { value: '13.0', className: 'text-info', emoji: null }, // >10 info
     ],
@@ -70,7 +70,7 @@ export const DEFAULT_ROWS: RowData[] = [
   {
     label: 'Fiber (g)',
     cells: [
-      { value: '2.9', className: 'text-warning', emoji: null }, // <3 warning
+      { value: '2.9', className: '', emoji: null }, // no rule matches
       { value: '10.0', className: 'text-positive', emoji: '👑' }, // >6 positive, highest
       { value: '8.0', className: 'text-positive', emoji: null }, // >6 positive
     ],
@@ -86,7 +86,7 @@ export const DEFAULT_ROWS: RowData[] = [
   {
     label: 'Computed Score',
     cells: [
-      { value: '43', className: '', emoji: null },
+      { value: '48', className: '', emoji: null },
       { value: '99', className: '', emoji: null },
       { value: '99', className: '', emoji: null },
     ],

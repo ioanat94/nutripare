@@ -47,6 +47,11 @@ vi.mock('next/dynamic', () => ({
     React.lazy(loader),
 }));
 
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({ replace: vi.fn() })),
+  useSearchParams: vi.fn(() => ({ get: vi.fn(() => null) })),
+}));
+
 vi.mock('@/contexts/auth-context', () => ({
   useAuth: vi.fn(() => ({ user: null, loading: false })),
 }));

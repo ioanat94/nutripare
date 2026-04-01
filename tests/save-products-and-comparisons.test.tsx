@@ -4,6 +4,11 @@ import { NutritionTable } from '@/components/nutrition-table';
 import type { ProductNutrition } from '@/types/openfoodfacts';
 import { vi } from 'vitest';
 
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({ replace: vi.fn() })),
+  useSearchParams: vi.fn(() => ({ get: vi.fn(() => null) })),
+}));
+
 // Mock auth context
 vi.mock('@/contexts/auth-context', () => ({
   useAuth: vi.fn(),

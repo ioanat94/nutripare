@@ -331,12 +331,11 @@ function ComparePageContent() {
     setLoading(false);
   }
 
-  const rulesets =
-    nutritionSettings !== undefined
-      ? (nutritionSettings?.rulesets ?? [
-          { id: 'default', name: 'Default', rules: getDefaultRules() },
-        ])
-      : undefined;
+  const rulesets = nutritionSettings
+    ? (nutritionSettings.rulesets ?? [
+        { id: 'default', name: 'Default', rules: getDefaultRules() },
+      ])
+    : undefined;
 
   return (
     <main className='mx-auto w-full max-w-5xl px-6 py-12'>

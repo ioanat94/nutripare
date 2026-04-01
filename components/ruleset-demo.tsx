@@ -416,9 +416,9 @@ export function RulesetDemo() {
       rows={active.rows}
       tableTopPadding
       toolbar={
-        <div className='flex items-center gap-2 border-b border-border bg-background px-4 py-3'>
+        <div className='flex flex-col gap-2 border-b border-border bg-background px-4 py-3 sm:flex-row sm:items-center'>
           <span className='text-xs text-muted-foreground'>Ruleset:</span>
-          <div className='flex gap-1.5'>
+          <div className='flex flex-wrap gap-1.5'>
             {RULESETS.map((r) => (
               <button
                 key={r.id}

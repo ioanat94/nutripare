@@ -27,6 +27,7 @@ import {
   updateComparisonRuleset,
 } from '@/lib/firestore';
 import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +39,6 @@ import { getDefaultRules } from '@/utils/getDefaultRules';
 import { submitReport } from '@/lib/reports';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
-import { useSearchParams } from 'next/navigation';
 
 const BarcodeScanner = dynamic(() => import('@/components/barcode-scanner'), {
   ssr: false,
@@ -60,6 +60,7 @@ function replaceOrAppend(
 function ComparePageContent() {
   const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<ProductNutrition[]>([]);
@@ -197,6 +198,8 @@ function ComparePageContent() {
     setSavedProductCodes(new Set());
     setSavedComparisonId(null);
     setLoadedComparison(null);
+    if (searchParams?.get('codes'))
+      router.replace('/compare', { scroll: false });
   }
 
   async function handleSaveProduct(code: string) {

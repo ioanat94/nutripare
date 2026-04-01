@@ -218,7 +218,7 @@ export function NutritionTable({
     );
   }
 
-  const tableNaturalWidth = `calc(11rem + ${displayProducts.length} * 14rem)`;
+  const tableNaturalWidth = `calc(10.5rem + ${displayProducts.length} * 13rem)`;
 
   return (
     <div

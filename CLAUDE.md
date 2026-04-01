@@ -20,27 +20,37 @@ npm test -- --run tests/compare.test.tsx   # Run a single test file
 Next.js 16 App Router application (React 19, TypeScript strict mode, Tailwind CSS v4).
 
 **Routes:**
+
 - `app/page.tsx` — home (`/`)
 - `app/login/page.tsx` — login (`/login`)
 - `app/compare/page.tsx` — compare (`/compare`)
-- `app/settings/page.tsx` — settings (`/settings`)
+- `app/settings/[[...tab]]/page.tsx` — settings with optional tab segment (`/settings/account`, `/settings/nutrition`, etc.)
+- `app/admin/page.tsx` — admin dashboard for product reports (`/admin`)
+- `app/help/page.tsx` — user guide (`/help`)
+- `app/privacy/page.tsx` — privacy policy (`/privacy`)
+- `app/auth/action/page.tsx` — email verification callback (`/auth/action`)
 - `app/layout.tsx` — root layout with Geist font, global metadata, and `dark` class on `<html>`
+- `app/providers.tsx` — context providers (Auth, Tooltip, UI)
 - `app/api/product/[code]/route.ts` — GET proxy to OpenFoodFacts API (caches 1h via `next.revalidate`)
+- `app/api/report/route.ts` — product report submission (IP-based rate limiting)
 
 **Key directories:**
-- `components/` — shared UI: `navbar`, `barcode-scanner`, `nutrition-table`, `auth-form`, `auth-screen`, `policies`, plus shadcn primitives under `components/ui/`
+
+- `components/` — shared UI: `navbar`, `footer`, `barcode-scanner`, `nutrition-table`, `auth-form`, `auth-screen`, `email-verification-screen`, `compare.page`, `demo-table`, `home-demo`, `ruleset-demo`, `help-toc`, `policies`, plus shadcn primitives under `components/ui/`
 - `components/settings/` — tab components for the settings page: `account-tab`, `comparisons-tab`, `nutrition-tab`, `products-tab`
-- `lib/` — `firebase.ts` (app/auth/Firestore init + FirebaseUI), `openfoodfacts.ts` (fetch + parse helpers), `firestore.ts` (Firestore CRUD helpers for products, comparisons, and nutrition settings)
-- `utils/` — `score.ts` (computed nutrition score), `thresholds.ts` (default nutrition rules), `tailwind.ts` (cn helper)
-- `types/` — `openfoodfacts.ts` (API response + `ProductNutrition`), `firestore.ts`
-- `hooks/` — `use-theme.ts` (dark/light toggle, persisted to `localStorage`)
-- `contexts/` — `auth-context.tsx` (Firebase auth state provider)
+- `lib/` — `firebase.ts` (app/auth/Firestore init + FirebaseUI), `openfoodfacts.ts` (fetch + parse helpers including EAN check digit validation), `firestore.ts` (Firestore CRUD helpers for products, comparisons, nutrition settings, and reports), `reports.ts` (report submission wrapper)
+- `utils/` — `score.ts` (computed nutrition score), `thresholds.ts` (threshold color mapping), `tailwind.ts` (cn helper), `constants.ts` (routes, built-in rulesets, demo data, labels), `getDefaultRules.ts` (default ruleset generator)
+- `types/` — `openfoodfacts.ts` (API response + `ProductNutrition`), `firestore.ts` (user, saved product/comparison, nutrition rules/rulesets, reports), `table.ts` (table cell/row rendering types), `thresholds.ts` (ThresholdColor type)
+- `hooks/` — `use-theme.ts` (dark/light toggle, persisted to `localStorage`), `use-expanded-table.ts` (table expansion state)
+- `contexts/` — `auth-context.tsx` (Firebase auth state provider with email verification tracking and new-user Firestore init)
 
 **Path alias:** `@/*` maps to the project root. Also configured in `vitest.config.ts` so tests can use it.
 
-**Auth & data:** Firebase Auth via `@firebase-oss/ui-react` + a custom `AuthProvider` context. Firestore is used to persist saved products, saved comparisons, and per-user nutrition settings. All Firebase config comes from `NEXT_PUBLIC_FIREBASE_*` env vars.
+**Auth & data:** Firebase Auth via `@firebase-oss/ui-react` + a custom `AuthProvider` context. Firestore is used to persist saved products, saved comparisons, per-user nutrition settings, and product reports. Admin report management is in `app/admin/`. All Firebase config comes from `NEXT_PUBLIC_FIREBASE_*` env vars. Email verification is required and tracked via `onVisibilityChange` refresh.
 
-**Barcode scanning:** `html5-qrcode` wrapped in `components/barcode-scanner.tsx`, loaded dynamically (`ssr: false`) on the compare page.
+**Barcode scanning:** `html5-qrcode` wrapped in `components/barcode-scanner.tsx`, loaded dynamically (`ssr: false`) on the compare page. EAN input is parsed and validated (including check digit) in `lib/openfoodfacts.ts` before fetching.
+
+**Drag-drop:** Column reordering in the nutrition table uses `@dnd-kit/core` and `@dnd-kit/sortable`.
 
 **Styling:** Tailwind CSS v4 via PostCSS. Theme variables are defined in `app/globals.css` using oklch color space. Dark mode uses the `.dark` class — toggled by `useTheme` hook at runtime (dark is the default). Custom tokens beyond shadcn defaults: `--positive` / `--positive-foreground` (green), `--warning` / `--warning-foreground` (amber), and `--info` / `--info-foreground` (blue). Font variables (`--font-geist-sans`, `--font-geist-mono`) must be set on `<html>`, not `<body>`, so they resolve correctly in the `@theme inline` block.
 
@@ -49,5 +59,6 @@ Next.js 16 App Router application (React 19, TypeScript strict mode, Tailwind CS
 ## Planning
 
 When asked to plan a feature:
+
 - Save the plan to `./.claude/plans/<spec-name>.md` (matching the spec filename, without the path)
 - Do not ask to implement after planning — exit plan mode immediately once the plan is saved

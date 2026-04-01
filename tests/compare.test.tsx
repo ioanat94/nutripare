@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
-
 import { mapProduct, parseEanInput } from '@/lib/openfoodfacts';
+
 import type { OFFProductResponse } from '@/types/openfoodfacts';
+import { vi } from 'vitest';
 
 vi.mock('@/contexts/auth-context', () => ({
   useAuth: vi.fn(() => ({ user: null, loading: false })),
@@ -34,23 +34,59 @@ describe('parseEanInput', () => {
   });
 
   it('trims whitespace from codes', () => {
-    expect(parseEanInput(' 12345678 , 87654321 ')).toEqual({ valid: ['12345678', '87654321'], invalid: [] });
+    expect(parseEanInput(' 12345670 , 87654325 ')).toEqual({
+      valid: ['12345670', '87654325'],
+      invalid: [],
+    });
   });
 
   it('deduplicates repeated codes', () => {
-    expect(parseEanInput('12345678,12345678,87654321')).toEqual({ valid: ['12345678', '87654321'], invalid: [] });
+    expect(parseEanInput('12345670,12345670,87654325')).toEqual({
+      valid: ['12345670', '87654325'],
+      invalid: [],
+    });
   });
 
   it('handles a single code without comma', () => {
-    expect(parseEanInput('1234567890123')).toEqual({ valid: ['1234567890123'], invalid: [] });
+    expect(parseEanInput('1234567890128')).toEqual({
+      valid: ['1234567890128'],
+      invalid: [],
+    });
   });
 
   it('handles multiple codes with irregular spacing', () => {
-    expect(parseEanInput('12345678 ,87654321,  11223344  ')).toEqual({ valid: ['12345678', '87654321', '11223344'], invalid: [] });
+    expect(parseEanInput('12345670 ,87654325,  11223344  ')).toEqual({
+      valid: ['12345670', '87654325', '11223344'],
+      invalid: [],
+    });
   });
 
   it('separates valid EANs from invalid tokens', () => {
-    expect(parseEanInput('12345678,abc,87654321')).toEqual({ valid: ['12345678', '87654321'], invalid: ['abc'] });
+    expect(parseEanInput('12345670,abc,87654325')).toEqual({
+      valid: ['12345670', '87654325'],
+      invalid: ['abc'],
+    });
+  });
+
+  it('rejects an EAN-8 with a wrong check digit', () => {
+    expect(parseEanInput('12345671')).toEqual({
+      valid: [],
+      invalid: ['12345671'],
+    });
+  });
+
+  it('rejects an EAN-13 with a wrong check digit', () => {
+    expect(parseEanInput('1234567890121')).toEqual({
+      valid: [],
+      invalid: ['1234567890121'],
+    });
+  });
+
+  it('rejects wrong check digit while accepting valid code in same input', () => {
+    expect(parseEanInput('12345671,12345670')).toEqual({
+      valid: ['12345670'],
+      invalid: ['12345671'],
+    });
   });
 });
 
@@ -128,7 +164,9 @@ describe('fetchProduct', () => {
       json: async () => ({ status: 0, status_verbose: 'product not found' }),
     } as Response);
 
-    const { fetchProduct: realFetchProduct } = await vi.importActual<typeof import('@/lib/openfoodfacts')>('@/lib/openfoodfacts');
+    const { fetchProduct: realFetchProduct } = await vi.importActual<
+      typeof import('@/lib/openfoodfacts')
+    >('@/lib/openfoodfacts');
     const result = await realFetchProduct('000');
     expect(result).toBeNull();
   });
@@ -147,7 +185,9 @@ describe('fetchProduct', () => {
       }),
     } as Response);
 
-    const { fetchProduct: realFetchProduct } = await vi.importActual<typeof import('@/lib/openfoodfacts')>('@/lib/openfoodfacts');
+    const { fetchProduct: realFetchProduct } = await vi.importActual<
+      typeof import('@/lib/openfoodfacts')
+    >('@/lib/openfoodfacts');
     const result = await realFetchProduct('123');
     expect(result).not.toBeNull();
     expect(result?.code).toBe('123');
@@ -157,7 +197,9 @@ describe('fetchProduct', () => {
   it('rejects on network error', async () => {
     vi.mocked(global.fetch).mockRejectedValue(new Error('Network error'));
 
-    const { fetchProduct: realFetchProduct } = await vi.importActual<typeof import('@/lib/openfoodfacts')>('@/lib/openfoodfacts');
+    const { fetchProduct: realFetchProduct } = await vi.importActual<
+      typeof import('@/lib/openfoodfacts')
+    >('@/lib/openfoodfacts');
     await expect(realFetchProduct('123')).rejects.toThrow('Network error');
   });
 });
@@ -174,8 +216,12 @@ describe('ComparePage', () => {
 
   it('renders input with placeholder and submit button', async () => {
     await renderPage();
-    expect(screen.getByRole('textbox', { name: /ean barcodes/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /look up/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('textbox', { name: /ean barcodes/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /look up/i }),
+    ).toBeInTheDocument();
   });
 
   it('does not call fetchProduct when input is empty', async () => {
@@ -190,12 +236,12 @@ describe('ComparePage', () => {
     mockFetchProduct.mockResolvedValue(null);
     await renderPage();
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
-      target: { value: '12345678,87654321' },
+      target: { value: '12345670,87654325' },
     });
     fireEvent.click(screen.getByRole('button', { name: /look up/i }));
     await waitFor(() => {
-      expect(mockFetchProduct).toHaveBeenCalledWith('12345678');
-      expect(mockFetchProduct).toHaveBeenCalledWith('87654321');
+      expect(mockFetchProduct).toHaveBeenCalledWith('12345670');
+      expect(mockFetchProduct).toHaveBeenCalledWith('87654325');
     });
   });
 
@@ -203,11 +249,11 @@ describe('ComparePage', () => {
     mockFetchProduct.mockResolvedValue(null);
     await renderPage();
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
-      target: { value: '12345678' },
+      target: { value: '12345670' },
     });
     fireEvent.click(screen.getByRole('button', { name: /look up/i }));
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('12345678');
+      expect(screen.getByRole('alert')).toHaveTextContent('12345670');
     });
   });
 
@@ -215,11 +261,11 @@ describe('ComparePage', () => {
     mockFetchProduct.mockRejectedValue(new Error('Network error'));
     await renderPage();
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
-      target: { value: '87654321' },
+      target: { value: '87654325' },
     });
     fireEvent.click(screen.getByRole('button', { name: /look up/i }));
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('87654321');
+      expect(screen.getByRole('alert')).toHaveTextContent('87654325');
     });
   });
 });

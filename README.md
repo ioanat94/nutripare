@@ -47,15 +47,18 @@ Nutripare lets you look up food products by barcode or name, view their nutritio
 <a name="features"></a>
 
 - **Barcode scanning** — scan a product's barcode directly from your camera to look it up instantly
-- **Product search** — search for products by barcode
+- **Product search** — search for products by barcode (with EAN check digit validation)
 - **Side-by-side comparison** — compare two or more products' full nutritional profiles at once
 - **Nutrition scoring** — each product gets a score based on user-defined thresholds for nutrients (green / blue / amber / red)
+- **Built-in rulesets** — choose from preset rulesets (Default, Low Carb, High Protein, High Fiber, Low Fat, Low Salt) or create your own
+- **Column reordering** — drag and drop columns to reorder them in the comparison table
 - **Saved products** — save products to your account for quick access later
 - **Saved comparisons** — save product comparisons to revisit them
 - **Custom nutrition settings** — configure which nutrients matter and set your own thresholds
+- **Product reporting** — flag products with incorrect or missing data
 - **Expandable comparison table** — expand the table to fit all products (or full viewport width on wide comparisons) with a toolbar toggle; preference is persisted across sessions
 - **Dark / light mode** — toggle between themes, persisted across sessions
-- **Authentication** — sign in with email/password or Google via Firebase Auth
+- **Authentication** — sign in with email/password or Google via Firebase Auth (email verification required)
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 

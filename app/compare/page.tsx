@@ -309,6 +309,11 @@ function ComparePageContent() {
 
   async function handleScan(code: string) {
     setScannerOpen(false);
+    const { valid } = parseEanInput(code);
+    if (valid.length === 0) {
+      setInvalidCodes([code]);
+      return;
+    }
     setLoading(true);
     try {
       const product = await fetchProduct(code);

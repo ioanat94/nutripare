@@ -22,7 +22,7 @@ export async function GET(
     return NextResponse.json({ error: 'Invalid barcode' }, { status: 400 });
   }
 
-  const url = `${baseUrl}/api/v2/product/${code}?fields=code,product_name,nutriments`;
+  const url = `${baseUrl}/api/v2/product/${code}?fields=code,product_name,product_name_en,product_name_fi,nutriments`;
   const headers: Record<string, string> = {
     'User-Agent': 'Nutripare/1.0 (nutripare@gmail.com)',
   };

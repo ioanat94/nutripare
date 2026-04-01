@@ -15,8 +15,10 @@ export interface OFFProductResponse {
   product?: {
     code: string;
     product_name: string;
+    product_name_en?: string;
+    product_name_fi?: string;
     nutriments: OFFNutriments;
-  };
+  } & Record<string, unknown>;
 }
 
 export interface ProductNutrition {

@@ -225,10 +225,8 @@ export function NutritionTable({
       style={
         expanded
           ? {
-              width: `min(calc(${tableNaturalWidth} + 3rem), 100vw)`,
-              marginLeft: `calc(50% - min(calc(${tableNaturalWidth} + 3rem), 100vw) / 2)`,
-              paddingLeft: '1.5rem',
-              paddingRight: '1.5rem',
+              width: `max(min(${tableNaturalWidth}, calc(100vw - 3rem)), 100%)`,
+              marginLeft: `min(calc(50% - min(${tableNaturalWidth}, calc(100vw - 3rem)) / 2), 0px)`,
             }
           : undefined
       }

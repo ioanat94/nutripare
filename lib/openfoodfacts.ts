@@ -36,6 +36,17 @@ export function parseEanInput(raw: string): {
   return { valid, invalid };
 }
 
+function resolveProductName(product: OFFProductResponse['product']): string {
+  if (!product) return '';
+  if (product.product_name) return product.product_name;
+  if (product.product_name_en) return product.product_name_en;
+  if (product.product_name_fi) return product.product_name_fi;
+  const fallback = Object.entries(product).find(
+    ([k, v]) => k.startsWith('product_name_') && typeof v === 'string' && v,
+  );
+  return fallback ? (fallback[1] as string) : '';
+}
+
 export function mapProduct(
   raw: OFFProductResponse,
   code: string,
@@ -43,7 +54,7 @@ export function mapProduct(
   const n = raw.product?.nutriments ?? {};
   return {
     code,
-    product_name: raw.product?.product_name ?? '',
+    product_name: resolveProductName(raw.product),
     kcals: n['energy-kcal_100g'],
     protein: n.proteins_100g,
     carbohydrates: n.carbohydrates_100g,

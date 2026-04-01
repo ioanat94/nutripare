@@ -2,12 +2,10 @@ import { NutrientThresholds } from '@/types/thresholds';
 import { NutritionRule } from '@/types/firestore';
 
 const THRESHOLDS: NutrientThresholds = {
-  // protein: higher is better
+  // protein: higher is better (no penalty for low values)
   protein: [
     { color: 'positive', when: 'above', value: 20 },
     { color: 'info', when: 'above', value: 10 },
-    { color: 'warning', when: 'below', value: 10 },
-    { color: 'negative', when: 'below', value: 5 },
   ],
   // sugar: lower is better
   sugar: [
@@ -23,12 +21,10 @@ const THRESHOLDS: NutrientThresholds = {
     { color: 'warning', when: 'above', value: 3 },
     { color: 'negative', when: 'above', value: 5 },
   ],
-  // fiber: higher is better
+  // fiber: higher is better (no penalty for low values)
   fiber: [
     { color: 'positive', when: 'above', value: 6 },
     { color: 'info', when: 'above', value: 3 },
-    { color: 'warning', when: 'below', value: 3 },
-    { color: 'negative', when: 'below', value: 1.5 },
   ],
   // salt: lower is better
   salt: [

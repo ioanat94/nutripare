@@ -18,7 +18,12 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { COMPUTED_SCORE_KEY, ROWS, SCORE_ROW } from '@/utils/constants';
+import {
+  COMPUTED_SCORE_KEY,
+  DEFAULT_NUTRITION_ROWS,
+  ROWS,
+  SCORE_ROW,
+} from '@/utils/constants';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -132,7 +137,9 @@ export function NutritionTable({
   selectedRulesetId,
   onRulesetChange,
 }: NutritionTableProps) {
-  const visibleRows = settings?.visibleRows ?? ROWS.map((r) => r.key);
+  const visibleRows: string[] = settings?.visibleRows ?? [
+    ...DEFAULT_NUTRITION_ROWS,
+  ];
   const activeRuleset =
     rulesets?.find((rs) => rs.id === selectedRulesetId) ?? null;
   const rules = useMemo(
@@ -211,7 +218,7 @@ export function NutritionTable({
     );
   }
 
-  const tableNaturalWidth = `calc(11rem + ${displayProducts.length} * 14rem)`;
+  const tableNaturalWidth = `calc(10.5rem + ${displayProducts.length} * 13rem)`;
 
   return (
     <div
@@ -366,14 +373,14 @@ export function NutritionTable({
         <Table
           className='table-fixed border-separate border-spacing-0 [&_td]:border-b [&_th]:border-b [&_td]:border-border/40 [&_th]:border-border/40 [&_tbody_tr:last-child_td]:border-b-0'
           containerClassName='overflow-visible'
-          style={{ width: `calc(11rem + ${displayProducts.length} * 14rem)` }}
+          style={{ width: `calc(10rem + ${displayProducts.length} * 13rem)` }}
         >
           <TableHeader>
             <TableRow className='hover:bg-transparent'>
               {/* Corner cell — table-wide qualifier */}
               <TableHead
                 className={cn(
-                  'sticky left-0 z-10 bg-background w-44 align-bottom pb-3 text-right text-xs font-normal text-muted-foreground',
+                  'sticky left-0 z-10 bg-background w-41 align-bottom pb-3 text-right text-xs font-normal text-muted-foreground',
                   pinnedCode === null && 'border-r',
                 )}
               >
@@ -387,9 +394,9 @@ export function NutritionTable({
                     key={p.code}
                     scope='col'
                     className={cn(
-                      'w-56 align-top pb-3',
+                      'w-52 align-top pb-3',
                       isPinned
-                        ? 'sticky left-44 z-10 bg-background border-r'
+                        ? 'sticky left-40 z-10 bg-background border-r'
                         : (pinnedCode !== null ? idx > 1 : idx > 0) &&
                             'border-l border-border/40',
                     )}
@@ -589,7 +596,7 @@ export function NutritionTable({
                     <TableCell
                       scope='row'
                       className={cn(
-                        'sticky left-0 z-10 w-44 py-3',
+                        'sticky left-0 z-10 w-40 py-3',
                         { 'border-r': pinnedCode === null },
                         stickyBg,
                       )}
@@ -678,7 +685,7 @@ export function NutritionTable({
 
                       const isCellPinned = pinnedCode === p.code;
                       const pinnedBase = isCellPinned
-                        ? 'sticky left-44 z-10 border-r'
+                        ? 'sticky left-40 z-10 border-r'
                         : (pinnedCode !== null ? j > 1 : j > 0)
                           ? 'border-l'
                           : '';

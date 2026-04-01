@@ -1,17 +1,32 @@
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
+
 import React from 'react';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 
 // Hoisted so these values are accessible inside vi.mock factory (which is hoisted)
 const { capturedCallbacks, mockScannerInstance } = vi.hoisted(() => {
-  const capturedCallbacks = { successCallback: null as ((code: string) => void) | null };
+  const capturedCallbacks = {
+    successCallback: null as ((code: string) => void) | null,
+  };
   const mockScannerInstance = {
-    start: vi.fn().mockImplementation(
-      (_camera: unknown, _config: unknown, successCb: (code: string) => void) => {
-        capturedCallbacks.successCallback = successCb;
-        return Promise.resolve();
-      },
-    ),
+    start: vi
+      .fn()
+      .mockImplementation(
+        (
+          _camera: unknown,
+          _config: unknown,
+          successCb: (code: string) => void,
+        ) => {
+          capturedCallbacks.successCallback = successCb;
+          return Promise.resolve();
+        },
+      ),
     stop: vi.fn().mockResolvedValue(undefined),
     clear: vi.fn().mockResolvedValue(undefined),
   };
@@ -28,7 +43,8 @@ vi.mock('html5-qrcode', () => ({
 }));
 
 vi.mock('next/dynamic', () => ({
-  default: (loader: () => Promise<{ default: React.ComponentType }>) => React.lazy(loader),
+  default: (loader: () => Promise<{ default: React.ComponentType }>) =>
+    React.lazy(loader),
 }));
 
 vi.mock('@/contexts/auth-context', () => ({
@@ -68,15 +84,21 @@ describe('Barcode scanning', () => {
 
   it('renders scan button next to Look Up button', async () => {
     await renderPage();
-    expect(screen.getByRole('button', { name: /look up/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /scan barcode/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /look up/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /scan barcode/i }),
+    ).toBeInTheDocument();
   });
 
   it('shows scanner UI when scan button is clicked', async () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /scan barcode/i }));
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: /barcode scanner/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('dialog', { name: /barcode scanner/i }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -84,12 +106,14 @@ describe('Barcode scanning', () => {
     mockFetchProduct.mockResolvedValue(null);
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /scan barcode/i }));
-    await waitFor(() => expect(capturedCallbacks.successCallback).not.toBeNull());
+    await waitFor(() =>
+      expect(capturedCallbacks.successCallback).not.toBeNull(),
+    );
     await act(async () => {
-      capturedCallbacks.successCallback!('1234567890123');
+      capturedCallbacks.successCallback!('1234567890128');
     });
     await waitFor(() => {
-      expect(mockFetchProduct).toHaveBeenCalledWith('1234567890123');
+      expect(mockFetchProduct).toHaveBeenCalledWith('1234567890128');
     });
   });
 
@@ -97,12 +121,16 @@ describe('Barcode scanning', () => {
     mockFetchProduct.mockResolvedValue(null);
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /scan barcode/i }));
-    await waitFor(() => expect(capturedCallbacks.successCallback).not.toBeNull());
+    await waitFor(() =>
+      expect(capturedCallbacks.successCallback).not.toBeNull(),
+    );
     await act(async () => {
-      capturedCallbacks.successCallback!('1234567890123');
+      capturedCallbacks.successCallback!('1234567890128');
     });
     await waitFor(() => {
-      expect(screen.queryByRole('dialog', { name: /barcode scanner/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('dialog', { name: /barcode scanner/i }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -110,18 +138,22 @@ describe('Barcode scanning', () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /scan barcode/i }));
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: /barcode scanner/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('dialog', { name: /barcode scanner/i }),
+      ).toBeInTheDocument();
     });
     fireEvent.click(screen.getByRole('button', { name: /close scanner/i }));
     await waitFor(() => {
-      expect(screen.queryByRole('dialog', { name: /barcode scanner/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('dialog', { name: /barcode scanner/i }),
+      ).not.toBeInTheDocument();
     });
     expect(mockFetchProduct).not.toHaveBeenCalled();
   });
 
   it('updates existing product instead of adding a duplicate on rescan', async () => {
     const product = {
-      code: '1234567890123',
+      code: '1234567890128',
       product_name: 'Test Product',
       kcals: 100,
       protein: 5,
@@ -137,15 +169,25 @@ describe('Barcode scanning', () => {
 
     // First scan
     fireEvent.click(screen.getByRole('button', { name: /scan barcode/i }));
-    await waitFor(() => expect(capturedCallbacks.successCallback).not.toBeNull());
-    await act(async () => { capturedCallbacks.successCallback!('1234567890123'); });
-    await waitFor(() => expect(screen.getByText('Test Product')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(capturedCallbacks.successCallback).not.toBeNull(),
+    );
+    await act(async () => {
+      capturedCallbacks.successCallback!('1234567890128');
+    });
+    await waitFor(() =>
+      expect(screen.getByText('Test Product')).toBeInTheDocument(),
+    );
 
     // Second scan of same product
     capturedCallbacks.successCallback = null;
     fireEvent.click(screen.getByRole('button', { name: /scan barcode/i }));
-    await waitFor(() => expect(capturedCallbacks.successCallback).not.toBeNull());
-    await act(async () => { capturedCallbacks.successCallback!('1234567890123'); });
+    await waitFor(() =>
+      expect(capturedCallbacks.successCallback).not.toBeNull(),
+    );
+    await act(async () => {
+      capturedCallbacks.successCallback!('1234567890128');
+    });
 
     await waitFor(() => {
       expect(screen.getAllByText('Test Product')).toHaveLength(1);

@@ -68,7 +68,7 @@ function makeProduct(
   overrides: Partial<ProductNutrition> = {},
 ): ProductNutrition {
   return {
-    code: '12345678',
+    code: '12345670',
     product_name: 'Test Product',
     kcals: 100,
     protein: 5,
@@ -170,7 +170,7 @@ describe('Compare page — report dialog', () => {
     }
 
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
-      target: { value: '12345678' },
+      target: { value: '12345670' },
     });
     fireEvent.click(screen.getByRole('button', { name: /look up/i }));
   }
@@ -229,7 +229,7 @@ describe('Compare page — report dialog', () => {
 
     await waitFor(() => {
       expect(mockSubmitReport).toHaveBeenCalledWith(
-        '12345678',
+        '12345670',
         'incorrect data',
       );
     });
@@ -244,7 +244,7 @@ describe('Compare page — report dialog', () => {
 
     await waitFor(() => {
       expect(mockSubmitReport).toHaveBeenCalledWith(
-        '12345678',
+        '12345670',
         'missing product',
       );
     });

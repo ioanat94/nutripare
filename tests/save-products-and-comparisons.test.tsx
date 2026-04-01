@@ -286,7 +286,7 @@ describe('Compare page — save handlers', () => {
   it('shows "Product already saved" info toast on duplicate', async () => {
     mockSaveProduct.mockRejectedValueOnce(new Error('DUPLICATE'));
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Nutella' },
+      { code: '11111115', product_name: 'Nutella' },
     ]);
     fireEvent.click(
       screen.getByRole('button', { name: /options for nutella/i }),
@@ -300,7 +300,7 @@ describe('Compare page — save handlers', () => {
   it('shows error toast when saveProduct fails with unknown error', async () => {
     mockSaveProduct.mockRejectedValueOnce(new Error('network'));
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Nutella' },
+      { code: '11111115', product_name: 'Nutella' },
     ]);
     fireEvent.click(
       screen.getByRole('button', { name: /options for nutella/i }),
@@ -313,8 +313,8 @@ describe('Compare page — save handlers', () => {
 
   it('opens a dialog with pre-filled name when save comparison is clicked', async () => {
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Nutella' },
-      { code: '22222222', product_name: 'Skippy' },
+      { code: '11111115', product_name: 'Nutella' },
+      { code: '22222220', product_name: 'Skippy' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
@@ -324,9 +324,9 @@ describe('Compare page — save handlers', () => {
 
   it('calls saveComparison with the pre-filled name and eans on confirm', async () => {
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Nutella' },
-      { code: '22222222', product_name: 'Skippy' },
-      { code: '33333333', product_name: 'Jif' },
+      { code: '11111115', product_name: 'Nutella' },
+      { code: '22222220', product_name: 'Skippy' },
+      { code: '33333335', product_name: 'Jif' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
@@ -335,7 +335,7 @@ describe('Compare page — save handlers', () => {
     await waitFor(() =>
       expect(mockSaveComparison).toHaveBeenCalledWith('uid-123', {
         name: 'Nutella + 2 others',
-        eans: ['11111111', '22222222', '33333333'],
+        eans: ['11111115', '22222220', '33333335'],
       }),
     );
     await waitFor(() =>
@@ -345,8 +345,8 @@ describe('Compare page — save handlers', () => {
 
   it('calls saveComparison with a custom name when the user edits it', async () => {
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Nutella' },
-      { code: '22222222', product_name: 'Skippy' },
+      { code: '11111115', product_name: 'Nutella' },
+      { code: '22222220', product_name: 'Skippy' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
@@ -358,15 +358,15 @@ describe('Compare page — save handlers', () => {
     await waitFor(() =>
       expect(mockSaveComparison).toHaveBeenCalledWith('uid-123', {
         name: 'My custom name',
-        eans: ['11111111', '22222222'],
+        eans: ['11111115', '22222220'],
       }),
     );
   });
 
   it('disables the Save button when the name is empty', async () => {
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Nutella' },
-      { code: '22222222', product_name: 'Skippy' },
+      { code: '11111115', product_name: 'Nutella' },
+      { code: '22222220', product_name: 'Skippy' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
@@ -377,8 +377,8 @@ describe('Compare page — save handlers', () => {
 
   it('closes the dialog without saving when Cancel is clicked', async () => {
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Nutella' },
-      { code: '22222222', product_name: 'Skippy' },
+      { code: '11111115', product_name: 'Nutella' },
+      { code: '22222220', product_name: 'Skippy' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
@@ -392,8 +392,8 @@ describe('Compare page — save handlers', () => {
 
   it('submits via Enter key in the name input', async () => {
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Nutella' },
-      { code: '22222222', product_name: 'Skippy' },
+      { code: '11111115', product_name: 'Nutella' },
+      { code: '22222220', product_name: 'Skippy' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
@@ -405,8 +405,8 @@ describe('Compare page — save handlers', () => {
   it('shows "Comparison already saved" info toast on duplicate', async () => {
     mockSaveComparison.mockRejectedValueOnce(new Error('DUPLICATE'));
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Nutella' },
-      { code: '22222222', product_name: 'Skippy' },
+      { code: '11111115', product_name: 'Nutella' },
+      { code: '22222220', product_name: 'Skippy' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     fireEvent.click(screen.getByRole('menuitem', { name: /save comparison/i }));
@@ -425,7 +425,7 @@ describe('Compare page — save handlers', () => {
       refreshEmailVerified: vi.fn(),
     });
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Nutella' },
+      { code: '11111115', product_name: 'Nutella' },
     ]);
     fireEvent.click(
       screen.getByRole('button', { name: /options for nutella/i }),
@@ -650,8 +650,8 @@ describe('Compare page — update and delete comparison handlers', () => {
       rulesetId: undefined,
     });
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Milk A' },
-      { code: '22222222', product_name: 'Milk B' },
+      { code: '11111115', product_name: 'Milk A' },
+      { code: '22222220', product_name: 'Milk B' },
     ]);
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));
     expect(
@@ -673,18 +673,18 @@ describe('Compare page — update and delete comparison handlers', () => {
     mockFindSavedComparison.mockResolvedValue(null);
 
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Milk A' },
-      { code: '22222222', product_name: 'Milk B' },
+      { code: '11111115', product_name: 'Milk A' },
+      { code: '22222220', product_name: 'Milk B' },
     ]);
 
     // Add a third product
     const extraProduct = makeProduct({
-      code: '33333333',
+      code: '33333335',
       product_name: 'Milk C',
     });
     mockFetchProduct.mockResolvedValueOnce(extraProduct);
     fireEvent.change(screen.getByRole('textbox'), {
-      target: { value: '33333333' },
+      target: { value: '33333335' },
     });
     fireEvent.submit(screen.getByRole('textbox').closest('form')!);
     await waitFor(() => expect(screen.getByText('Milk C')).toBeInTheDocument());
@@ -710,17 +710,17 @@ describe('Compare page — update and delete comparison handlers', () => {
     mockFindSavedComparison.mockResolvedValue(null);
 
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Milk A' },
-      { code: '22222222', product_name: 'Milk B' },
+      { code: '11111115', product_name: 'Milk A' },
+      { code: '22222220', product_name: 'Milk B' },
     ]);
 
     const extraProduct = makeProduct({
-      code: '33333333',
+      code: '33333335',
       product_name: 'Milk C',
     });
     mockFetchProduct.mockResolvedValueOnce(extraProduct);
     fireEvent.change(screen.getByRole('textbox'), {
-      target: { value: '33333333' },
+      target: { value: '33333335' },
     });
     fireEvent.submit(screen.getByRole('textbox').closest('form')!);
     await waitFor(() => expect(screen.getByText('Milk C')).toBeInTheDocument());
@@ -732,7 +732,7 @@ describe('Compare page — update and delete comparison handlers', () => {
       expect(mockUpdateComparisonEans).toHaveBeenCalledWith(
         'uid-123',
         'cmp-1',
-        ['11111111', '22222222', '33333333'],
+        ['11111115', '22222220', '33333335'],
       ),
     );
     await waitFor(() =>
@@ -747,8 +747,8 @@ describe('Compare page — update and delete comparison handlers', () => {
       rulesetId: undefined,
     });
     await renderCompareWithProducts([
-      { code: '11111111', product_name: 'Milk A' },
-      { code: '22222222', product_name: 'Milk B' },
+      { code: '11111115', product_name: 'Milk A' },
+      { code: '22222220', product_name: 'Milk B' },
     ]);
 
     fireEvent.click(screen.getByRole('button', { name: /more options/i }));

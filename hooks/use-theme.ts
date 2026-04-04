@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-export type Theme = 'dark' | 'light';
+type Theme = 'dark' | 'light';
 
 const STORAGE_KEY = 'nutripare-theme';
 

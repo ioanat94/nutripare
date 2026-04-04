@@ -58,7 +58,7 @@ function buildSchema(mode: 'signIn' | 'signUp') {
   return base;
 }
 
-export interface AuthFormProps {
+interface AuthFormProps {
   mode: 'signIn' | 'signUp';
   onModeToggle?: () => void;
   onForgotPasswordClick?: () => void;

@@ -79,14 +79,6 @@ export async function findSavedComparison(
   return null;
 }
 
-export async function isComparisonSaved(
-  uid: string,
-  eans: string[],
-): Promise<boolean> {
-  const result = await findSavedComparison(uid, eans);
-  return result !== null;
-}
-
 export async function updateComparisonRuleset(
   uid: string,
   comparisonId: string,

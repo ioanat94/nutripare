@@ -10,7 +10,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Report, ReportStatus } from '@/types/firestore';
+import type { Report, ReportReason, ReportStatus } from '@/types/firestore';
 import { getAllReports, updateReportStatus } from '@/lib/firestore';
 import { useEffect, useState } from 'react';
 
@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 const PAGE_SIZE = 25;
 
 type Filter = ReportStatus | 'all';
+type ReasonFilter = ReportReason | 'all';
 
 const STATUS_CLASSES: Record<ReportStatus, string> = {
   open: 'bg-warning/15 text-warning',
@@ -34,7 +35,8 @@ export default function AdminPage() {
   const router = useRouter();
 
   const [reports, setReports] = useState<Report[]>([]);
-  const [filter, setFilter] = useState<Filter>('all');
+  const [statusFilter, setStatusFilter] = useState<Filter>('open');
+  const [reasonFilter, setReasonFilter] = useState<ReasonFilter>('all');
   const [page, setPage] = useState(1);
   const [dataLoading, setDataLoading] = useState(true);
 
@@ -61,16 +63,36 @@ export default function AdminPage() {
     );
   }
 
-  const filtered =
-    filter === 'all' ? reports : reports.filter((r) => r.status === filter);
+  const byStatus =
+    statusFilter === 'all'
+      ? reports
+      : reports.filter((r) => r.status === statusFilter);
+  const byReason =
+    reasonFilter === 'all'
+      ? reports
+      : reports.filter((r) => r.reason === reasonFilter);
+
+  const filtered = reports
+    .filter((r) => statusFilter === 'all' || r.status === statusFilter)
+    .filter((r) => reasonFilter === 'all' || r.reason === reasonFilter);
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const counts: Record<Filter, number> = {
-    all: reports.length,
-    open: reports.filter((r) => r.status === 'open').length,
-    solved: reports.filter((r) => r.status === 'solved').length,
-    dismissed: reports.filter((r) => r.status === 'dismissed').length,
+  const statusCounts: Record<Filter, number> = {
+    all: byReason.length,
+    open: byReason.filter((r) => r.status === 'open').length,
+    solved: byReason.filter((r) => r.status === 'solved').length,
+    dismissed: byReason.filter((r) => r.status === 'dismissed').length,
+  };
+
+  const reasons: ReasonFilter[] = ['all', 'incorrect data', 'missing product'];
+  const reasonCounts: Record<ReasonFilter, number> = {
+    all: byStatus.length,
+    'incorrect data': byStatus.filter((r) => r.reason === 'incorrect data')
+      .length,
+    'missing product': byStatus.filter((r) => r.reason === 'missing product')
+      .length,
   };
 
   if (authLoading || dataLoading) {
@@ -93,24 +115,48 @@ export default function AdminPage() {
         </h1>
       </div>
 
-      {/* Filter row */}
-      <div className='mb-4 flex gap-2'>
-        {filters.map((f) => (
-          <Button
-            key={f}
-            variant={filter === f ? 'default' : 'outline'}
-            size='sm'
-            onClick={() => {
-              setFilter(f);
-              setPage(1);
-            }}
-          >
-            {f.charAt(0).toUpperCase() + f.slice(1)}
-            <span className='ml-1 tabular-nums text-xs opacity-70'>
-              ({counts[f]})
-            </span>
-          </Button>
-        ))}
+      {/* Filter rows */}
+      <div className='mb-4 flex flex-col gap-2'>
+        <div className='flex gap-2'>
+          {filters.map((f) => (
+            <Button
+              key={f}
+              variant={statusFilter === f ? 'default' : 'outline'}
+              size='sm'
+              onClick={() => {
+                setStatusFilter(f);
+                setPage(1);
+              }}
+            >
+              {f === 'all'
+                ? 'All statuses'
+                : f.charAt(0).toUpperCase() + f.slice(1)}
+              <span className='ml-1 tabular-nums text-xs opacity-70'>
+                ({statusCounts[f]})
+              </span>
+            </Button>
+          ))}
+        </div>
+        <div className='flex gap-2'>
+          {reasons.map((r) => (
+            <Button
+              key={r}
+              variant={reasonFilter === r ? 'default' : 'outline'}
+              size='sm'
+              onClick={() => {
+                setReasonFilter(r);
+                setPage(1);
+              }}
+            >
+              {r === 'all'
+                ? 'All reasons'
+                : r.charAt(0).toUpperCase() + r.slice(1)}
+              <span className='ml-1 tabular-nums text-xs opacity-70'>
+                ({reasonCounts[r]})
+              </span>
+            </Button>
+          ))}
+        </div>
       </div>
 
       {/* Table */}

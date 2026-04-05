@@ -298,7 +298,7 @@ describe('Admin page', () => {
       makeReport({ code: '12345678', status: 'open' }),
       makeReport({
         code: '87654321',
-        status: 'solved',
+        status: 'open',
         reason: 'incorrect data',
       }),
     ]);

@@ -141,17 +141,15 @@ function ComparePageContent() {
     setNotFoundCodes([]);
     const notFound: string[] = [];
     const fetched: ProductNutrition[] = [];
-    await Promise.all(
-      valid.map(async (code) => {
-        try {
-          const product = await fetchProduct(code);
-          if (product === null) notFound.push(code);
-          else fetched.push(product);
-        } catch {
-          notFound.push(code);
-        }
-      }),
-    );
+    for (const code of valid) {
+      try {
+        const product = await fetchProduct(code);
+        if (product === null) notFound.push(code);
+        else fetched.push(product);
+      } catch {
+        notFound.push(code);
+      }
+    }
     if (fetched.length > 0) {
       setProducts((prev) => {
         let next = [...prev];

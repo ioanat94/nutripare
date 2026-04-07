@@ -33,7 +33,13 @@ export async function GET(
   try {
     const res = await fetch(url, { headers, next: { revalidate: 3600 } });
     if (!res.ok) {
-      return NextResponse.json({ error: 'Upstream error' }, { status: 502 });
+      console.error(
+        `[product/${code}] upstream ${res.status} ${res.statusText}`,
+      );
+      return NextResponse.json(
+        { error: 'Upstream error', upstream: res.status },
+        { status: 502 },
+      );
     }
     const data = await res.json();
     if (data.status === 0) {

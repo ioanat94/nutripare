@@ -23,11 +23,13 @@ vi.mock('@/lib/openfoodfacts', async (importOriginal) => {
   return {
     ...actual,
     fetchProduct: vi.fn(),
+    fetchProducts: vi.fn(),
   };
 });
 
-const { fetchProduct } = await import('@/lib/openfoodfacts');
+const { fetchProduct, fetchProducts } = await import('@/lib/openfoodfacts');
 const mockFetchProduct = vi.mocked(fetchProduct);
+const mockFetchProducts = vi.mocked(fetchProducts);
 
 describe('parseEanInput', () => {
   it('returns empty arrays for empty string', () => {
@@ -209,9 +211,94 @@ describe('fetchProduct', () => {
   });
 });
 
+describe('fetchProducts', () => {
+  let realFetchProducts: typeof import('@/lib/openfoodfacts').fetchProducts;
+
+  beforeAll(async () => {
+    ({ fetchProducts: realFetchProducts } = await vi.importActual<
+      typeof import('@/lib/openfoodfacts')
+    >('@/lib/openfoodfacts'));
+  });
+
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('returns all products in fetched when all succeed', async () => {
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        status: 1,
+        product: { code: '12345670', product_name: 'Test', nutriments: {} },
+      }),
+    } as Response);
+
+    const result = await realFetchProducts(['12345670', '87654325']);
+    expect(result.fetched).toHaveLength(2);
+    expect(result.notFound).toHaveLength(0);
+  });
+
+  it('puts code in notFound when product is not found (status 0)', async () => {
+    vi.mocked(global.fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: 1,
+          product: { code: '12345670', product_name: 'Test', nutriments: {} },
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ status: 0 }),
+      } as Response);
+
+    const result = await realFetchProducts(['12345670', '87654325']);
+    expect(result.fetched).toHaveLength(1);
+    expect(result.fetched[0].code).toBe('12345670');
+    expect(result.notFound).toEqual(['87654325']);
+  });
+
+  it('puts code in notFound when fetch throws', async () => {
+    vi.mocked(global.fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: 1,
+          product: { code: '12345670', product_name: 'Test', nutriments: {} },
+        }),
+      } as Response)
+      .mockRejectedValueOnce(new Error('Network error'));
+
+    const result = await realFetchProducts(['12345670', '87654325']);
+    expect(result.fetched).toHaveLength(1);
+    expect(result.notFound).toEqual(['87654325']);
+  });
+
+  it('processes codes across multiple batches', async () => {
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        status: 1,
+        product: { code: '12345670', product_name: 'Test', nutriments: {} },
+      }),
+    } as Response);
+
+    const codes = ['12345670', '87654325', '11223344', '44332211', '99887766'];
+    const result = await realFetchProducts(codes, 2);
+    expect(result.fetched).toHaveLength(5);
+    expect(result.notFound).toHaveLength(0);
+    expect(vi.mocked(global.fetch)).toHaveBeenCalledTimes(5);
+  });
+});
+
 describe('ComparePage', () => {
   beforeEach(() => {
     mockFetchProduct.mockReset();
+    mockFetchProducts.mockReset();
   });
 
   async function renderPage() {
@@ -229,29 +316,31 @@ describe('ComparePage', () => {
     ).toBeInTheDocument();
   });
 
-  it('does not call fetchProduct when input is empty', async () => {
+  it('does not call fetchProducts when input is empty', async () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /look up/i }));
     await waitFor(() => {
-      expect(mockFetchProduct).not.toHaveBeenCalled();
+      expect(mockFetchProducts).not.toHaveBeenCalled();
     });
   });
 
-  it('calls fetchProduct with parsed codes on submit', async () => {
-    mockFetchProduct.mockResolvedValue(null);
+  it('calls fetchProducts with parsed codes on submit', async () => {
+    mockFetchProducts.mockResolvedValue({ fetched: [], notFound: [] });
     await renderPage();
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
       target: { value: '12345670,87654325' },
     });
     fireEvent.click(screen.getByRole('button', { name: /look up/i }));
     await waitFor(() => {
-      expect(mockFetchProduct).toHaveBeenCalledWith('12345670');
-      expect(mockFetchProduct).toHaveBeenCalledWith('87654325');
+      expect(mockFetchProducts).toHaveBeenCalledWith(['12345670', '87654325']);
     });
   });
 
-  it('shows warning alert when fetchProduct returns null', async () => {
-    mockFetchProduct.mockResolvedValue(null);
+  it('shows warning alert when product is not found', async () => {
+    mockFetchProducts.mockResolvedValue({
+      fetched: [],
+      notFound: ['12345670'],
+    });
     await renderPage();
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
       target: { value: '12345670' },
@@ -262,8 +351,11 @@ describe('ComparePage', () => {
     });
   });
 
-  it('shows warning alert when fetchProduct throws', async () => {
-    mockFetchProduct.mockRejectedValue(new Error('Network error'));
+  it('shows warning alert when product is not found', async () => {
+    mockFetchProducts.mockResolvedValue({
+      fetched: [],
+      notFound: ['87654325'],
+    });
     await renderPage();
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
       target: { value: '87654325' },

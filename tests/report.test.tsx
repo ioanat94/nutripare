@@ -37,7 +37,7 @@ vi.mock('@/lib/reports', () => ({
 
 vi.mock('@/lib/openfoodfacts', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/openfoodfacts')>();
-  return { ...actual, fetchProduct: vi.fn() };
+  return { ...actual, fetchProduct: vi.fn(), fetchProducts: vi.fn() };
 });
 
 vi.mock('sonner', () => ({
@@ -56,8 +56,9 @@ const mockUpdateReportStatus = vi.mocked(updateReportStatus);
 const { submitReport } = await import('@/lib/reports');
 const mockSubmitReport = vi.mocked(submitReport);
 
-const { fetchProduct } = await import('@/lib/openfoodfacts');
-const mockFetchProduct = vi.mocked(fetchProduct);
+const { fetchProducts } = await import('@/lib/openfoodfacts');
+
+const mockFetchProducts = vi.mocked(fetchProducts);
 
 const { useRouter } = await import('next/navigation');
 const mockUseRouter = vi.mocked(useRouter);
@@ -163,11 +164,10 @@ describe('Compare page — report dialog', () => {
 
     await screen.findByRole('textbox', { name: /ean barcodes/i });
 
-    if (product !== null) {
-      mockFetchProduct.mockResolvedValue(product);
-    } else {
-      mockFetchProduct.mockResolvedValue(null);
-    }
+    mockFetchProducts.mockResolvedValue({
+      fetched: product !== null ? [product] : [],
+      notFound: product !== null ? [] : ['12345670'],
+    });
 
     fireEvent.change(screen.getByRole('textbox', { name: /ean barcodes/i }), {
       target: { value: '12345670' },

@@ -26,7 +26,11 @@ import {
   updateComparisonEans,
   updateComparisonRuleset,
 } from '@/lib/firestore';
-import { fetchProduct, parseEanInput } from '@/lib/openfoodfacts';
+import {
+  fetchProduct,
+  fetchProducts,
+  parseEanInput,
+} from '@/lib/openfoodfacts';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -139,17 +143,7 @@ function ComparePageContent() {
     setLoading(true);
     setInvalidCodes([]);
     setNotFoundCodes([]);
-    const notFound: string[] = [];
-    const fetched: ProductNutrition[] = [];
-    for (const code of valid) {
-      try {
-        const product = await fetchProduct(code);
-        if (product === null) notFound.push(code);
-        else fetched.push(product);
-      } catch {
-        notFound.push(code);
-      }
-    }
+    const { fetched, notFound } = await fetchProducts(valid);
     if (fetched.length > 0) {
       setProducts((prev) => {
         let next = [...prev];

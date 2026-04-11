@@ -231,11 +231,11 @@ describe('NutritionTable — save buttons', () => {
 
 vi.mock('@/lib/openfoodfacts', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/openfoodfacts')>();
-  return { ...actual, fetchProduct: vi.fn() };
+  return { ...actual, fetchProduct: vi.fn(), fetchProducts: vi.fn() };
 });
 
-const { fetchProduct } = await import('@/lib/openfoodfacts');
-const mockFetchProduct = vi.mocked(fetchProduct);
+const { fetchProducts } = await import('@/lib/openfoodfacts');
+const mockFetchProducts = vi.mocked(fetchProducts);
 
 async function renderCompareWithProducts(
   productOverrides: Partial<ProductNutrition>[] = [{}],
@@ -246,7 +246,10 @@ async function renderCompareWithProducts(
   // Submit a barcode for each product
   for (const overrides of productOverrides) {
     const product = makeProduct(overrides);
-    mockFetchProduct.mockResolvedValueOnce(product);
+    mockFetchProducts.mockResolvedValueOnce({
+      fetched: [product],
+      notFound: [],
+    });
     fireEvent.change(screen.getByRole('textbox'), {
       target: { value: product.code },
     });
@@ -687,7 +690,10 @@ describe('Compare page — update and delete comparison handlers', () => {
       code: '33333335',
       product_name: 'Milk C',
     });
-    mockFetchProduct.mockResolvedValueOnce(extraProduct);
+    mockFetchProducts.mockResolvedValueOnce({
+      fetched: [extraProduct],
+      notFound: [],
+    });
     fireEvent.change(screen.getByRole('textbox'), {
       target: { value: '33333335' },
     });
@@ -723,7 +729,10 @@ describe('Compare page — update and delete comparison handlers', () => {
       code: '33333335',
       product_name: 'Milk C',
     });
-    mockFetchProduct.mockResolvedValueOnce(extraProduct);
+    mockFetchProducts.mockResolvedValueOnce({
+      fetched: [extraProduct],
+      notFound: [],
+    });
     fireEvent.change(screen.getByRole('textbox'), {
       target: { value: '33333335' },
     });

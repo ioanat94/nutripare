@@ -75,3 +75,23 @@ export async function fetchProduct(
   if (json.status === 0) return null;
   return mapProduct(json, code);
 }
+
+export async function fetchProducts(
+  codes: string[],
+  concurrency = 3,
+): Promise<{ fetched: ProductNutrition[]; notFound: string[] }> {
+  const fetched: ProductNutrition[] = [];
+  const notFound: string[] = [];
+  for (let i = 0; i < codes.length; i += concurrency) {
+    const batch = codes.slice(i, i + concurrency);
+    const settled = await Promise.allSettled(batch.map(fetchProduct));
+    settled.forEach((result, j) => {
+      if (result.status === 'fulfilled' && result.value !== null) {
+        fetched.push(result.value);
+      } else {
+        notFound.push(batch[j]);
+      }
+    });
+  }
+  return { fetched, notFound };
+}

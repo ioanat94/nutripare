@@ -1,6 +1,11 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +19,7 @@ import type { Report, ReportReason, ReportStatus } from '@/types/firestore';
 import { getAllReports, updateReportStatus } from '@/lib/firestore';
 import { useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/utils/tailwind';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
@@ -39,6 +44,7 @@ export default function AdminPage() {
   const [reasonFilter, setReasonFilter] = useState<ReasonFilter>('all');
   const [page, setPage] = useState(1);
   const [dataLoading, setDataLoading] = useState(true);
+  const [selectedCodes, setSelectedCodes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (authLoading) return;
@@ -63,6 +69,29 @@ export default function AdminPage() {
     );
   }
 
+  function handleSelectRow(code: string, checked: boolean) {
+    setSelectedCodes((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(code); else next.delete(code);
+      return next;
+    });
+  }
+
+  function handleSelectAll(checked: boolean) {
+    setSelectedCodes(
+      checked ? new Set(paginated.map((r) => r.code)) : new Set(),
+    );
+  }
+
+  async function handleBulkStatusChange(status: ReportStatus) {
+    const codes = Array.from(selectedCodes);
+    await Promise.all(codes.map((code) => updateReportStatus(code, status)));
+    setReports((prev) =>
+      prev.map((r) => (selectedCodes.has(r.code) ? { ...r, status } : r)),
+    );
+    setSelectedCodes(new Set());
+  }
+
   const byStatus =
     statusFilter === 'all'
       ? reports
@@ -78,6 +107,11 @@ export default function AdminPage() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const allOnPageSelected =
+    paginated.length > 0 && paginated.every((r) => selectedCodes.has(r.code));
+  const someOnPageSelected =
+    !allOnPageSelected && paginated.some((r) => selectedCodes.has(r.code));
 
   const statusCounts: Record<Filter, number> = {
     all: byReason.length,
@@ -126,6 +160,7 @@ export default function AdminPage() {
               onClick={() => {
                 setStatusFilter(f);
                 setPage(1);
+                setSelectedCodes(new Set());
               }}
             >
               {f === 'all'
@@ -137,25 +172,60 @@ export default function AdminPage() {
             </Button>
           ))}
         </div>
-        <div className='flex gap-2'>
-          {reasons.map((r) => (
-            <Button
-              key={r}
-              variant={reasonFilter === r ? 'default' : 'outline'}
-              size='sm'
-              onClick={() => {
-                setReasonFilter(r);
-                setPage(1);
-              }}
-            >
-              {r === 'all'
-                ? 'All reasons'
-                : r.charAt(0).toUpperCase() + r.slice(1)}
-              <span className='ml-1 tabular-nums text-xs opacity-70'>
-                ({reasonCounts[r]})
+        <div className='flex items-center justify-between'>
+          <div className='flex gap-2'>
+            {reasons.map((r) => (
+              <Button
+                key={r}
+                variant={reasonFilter === r ? 'default' : 'outline'}
+                size='sm'
+                onClick={() => {
+                  setReasonFilter(r);
+                  setPage(1);
+                  setSelectedCodes(new Set());
+                }}
+              >
+                {r === 'all'
+                  ? 'All reasons'
+                  : r.charAt(0).toUpperCase() + r.slice(1)}
+                <span className='ml-1 tabular-nums text-xs opacity-70'>
+                  ({reasonCounts[r]})
+                </span>
+              </Button>
+            ))}
+          </div>
+          {selectedCodes.size > 0 && (
+            <div className='flex items-center gap-3'>
+              <span className='text-sm text-muted-foreground'>
+                {selectedCodes.size} selected
               </span>
-            </Button>
-          ))}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+                >
+                  Change status
+                  <ChevronDown className='ml-1 size-4' />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='end'>
+                  <DropdownMenuItem
+                    onClick={() => handleBulkStatusChange('open')}
+                  >
+                    Open
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleBulkStatusChange('solved')}
+                  >
+                    Solved
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleBulkStatusChange('dismissed')}
+                  >
+                    Dismissed
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
       </div>
 
@@ -164,6 +234,18 @@ export default function AdminPage() {
         <table className='w-full text-sm'>
           <thead>
             <tr className='border-b border-border bg-muted/40'>
+              <th className='w-10 px-4 py-2.5'>
+                <input
+                  type='checkbox'
+                  aria-label='Select all'
+                  checked={allOnPageSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = someOnPageSelected;
+                  }}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className='cursor-pointer accent-primary'
+                />
+              </th>
               <th className='px-4 py-2.5 text-left font-medium text-muted-foreground'>
                 Code
               </th>
@@ -185,7 +267,7 @@ export default function AdminPage() {
             {paginated.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className='px-4 py-8 text-center text-muted-foreground'
                 >
                   No reports.
@@ -197,6 +279,15 @@ export default function AdminPage() {
                   key={r.code}
                   className='border-b border-border last:border-0 hover:bg-muted/30 transition-colors'
                 >
+                  <td className='px-4 py-3'>
+                    <input
+                      type='checkbox'
+                      aria-label={`Select ${r.code}`}
+                      checked={selectedCodes.has(r.code)}
+                      onChange={(e) => handleSelectRow(r.code, e.target.checked)}
+                      className='cursor-pointer accent-primary'
+                    />
+                  </td>
                   <td className='px-4 py-3 font-mono'>{r.code}</td>
                   <td className='px-4 py-3 text-muted-foreground'>
                     {r.date.toDate().toLocaleDateString()}
@@ -263,7 +354,10 @@ export default function AdminPage() {
           <Button
             variant='outline'
             size='sm'
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => {
+              setPage((p) => Math.max(1, p - 1));
+              setSelectedCodes(new Set());
+            }}
             disabled={page === 1}
           >
             <ChevronLeft className='size-4' />
@@ -275,7 +369,10 @@ export default function AdminPage() {
           <Button
             variant='outline'
             size='sm'
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            onClick={() => {
+              setPage((p) => Math.min(totalPages, p + 1));
+              setSelectedCodes(new Set());
+            }}
             disabled={page === totalPages}
           >
             Next

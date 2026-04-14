@@ -87,6 +87,7 @@ function ComparePageContent() {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveDialogName, setSaveDialogName] = useState('');
   const [reportCode, setReportCode] = useState<string | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
   const [nutritionSettings, setNutritionSettings] = useState<
     NutritionSettings | null | undefined
   >(undefined);
@@ -487,15 +488,21 @@ function ComparePageContent() {
             </Button>
             <Button
               variant='warning'
+              disabled={reportLoading}
               onClick={async () => {
                 if (reportCode) {
+                  setReportLoading(true);
                   await submitReport(reportCode, 'incorrect data');
+                  setReportLoading(false);
                   toast.success('Report submitted');
                 }
                 setReportCode(null);
               }}
             >
-              Confirm
+              <span className='relative flex items-center justify-center'>
+                <span className={reportLoading ? 'invisible' : ''}>Confirm</span>
+                {reportLoading && <Loader2 className='animate-spin absolute' />}
+              </span>
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

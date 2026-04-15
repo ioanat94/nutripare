@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Check, Eye, Loader2, Pencil, SaveOff, Search, X } from 'lucide-react';
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Check, Eye, Loader2, Pencil, SaveOff, Search, X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -9,25 +9,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   deleteComparison,
   getSavedComparisons,
   renameComparison,
-} from '@/lib/firestore';
-import { useEffect, useRef, useState } from 'react';
+} from "@/lib/firestore";
+import { useEffect, useRef, useState } from "react";
 
-import { Input } from '@/components/ui/input';
-import Link from 'next/link';
-import type { SavedComparison } from '@/types/firestore';
-import { toast } from 'sonner';
+import { Input } from "@/components/ui/input";
+import { Link } from "@/i18n/navigation";
+import type { SavedComparison } from "@/types/firestore";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 export function ComparisonsTab({ userId }: { userId: string }) {
+  const t = useTranslations("ComparisonsTab");
   const [comparisons, setComparisons] = useState<SavedComparison[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState('');
+  const [editingName, setEditingName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -37,10 +39,10 @@ export function ComparisonsTab({ userId }: { userId: string }) {
         setLoading(false);
       })
       .catch(() => {
-        toast.error('Failed to load comparisons');
+        toast.error(t("toast.loadFailed"));
         setLoading(false);
       });
-  }, [userId]);
+  }, [userId, t]);
 
   useEffect(() => {
     if (editingId) inputRef.current?.focus();
@@ -53,13 +55,13 @@ export function ComparisonsTab({ userId }: { userId: string }) {
 
   function cancelEditing() {
     setEditingId(null);
-    setEditingName('');
+    setEditingName("");
   }
 
   async function handleRename(id: string) {
     const trimmed = editingName.trim();
     if (!trimmed) {
-      toast.error('Name cannot be empty');
+      toast.error(t("error.nameEmpty"));
       return;
     }
     try {
@@ -68,9 +70,9 @@ export function ComparisonsTab({ userId }: { userId: string }) {
         prev.map((c) => (c.id === id ? { ...c, name: trimmed } : c)),
       );
       cancelEditing();
-      toast.success('Comparison renamed');
+      toast.success(t("toast.renamed"));
     } catch {
-      toast.error('Failed to rename comparison');
+      toast.error(t("toast.renameFailed"));
     }
   }
 
@@ -79,21 +81,21 @@ export function ComparisonsTab({ userId }: { userId: string }) {
       await deleteComparison(userId, eans);
       setComparisons((prev) =>
         prev.filter(
-          (c) => [...c.eans].sort().join(',') !== [...eans].sort().join(','),
+          (c) => [...c.eans].sort().join(",") !== [...eans].sort().join(","),
         ),
       );
-      toast.success('Comparison removed');
+      toast.success(t("toast.unsaved"));
     } catch {
-      toast.error('Failed to remove comparison');
+      toast.error(t("toast.unsaveFailed"));
     }
   }
 
   if (loading) {
-    return <Loader2 className='size-5 animate-spin text-muted-foreground' />;
+    return <Loader2 className="size-5 animate-spin text-muted-foreground" />;
   }
 
   if (comparisons.length === 0) {
-    return <p className='text-muted-foreground'>No saved comparisons yet.</p>;
+    return <p className="text-muted-foreground">{t("noComparisons")}</p>;
   }
 
   const filtered = comparisons.filter(
@@ -103,27 +105,25 @@ export function ComparisonsTab({ userId }: { userId: string }) {
   );
 
   return (
-    <div className='space-y-3'>
-      <div className='relative'>
-        <Search className='absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
+    <div className="space-y-3">
+      <div className="relative">
+        <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder='Search by name or EAN…'
+          placeholder={t("searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className='pl-8'
+          className="pl-8"
         />
       </div>
       {filtered.length === 0 && search ? (
-        <p className='text-muted-foreground'>
-          No comparisons match your search.
-        </p>
+        <p className="text-muted-foreground">{t("noResults")}</p>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className='w-[45%]'>Name</TableHead>
-              <TableHead className='w-[45%]'>EAN Codes</TableHead>
-              <TableHead className='w-[10%]'>Actions</TableHead>
+              <TableHead className="w-[45%]">{t("name")}</TableHead>
+              <TableHead className="w-[45%]">{t("codes")}</TableHead>
+              <TableHead className="w-[10%]">{t("actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -132,7 +132,7 @@ export function ComparisonsTab({ userId }: { userId: string }) {
                 {editingId === comparison.id ? (
                   <TableCell colSpan={3}>
                     <form
-                      className='flex items-center gap-1'
+                      className="flex items-center gap-1"
                       onSubmit={(e) => {
                         e.preventDefault();
                         handleRename(comparison.id);
@@ -142,69 +142,75 @@ export function ComparisonsTab({ userId }: { userId: string }) {
                         ref={inputRef}
                         value={editingName}
                         onChange={(e) => setEditingName(e.target.value)}
-                        className='h-7 text-sm'
+                        className="h-7 text-sm"
                       />
                       <Button
-                        type='submit'
-                        variant='ghost'
-                        size='icon'
-                        aria-label='Save name'
-                        className='size-7 shrink-0 hover:text-positive hover:bg-positive/10'
+                        type="submit"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={t("confirmRename")}
+                        className="size-7 shrink-0 hover:text-positive hover:bg-positive/10"
                       >
-                        <Check className='size-3.5' />
+                        <Check className="size-3.5" />
                       </Button>
                       <Button
-                        type='button'
-                        variant='ghost'
-                        size='icon'
-                        aria-label='Cancel'
-                        className='size-7 shrink-0 hover:text-destructive hover:bg-destructive/10'
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={t("cancelRename")}
+                        className="size-7 shrink-0 hover:text-destructive hover:bg-destructive/10"
                         onClick={cancelEditing}
                       >
-                        <X className='size-3.5' />
+                        <X className="size-3.5" />
                       </Button>
                     </form>
                   </TableCell>
                 ) : (
                   <>
-                    <TableCell className='max-w-48 whitespace-normal'>
-                      <span className='flex items-center gap-1.5'>
+                    <TableCell className="max-w-48 whitespace-normal">
+                      <span className="flex items-center gap-1.5">
                         {comparison.name}
                         <Button
-                          variant='ghost'
-                          size='icon'
-                          aria-label={`Rename ${comparison.name}`}
-                          className='size-6 shrink-0 text-muted-foreground hover:text-foreground'
+                          variant="ghost"
+                          size="icon"
+                          aria-label={t("renameComparison", {
+                            name: comparison.name,
+                          })}
+                          className="size-6 shrink-0 text-muted-foreground hover:text-foreground"
                           onClick={() => startEditing(comparison)}
                         >
-                          <Pencil className='size-3' />
+                          <Pencil className="size-3" />
                         </Button>
                       </span>
                     </TableCell>
-                    <TableCell className='max-w-48 whitespace-normal font-mono'>
-                      {comparison.eans.join(', ')}
+                    <TableCell className="max-w-48 whitespace-normal font-mono">
+                      {comparison.eans.join(", ")}
                     </TableCell>
                     <TableCell>
-                      <div className='flex gap-1'>
+                      <div className="flex gap-1">
                         <Link
-                          href={`/compare?codes=${comparison.eans.join(',')}`}
-                          target='_blank'
-                          aria-label={`View ${comparison.name}`}
+                          href={`/compare?codes=${comparison.eans.join(",")}`}
+                          target="_blank"
+                          aria-label={t("viewComparison", {
+                            name: comparison.name,
+                          })}
                           className={
-                            buttonVariants({ variant: 'ghost', size: 'icon' }) +
-                            ' hover:text-info hover:bg-info/10'
+                            buttonVariants({ variant: "ghost", size: "icon" }) +
+                            " hover:text-info hover:bg-info/10"
                           }
                         >
-                          <Eye className='size-4' />
+                          <Eye className="size-4" />
                         </Link>
                         <Button
-                          variant='ghost'
-                          size='icon'
-                          aria-label={`Unsave ${comparison.name}`}
-                          className='hover:text-destructive hover:bg-destructive/10'
+                          variant="ghost"
+                          size="icon"
+                          aria-label={t("unsaveComparison", {
+                            name: comparison.name,
+                          })}
+                          className="hover:text-destructive hover:bg-destructive/10"
                           onClick={() => handleUnsave(comparison.eans)}
                         >
-                          <SaveOff className='size-4' />
+                          <SaveOff className="size-4" />
                         </Button>
                       </div>
                     </TableCell>

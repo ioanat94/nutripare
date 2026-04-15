@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   createContext,
@@ -6,15 +6,15 @@ import {
   useEffect,
   useState,
   type ReactNode,
-} from 'react';
+} from "react";
 
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
-import { auth, db } from '@/lib/firebase';
-import { saveNutritionSettings } from '@/lib/firestore';
-import type { FirestoreUser } from '@/types/firestore';
-import { BUILTIN_RULESETS, DEFAULT_NUTRITION_ROWS } from '@/utils/constants';
+import { auth, db } from "@/lib/firebase";
+import { saveNutritionSettings } from "@/lib/firestore";
+import type { FirestoreUser } from "@/types/firestore";
+import { BUILTIN_RULESETS, DEFAULT_NUTRITION_ROWS } from "@/utils/constants";
 
 interface AuthContextValue {
   user: FirestoreUser | null;
@@ -48,18 +48,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     function handleVisibilityChange() {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === "visible") {
         reloadIfUnverified();
       }
     }
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleVisibilityChange);
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
-          const docRef = doc(db, 'users', firebaseUser.uid);
+          const docRef = doc(db, "users", firebaseUser.uid);
           const snapshot = await getDoc(docRef);
 
           if (!snapshot.exists()) {
@@ -67,8 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               id: firebaseUser.uid,
               displayName:
                 firebaseUser.displayName ??
-                firebaseUser.email?.split('@')[0] ??
-                'User',
+                firebaseUser.email?.split("@")[0] ??
+                "User",
             };
             await setDoc(docRef, newUser);
 
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setEmailVerified(false);
         }
       } catch (err) {
-        console.error('Failed to load user profile:', err);
+        console.error("Failed to load user profile:", err);
         setUser(null);
       } finally {
         setLoading(false);
@@ -99,8 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       unsubscribe();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleVisibilityChange);
     };
   }, []);
 
@@ -115,6 +115,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }

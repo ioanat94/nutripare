@@ -1,27 +1,27 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from "@testing-library/react";
 
-import type { FirestoreUser } from '@/types/firestore';
-import { Navbar } from '@/components/navbar';
-import { vi } from 'vitest';
+import type { FirestoreUser } from "@/types/firestore";
+import { Navbar } from "@/components/navbar";
+import { vi } from "vitest";
 
 const mockPush = vi.fn();
 const mockUseAuth = vi.fn();
-let mockPathname = '/';
+let mockPathname = "/";
 
-vi.mock('@/contexts/auth-context', () => ({
+vi.mock("@/contexts/auth-context", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush, replace: vi.fn() }),
   usePathname: () => mockPathname,
 }));
 
 beforeEach(() => {
   localStorage.clear();
-  document.documentElement.classList.remove('dark');
+  document.documentElement.classList.remove("dark");
   mockPush.mockClear();
-  mockPathname = '/';
+  mockPathname = "/";
   mockUseAuth.mockReturnValue({
     user: null,
     loading: false,
@@ -31,63 +31,63 @@ beforeEach(() => {
 });
 
 const mockUser: FirestoreUser = {
-  id: '123',
-  displayName: 'Test User',
+  id: "123",
+  displayName: "Test User",
 };
 
-describe('Navbar', () => {
-  it('renders without crashing', () => {
+describe("Navbar", () => {
+  it("renders without crashing", () => {
     render(<Navbar />);
   });
 
-  it('has a theme toggle button', () => {
+  it("has a theme toggle button", () => {
     render(<Navbar />);
     expect(
-      screen.getByRole('button', { name: /toggle theme/i }),
+      screen.getByRole("button", { name: /toggle theme/i }),
     ).toBeInTheDocument();
   });
 
-  it('applies dark theme by default when no localStorage value is set', async () => {
+  it("applies dark theme by default when no localStorage value is set", async () => {
     render(<Navbar />);
     await Promise.resolve();
-    expect(document.documentElement).toHaveClass('dark');
+    expect(document.documentElement).toHaveClass("dark");
   });
 
-  it('applies light theme on mount when localStorage is set to light', async () => {
-    localStorage.setItem('nutripare-theme', 'light');
+  it("applies light theme on mount when localStorage is set to light", async () => {
+    localStorage.setItem("nutripare-theme", "light");
     render(<Navbar />);
     await Promise.resolve();
-    expect(document.documentElement).not.toHaveClass('dark');
+    expect(document.documentElement).not.toHaveClass("dark");
   });
 
-  it('clicking toggle switches from dark to light', async () => {
+  it("clicking toggle switches from dark to light", async () => {
     render(<Navbar />);
     await Promise.resolve();
-    fireEvent.click(screen.getByRole('button', { name: /toggle theme/i }));
-    expect(document.documentElement).not.toHaveClass('dark');
+    fireEvent.click(screen.getByRole("button", { name: /toggle theme/i }));
+    expect(document.documentElement).not.toHaveClass("dark");
   });
 
-  it('clicking toggle twice switches back to dark', async () => {
+  it("clicking toggle twice switches back to dark", async () => {
     render(<Navbar />);
     await Promise.resolve();
-    fireEvent.click(screen.getByRole('button', { name: /toggle theme/i }));
-    fireEvent.click(screen.getByRole('button', { name: /toggle theme/i }));
-    expect(document.documentElement).toHaveClass('dark');
+    fireEvent.click(screen.getByRole("button", { name: /toggle theme/i }));
+    fireEvent.click(screen.getByRole("button", { name: /toggle theme/i }));
+    expect(document.documentElement).toHaveClass("dark");
   });
 
-  it('writes the new theme to localStorage on toggle', async () => {
+  it("writes the new theme to localStorage on toggle", async () => {
     render(<Navbar />);
     await Promise.resolve();
-    fireEvent.click(screen.getByRole('button', { name: /toggle theme/i }));
-    expect(localStorage.getItem('nutripare-theme')).toBe('light');
+    fireEvent.click(screen.getByRole("button", { name: /toggle theme/i }));
+    expect(localStorage.getItem("nutripare-theme")).toBe("light");
   });
 
-  it('renders a user icon link', () => {
+  it("renders a user icon link", () => {
     render(<Navbar />);
-    expect(screen.getByRole('link', { name: /sign in/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /sign in/i })).toBeInTheDocument();
   });
 
-  it('user icon has text-foreground class when logged out', () => {
+  it("user icon has text-foreground class when logged out", () => {
     mockUseAuth.mockReturnValue({
       user: null,
       loading: false,
@@ -95,11 +95,11 @@ describe('Navbar', () => {
       refreshEmailVerified: vi.fn(),
     });
     render(<Navbar />);
-    const link = screen.getByRole('link', { name: /sign in/i });
-    expect(link.querySelector('svg')).toHaveClass('text-foreground');
+    const link = screen.getByRole("link", { name: /sign in/i });
+    expect(link.querySelector("svg")).toHaveClass("text-foreground");
   });
 
-  it('user icon has text-primary class when logged in', () => {
+  it("user icon has text-primary class when logged in", () => {
     mockUseAuth.mockReturnValue({
       user: mockUser,
       loading: false,
@@ -107,11 +107,11 @@ describe('Navbar', () => {
       refreshEmailVerified: vi.fn(),
     });
     render(<Navbar />);
-    const link = screen.getByRole('link', { name: /account settings/i });
-    expect(link.querySelector('svg')).toHaveClass('text-primary');
+    const link = screen.getByRole("link", { name: /account settings/i });
+    expect(link.querySelector("svg")).toHaveClass("text-primary");
   });
 
-  it('user icon while logged out links to /login with redirect param', () => {
+  it("user icon while logged out links to /login with redirect param", () => {
     mockUseAuth.mockReturnValue({
       user: null,
       loading: false,
@@ -119,14 +119,14 @@ describe('Navbar', () => {
       refreshEmailVerified: vi.fn(),
     });
     render(<Navbar />);
-    expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute(
-      'href',
-      '/login?redirect=%2F',
+    expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute(
+      "href",
+      "/login?redirect=%2F",
     );
   });
 
-  it('user icon while logged out on /login links to /login?redirect=/', () => {
-    mockPathname = '/login';
+  it("user icon while logged out on /login links to /login?redirect=/", () => {
+    mockPathname = "/login";
     mockUseAuth.mockReturnValue({
       user: null,
       loading: false,
@@ -134,13 +134,13 @@ describe('Navbar', () => {
       refreshEmailVerified: vi.fn(),
     });
     render(<Navbar />);
-    expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute(
-      'href',
-      '/login?redirect=%2F',
+    expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute(
+      "href",
+      "/login?redirect=%2F",
     );
   });
 
-  it('user icon while logged in links to /settings/account', () => {
+  it("user icon while logged in links to /settings/account", () => {
     mockUseAuth.mockReturnValue({
       user: mockUser,
       loading: false,
@@ -149,7 +149,7 @@ describe('Navbar', () => {
     });
     render(<Navbar />);
     expect(
-      screen.getByRole('link', { name: /account settings/i }),
-    ).toHaveAttribute('href', '/settings/account');
+      screen.getByRole("link", { name: /account settings/i }),
+    ).toHaveAttribute("href", "/settings/account");
   });
 });

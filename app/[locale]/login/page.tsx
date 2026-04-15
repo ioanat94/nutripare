@@ -1,0 +1,77 @@
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
+import { useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
+
+import { AuthForm } from "@/components/auth-form";
+import { AuthScreen } from "@/components/auth-screen";
+import { EmailVerificationScreen } from "@/components/email-verification-screen";
+import { GoogleSignInButton } from "@firebase-oss/ui-react";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import { useAuth } from "@/contexts/auth-context";
+import { useTranslations } from "next-intl";
+
+function safeRedirect(value: string | null): string {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";
+  return value;
+}
+
+function LoginContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, emailVerified, refreshEmailVerified } = useAuth();
+  const redirect = safeRedirect(searchParams.get("redirect"));
+  const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
+  const t = useTranslations("LoginPage");
+
+  useEffect(() => {
+    if (user && emailVerified) {
+      router.replace(redirect);
+    }
+  }, [user, emailVerified, redirect, router]);
+
+  if (user && !emailVerified) {
+    return (
+      <EmailVerificationScreen
+        email={auth.currentUser?.email ?? ""}
+        onSignOut={() => signOut(auth)}
+        onVerified={async () => {
+          await refreshEmailVerified();
+          router.replace(redirect);
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-1 items-center justify-center">
+      <AuthScreen
+        title={mode === "signIn" ? t("signIn") : t("signUp")}
+        description={
+          mode === "signIn" ? t("signInDescription") : t("signUpDescription")
+        }
+        onAuthenticated={() => {}}
+        form={
+          <AuthForm
+            mode={mode}
+            onModeToggle={() =>
+              setMode(mode === "signIn" ? "signUp" : "signIn")
+            }
+          />
+        }
+      >
+        <GoogleSignInButton />
+      </AuthScreen>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
+  );
+}

@@ -1,31 +1,31 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from "@testing-library/react";
 
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // ─── Firebase mocks ───────────────────────────────────────────────────────────
 
 const mockOnAuthStateChanged = vi.fn();
 
-vi.mock('firebase/auth', () => ({
+vi.mock("firebase/auth", () => ({
   onAuthStateChanged: mockOnAuthStateChanged,
 }));
 
-vi.mock('firebase/firestore', () => ({
+vi.mock("firebase/firestore", () => ({
   doc: vi.fn(),
   getDoc: vi.fn().mockResolvedValue({
     exists: () => true,
-    data: () => ({ id: 'uid-1', displayName: 'Test' }),
+    data: () => ({ id: "uid-1", displayName: "Test" }),
   }),
   setDoc: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('@/lib/firestore', () => ({
+vi.mock("@/lib/firestore", () => ({
   saveNutritionSettings: vi.fn().mockResolvedValue(undefined),
 }));
 
 const mockCurrentUser = {
-  uid: 'uid-1',
-  email: 'test@example.com',
+  uid: "uid-1",
+  email: "test@example.com",
   emailVerified: false,
   reload: vi.fn().mockResolvedValue(undefined),
 };
@@ -35,10 +35,10 @@ const mockAuthContainer: { currentUser: typeof mockCurrentUser | null } = {
   currentUser: mockCurrentUser,
 };
 
-vi.mock('@/lib/firebase', () => ({
+vi.mock("@/lib/firebase", () => ({
   auth: new Proxy(mockAuthContainer, {
     get(target, prop) {
-      if (prop === 'currentUser') return target.currentUser;
+      if (prop === "currentUser") return target.currentUser;
       return undefined;
     },
   }),
@@ -47,18 +47,18 @@ vi.mock('@/lib/firebase', () => ({
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const { AuthProvider, useAuth } = await import('@/contexts/auth-context');
+const { AuthProvider, useAuth } = await import("@/contexts/auth-context");
 
 function AuthStatusDisplay() {
   const { emailVerified, loading } = useAuth();
-  if (loading) return <div data-testid='status'>loading</div>;
+  if (loading) return <div data-testid="status">loading</div>;
   return (
-    <div data-testid='status'>{emailVerified ? 'verified' : 'unverified'}</div>
+    <div data-testid="status">{emailVerified ? "verified" : "unverified"}</div>
   );
 }
 
 function makeFirebaseUser(emailVerified: boolean) {
-  return { uid: 'uid-1', email: 'test@example.com', emailVerified };
+  return { uid: "uid-1", email: "test@example.com", emailVerified };
 }
 
 beforeEach(() => {
@@ -76,8 +76,8 @@ beforeEach(() => {
 
 // ─── visibilitychange ─────────────────────────────────────────────────────────
 
-describe('AuthProvider — visibilitychange / focus listeners', () => {
-  it('sets emailVerified to true when tab becomes visible and reload confirms verification', async () => {
+describe("AuthProvider — visibilitychange / focus listeners", () => {
+  it("sets emailVerified to true when tab becomes visible and reload confirms verification", async () => {
     await act(async () => {
       render(
         <AuthProvider>
@@ -87,7 +87,7 @@ describe('AuthProvider — visibilitychange / focus listeners', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByTestId('status')).toHaveTextContent('unverified'),
+      expect(screen.getByTestId("status")).toHaveTextContent("unverified"),
     );
 
     // Simulate the user verifying their email in another tab
@@ -97,19 +97,19 @@ describe('AuthProvider — visibilitychange / focus listeners', () => {
     });
 
     await act(async () => {
-      Object.defineProperty(document, 'visibilityState', {
-        value: 'visible',
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
         configurable: true,
       });
-      document.dispatchEvent(new Event('visibilitychange'));
+      document.dispatchEvent(new Event("visibilitychange"));
     });
 
     await waitFor(() =>
-      expect(screen.getByTestId('status')).toHaveTextContent('verified'),
+      expect(screen.getByTestId("status")).toHaveTextContent("verified"),
     );
   });
 
-  it('does not update emailVerified when reload shows the email is still unverified', async () => {
+  it("does not update emailVerified when reload shows the email is still unverified", async () => {
     await act(async () => {
       render(
         <AuthProvider>
@@ -119,25 +119,25 @@ describe('AuthProvider — visibilitychange / focus listeners', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByTestId('status')).toHaveTextContent('unverified'),
+      expect(screen.getByTestId("status")).toHaveTextContent("unverified"),
     );
 
     // reload does not flip the flag
     mockCurrentUser.emailVerified = false;
 
     await act(async () => {
-      Object.defineProperty(document, 'visibilityState', {
-        value: 'visible',
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
         configurable: true,
       });
-      document.dispatchEvent(new Event('visibilitychange'));
+      document.dispatchEvent(new Event("visibilitychange"));
     });
 
     // still unverified
-    expect(screen.getByTestId('status')).toHaveTextContent('unverified');
+    expect(screen.getByTestId("status")).toHaveTextContent("unverified");
   });
 
-  it('does not call reload when the tab becomes hidden', async () => {
+  it("does not call reload when the tab becomes hidden", async () => {
     await act(async () => {
       render(
         <AuthProvider>
@@ -147,17 +147,17 @@ describe('AuthProvider — visibilitychange / focus listeners', () => {
     });
 
     await act(async () => {
-      Object.defineProperty(document, 'visibilityState', {
-        value: 'hidden',
+      Object.defineProperty(document, "visibilityState", {
+        value: "hidden",
         configurable: true,
       });
-      document.dispatchEvent(new Event('visibilitychange'));
+      document.dispatchEvent(new Event("visibilitychange"));
     });
 
     expect(mockCurrentUser.reload).not.toHaveBeenCalled();
   });
 
-  it('sets emailVerified to true when window focus fires and reload confirms verification', async () => {
+  it("sets emailVerified to true when window focus fires and reload confirms verification", async () => {
     await act(async () => {
       render(
         <AuthProvider>
@@ -167,7 +167,7 @@ describe('AuthProvider — visibilitychange / focus listeners', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByTestId('status')).toHaveTextContent('unverified'),
+      expect(screen.getByTestId("status")).toHaveTextContent("unverified"),
     );
 
     mockCurrentUser.reload.mockImplementation(() => {
@@ -176,15 +176,15 @@ describe('AuthProvider — visibilitychange / focus listeners', () => {
     });
 
     await act(async () => {
-      window.dispatchEvent(new Event('focus'));
+      window.dispatchEvent(new Event("focus"));
     });
 
     await waitFor(() =>
-      expect(screen.getByTestId('status')).toHaveTextContent('verified'),
+      expect(screen.getByTestId("status")).toHaveTextContent("verified"),
     );
   });
 
-  it('does not call reload when the user is already verified', async () => {
+  it("does not call reload when the user is already verified", async () => {
     mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
       callback(makeFirebaseUser(true));
       return vi.fn();
@@ -200,17 +200,17 @@ describe('AuthProvider — visibilitychange / focus listeners', () => {
     });
 
     await act(async () => {
-      Object.defineProperty(document, 'visibilityState', {
-        value: 'visible',
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
         configurable: true,
       });
-      document.dispatchEvent(new Event('visibilitychange'));
+      document.dispatchEvent(new Event("visibilitychange"));
     });
 
     expect(mockCurrentUser.reload).not.toHaveBeenCalled();
   });
 
-  it('does not call reload when no user is signed in', async () => {
+  it("does not call reload when no user is signed in", async () => {
     mockOnAuthStateChanged.mockImplementation((_auth, callback) => {
       callback(null);
       return vi.fn();
@@ -226,11 +226,11 @@ describe('AuthProvider — visibilitychange / focus listeners', () => {
     });
 
     await act(async () => {
-      Object.defineProperty(document, 'visibilityState', {
-        value: 'visible',
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
         configurable: true,
       });
-      document.dispatchEvent(new Event('visibilitychange'));
+      document.dispatchEvent(new Event("visibilitychange"));
     });
 
     expect(mockCurrentUser.reload).not.toHaveBeenCalled();

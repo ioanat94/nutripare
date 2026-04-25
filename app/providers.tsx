@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { type ReactNode } from 'react';
+import { type ReactNode } from "react";
 
-import { FirebaseUIProvider } from '@firebase-oss/ui-react';
+import { FirebaseUIProvider } from "@firebase-oss/ui-react";
 
-import { AuthProvider } from '@/contexts/auth-context';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { ui } from '@/lib/firebase';
+import { AuthProvider } from "@/contexts/auth-context";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ui } from "@/lib/firebase";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (

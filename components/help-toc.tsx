@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { ArrowUp, ChevronDown } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowUp, ChevronDown } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { cn } from '@/utils/tailwind';
+import { cn } from "@/utils/tailwind";
 
 function scrollToSection(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
-  const navbar = document.querySelector('nav');
+  const navbar = document.querySelector("nav");
   const offset = (navbar?.getBoundingClientRect().height ?? 0) + 16;
   const top = el.getBoundingClientRect().top + window.scrollY - offset;
-  window.scrollTo({ top, behavior: 'smooth' });
+  window.scrollTo({ top, behavior: "smooth" });
 }
 
 interface Section {
@@ -24,7 +24,7 @@ interface HelpTocProps {
 }
 
 export function HelpToc({ sections }: HelpTocProps) {
-  const [activeId, setActiveId] = useState<string>('');
+  const [activeId, setActiveId] = useState<string>("");
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -35,7 +35,7 @@ export function HelpToc({ sections }: HelpTocProps) {
           }
         }
       },
-      { rootMargin: '-20% 0px -70% 0px' },
+      { rootMargin: "-20% 0px -70% 0px" },
     );
 
     const elements = sections
@@ -47,9 +47,9 @@ export function HelpToc({ sections }: HelpTocProps) {
   }, [sections]);
 
   return (
-    <aside className='hidden lg:block w-56 shrink-0'>
-      <nav className='sticky top-24 space-y-1' aria-label='Page sections'>
-        <p className='mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
+    <aside className="hidden lg:block w-56 shrink-0">
+      <nav className="sticky top-24 space-y-1" aria-label="Page sections">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           On this page
         </p>
         {sections.map(({ id, label }) => (
@@ -58,8 +58,8 @@ export function HelpToc({ sections }: HelpTocProps) {
             onClick={() => scrollToSection(id)}
             className={
               activeId === id
-                ? 'block w-full text-left rounded-md bg-primary/15 px-2 py-1 text-sm font-semibold text-primary transition-colors'
-                : 'block w-full text-left rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+                ? "block w-full text-left rounded-md bg-primary/15 px-2 py-1 text-sm font-semibold text-primary transition-colors"
+                : "block w-full text-left rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             }
           >
             {label}
@@ -74,37 +74,37 @@ export function HelpTocMobile({ sections }: HelpTocProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className='lg:hidden' aria-label='Page sections'>
-      <div className='rounded-xl border border-border bg-card overflow-hidden'>
+    <nav className="lg:hidden" aria-label="Page sections">
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
         <button
           onClick={() => setOpen((o) => !o)}
-          className='flex w-full items-center justify-between px-4 py-3 text-left'
+          className="flex w-full items-center justify-between px-4 py-3 text-left"
           aria-expanded={open}
-          aria-controls='help-toc-mobile-list'
+          aria-controls="help-toc-mobile-list"
         >
-          <span className='flex items-center gap-2'>
-            <span className='text-sm font-semibold text-foreground'>
+          <span className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-foreground">
               On this page
             </span>
-            <span className='text-xs text-muted-foreground'>
+            <span className="text-xs text-muted-foreground">
               · {sections.length} sections
             </span>
           </span>
           <ChevronDown
             className={cn(
-              'size-4 text-muted-foreground transition-transform duration-200',
-              open && 'rotate-180',
+              "size-4 text-muted-foreground transition-transform duration-200",
+              open && "rotate-180",
             )}
-            aria-hidden='true'
+            aria-hidden="true"
           />
         </button>
 
         {open && (
           <div
-            id='help-toc-mobile-list'
-            className='border-t border-border px-4 py-3'
+            id="help-toc-mobile-list"
+            className="border-t border-border px-4 py-3"
           >
-            <ul className='space-y-1'>
+            <ul className="space-y-1">
               {sections.map(({ id, label }) => (
                 <li key={id}>
                   <button
@@ -113,7 +113,7 @@ export function HelpTocMobile({ sections }: HelpTocProps) {
                       // Defer scroll until after the dropdown collapses to get a correct offset
                       setTimeout(() => scrollToSection(id), 0);
                     }}
-                    className='block w-full text-left rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
+                    className="block w-full text-left rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
                     {label}
                   </button>
@@ -132,22 +132,22 @@ export function BackToTop() {
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 300);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
     <button
-      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      aria-label='Back to top'
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Back to top"
       className={cn(
-        'lg:hidden fixed bottom-6 right-6 z-50 flex items-center justify-center size-10 rounded-full bg-primary text-primary-foreground shadow-lg transition-all duration-200',
+        "lg:hidden fixed bottom-6 right-6 z-50 flex items-center justify-center size-10 rounded-full bg-primary text-primary-foreground shadow-lg transition-all duration-200",
         visible
-          ? 'opacity-100 translate-y-0'
-          : 'opacity-0 translate-y-4 pointer-events-none',
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 translate-y-4 pointer-events-none",
       )}
     >
-      <ArrowUp className='size-4' />
+      <ArrowUp className="size-4" />
     </button>
   );
 }

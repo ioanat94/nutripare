@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
-const STORAGE_KEY = 'nutripare-table-expanded';
+const STORAGE_KEY = "nutripare-table-expanded";
 
 function readStored(): boolean {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === "undefined") return false;
   try {
-    return localStorage.getItem(STORAGE_KEY) === 'true';
+    return localStorage.getItem(STORAGE_KEY) === "true";
   } catch {
     return false;
   }
@@ -22,7 +22,7 @@ export function useExpandedTable() {
     try {
       localStorage.setItem(STORAGE_KEY, String(next));
     } catch (err) {
-      console.error('Failed to persist table expansion:', err);
+      console.error("Failed to persist table expansion:", err);
     }
   }
 

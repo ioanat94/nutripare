@@ -1,0 +1,750 @@
+{
+  "Metadata": {
+    "title": "Nutripare",
+    "description": "Tee terveellisempiä ruokavalintoja"
+  },
+  "Navbar": {
+    "home": "Etusivu",
+    "compare": "Vertailu",
+    "help": "Ohjeet",
+    "accountSettings": "Tilin asetukset",
+    "signIn": "Kirjaudu sisään",
+    "toggleTheme": "Vaihda teema",
+    "toggleLocale": "Vaihda kieli"
+  },
+  "Footer": {
+    "openFoodFacts": "Open Food Facts",
+    "privacyPolicy": "Tietosuojakäytäntö",
+    "github": "GitHub-repositorio"
+  },
+  "HomePage": {
+    "hero": {
+      "title1": "Tiedä mitä syöt.",
+      "title2": "Oikeasti.",
+      "description": "Skannaa tai syötä viivakoodi ja saat selkeät ravintotiedot sekunneissa. Vertaile tuotteita, havaitse oleellinen ero ja tee parempia valintoja — ilman arvausta.",
+      "startComparing": "Aloita vertailu →",
+      "howItWorks": "Miten se toimii"
+    },
+    "features": {
+      "title": "Mitä se tekee",
+      "subtitle": "Kaikki mitä tarvitset ravintosisällön ymmärtämiseen nopeasti.",
+      "items": {
+        "scan": {
+          "title": "Skannaa tai kirjoita viivakoodi",
+          "description": "Syötä EAN-koodi tai skannaa tuotteen viivakoodi saadaksesi välittömästi täyden ravintosisältöerittelyn."
+        },
+        "glance": {
+          "title": "Näe oleellinen yhdellä silmäyksellä",
+          "description": "Tärkeimmät ravintoaineet merkitään hyviksi tai huonoiksi, joten tiedät heti mitä kannattaa seurata."
+        },
+        "compare": {
+          "title": "Vertaile tuotteita rinnakkain",
+          "description": "Lisää useita tuotteita ja katso miten ne vertautuvat toisiinsa kaikkien ravintoaineiden osalta."
+        },
+        "sort": {
+          "title": "Lajittele minkä tahansa ravintoaineen mukaan",
+          "description": "Järjestä vertailu proteiinin, sokerin, kalorien tai minkä tahansa muun haluamasi tekijän mukaan."
+        }
+      }
+    },
+    "benefits": {
+      "title": "Entistä parempi tilin kanssa",
+      "subtitle": "Nutripare on ilmainen — ei luottokorttia, ei jujuja.",
+      "items": {
+        "saveProducts": {
+          "title": "Tallenna tuotteet",
+          "description": "Lisää skannaamasi tuotteet kirjanmerkkeihin, jotta löydät ne uudelleen ilman viivakoodin uudelleensyöttämistä."
+        },
+        "saveComparisons": {
+          "title": "Tallenna vertailut",
+          "description": "Pidä vertailuryhmäsi tallennettuna, jotta voit palata niihin milloin tahansa."
+        },
+        "chooseNutrients": {
+          "title": "Valitse ravintoaineet",
+          "description": "Päätä mitkä ravintoaineet korostetaan — keskity siihen mikä todella merkitsee ruokavaliossasi."
+        },
+        "buildProfiles": {
+          "title": "Luo ravintoprofiileja",
+          "description": "Luo nimettyjä sääntöjoukkoja, jotka määrittävät ruokavaliolle tärkeät tekijät — vaihda niiden välillä vertailukohtaisesti."
+        }
+      }
+    }
+  },
+  "ComparePage": {
+    "title": "Vertaile tuotteita",
+    "description": "Syötä EAN-viivakoodeja nähdäksesi ravintotiedot rinnakkain. Lisää useita koodeja kerralla erottamalla ne pilkuilla.",
+    "input": {
+      "placeholder": "esim. 5000112637922, 8076809513388",
+      "ariaLabel": "EAN-viivakoodit"
+    },
+    "scanBarcode": "Skannaa viivakoodi",
+    "lookUp": "Hae",
+    "addProducts": "Lisää tuotteita",
+    "invalidFormat": "Virheellinen EAN-muoto:",
+    "notFound": "Tuotetta ei löydy koodille:",
+    "addAnother": "Syötä toinen viivakoodi yllä lisätäksesi sarakkeen.",
+    "dataSource": "Tiedot lähteestä {link}, ilmainen yhteisöllinen tietokanta. Ravintosisältö voi olla puutteellinen tai epätarkka.",
+    "openFoodFacts": "Open Food Facts",
+    "report": {
+      "title": "Ilmoita tuotetiedoista",
+      "description": "Ilmoita puuttuvasta tai virheellisestä tuotetiedosta? Ilmoituksesi on anonyymi.",
+      "cancel": "Peruuta",
+      "confirm": "Vahvista"
+    },
+    "saveDialog": {
+      "title": "Nimeä tämä vertailu",
+      "description": "Valitse nimi tallennetulle vertailullesi.",
+      "cancel": "Peruuta",
+      "save": "Tallenna"
+    },
+    "toast": {
+      "productSaved": "Tuote tallennettu",
+      "productAlreadySaved": "Tuote on jo tallennettu",
+      "productSaveFailed": "Tuotteen tallentaminen epäonnistui",
+      "productRemoved": "Tuote poistettu",
+      "productRemoveFailed": "Tuotteen poistaminen epäonnistui",
+      "comparisonSaved": "Vertailu tallennettu",
+      "comparisonAlreadySaved": "Vertailu on jo tallennettu",
+      "comparisonSaveFailed": "Vertailun tallentaminen epäonnistui",
+      "comparisonUpdated": "Vertailu päivitetty",
+      "comparisonUpdateFailed": "Vertailun päivittäminen epäonnistui",
+      "comparisonRemoved": "Vertailu poistettu",
+      "comparisonRemoveFailed": "Vertailun poistaminen epäonnistui",
+      "rulesetUpdateFailed": "Sääntöjoukon päivittäminen epäonnistui",
+      "reportSubmitted": "Ilmoitus lähetetty",
+      "linkCopied": "Linkki kopioitu leikepöydälle",
+      "linkCopyFailed": "Linkin kopioiminen epäonnistui"
+    }
+  },
+  "LoginPage": {
+    "signIn": "Kirjaudu sisään",
+    "signUp": "Rekisteröidy",
+    "signInDescription": "Kirjaudu tilillesi",
+    "signUpDescription": "Luo uusi tili"
+  },
+  "SettingsPage": {
+    "title": "Asetukset",
+    "logOut": "Kirjaudu ulos",
+    "tabs": {
+      "account": "tili",
+      "nutrition": "ravinto",
+      "products": "tuotteet",
+      "comparisons": "vertailut"
+    }
+  },
+  "AccountTab": {
+    "email": "Sähköposti",
+    "displayName": "Näyttönimi",
+    "saveName": "Tallenna nimi",
+    "changePassword": "Vaihda salasana",
+    "currentPassword": "Nykyinen salasana",
+    "newPassword": "Uusi salasana",
+    "confirmPassword": "Vahvista uusi salasana",
+    "changePasswordBtn": "Vaihda salasana",
+    "downloadData": "Lataa tietosi",
+    "downloadDataDescription": "Lataa kopio tilitiedoistasi, tallennetuista tuotteista, vertailuista ja ravitsemusasetuksista.",
+    "downloadDataBtn": "Lataa tiedot",
+    "deleteAccount": "Poista tili",
+    "deleteAccountDescription": "Tämä toiminto on pysyvä eikä sitä voi perua. Kaikki tallennetut tuotteesi, vertailusi ja asetuksesi poistetaan.",
+    "deleteAccountBtn": "Poista tili",
+    "confirmWithGoogle": "Sinua pyydetään vahvistamaan Google-tilillä.",
+    "enterPasswordToConfirm": "Syötä salasanasi vahvistaaksesi",
+    "yourPassword": "Salasanasi",
+    "yesDelete": "Kyllä, poista",
+    "cancel": "Peruuta",
+    "toast": {
+      "displayNameUpdated": "Näyttönimi päivitetty",
+      "displayNameFailed": "Näyttönimen päivittäminen epäonnistui",
+      "displayNameEmpty": "Näyttönimi ei voi olla tyhjä",
+      "passwordUpdated": "Salasana vaihdettu",
+      "downloadFailed": "Tietojen lataaminen epäonnistui"
+    },
+    "error": {
+      "passwordMismatch": "Uudet salasanat eivät täsmää",
+      "passwordSame": "Uuden salasanan on oltava erilainen kuin nykyisen",
+      "wrongPassword": "Nykyinen salasana on väärä",
+      "passwordFailed": "Salasanan vaihtaminen epäonnistui",
+      "incorrectPassword": "Väärä salasana",
+      "deleteFailed": "Tilin poistaminen epäonnistui"
+    }
+  },
+  "NutritionTable": {
+    "perHundredG": "per 100g",
+    "unknownProduct": "Tuntematon tuote",
+    "productCount_one": "{count} tuote",
+    "productCount_other": "{count} tuotetta",
+    "expandTable": "Laajenna taulukko",
+    "collapseTable": "Pienennä taulukko",
+    "moreOptions": "Lisää vaihtoehtoja",
+    "rulesetLabel": "Sääntöjoukko:",
+    "rulesetNone": "Ei mitään",
+    "updateComparison": "Päivitä \"{name}\"",
+    "saveAsNew": "Tallenna uutena vertailuna",
+    "saveComparison": "Tallenna vertailu",
+    "deleteComparison": "Poista \"{name}\"",
+    "share": "Jaa",
+    "clearAll": "Tyhjennä kaikki",
+    "unpinColumn": "Irrota sarake",
+    "optionsFor": "Vaihtoehdot kohteelle {name}",
+    "unsaveProduct": "Poista tallennus",
+    "saveProduct": "Tallenna tuote",
+    "pinColumn": "Kiinnitä sarake",
+    "report": "Ilmoita",
+    "remove": "Poista",
+    "noNutrients": "Ei näkyviä ravintoaineita. Ota käyttöön joitakin Asetukset → Ravinto -kohdassa.",
+    "scoreTooltip": "Pistemäärä 0–100 ravitsemusääntöjesi perusteella.",
+    "linkCopied": "Linkki kopioitu leikepöydälle",
+    "linkCopyFailed": "Linkin kopioiminen epäonnistui"
+  },
+  "NutritionTab": {
+    "visibleRows": "Näkyvät rivit",
+    "highlights": "Korostukset",
+    "showCrown": "Näytä kruunu (👑)",
+    "showCrownDescription": "Merkitsee parhaan tuloksen ravintoaineille, joilla on 'Hyvä'-sääntö.",
+    "showFlag": "Näytä lippu (🚩)",
+    "showFlagDescription": "Merkitsee huonoimman tuloksen ravintoaineille, joilla on 'Huono'-sääntö.",
+    "rulesets": "Sääntöjoukot",
+    "searchRulesets": "Hae sääntöjoukkoja…",
+    "noResultsSearch": "Hakua vastaavia sääntöjoukkoja ei löydy.",
+    "addRuleset": "Lisää sääntöjoukko",
+    "newRuleset": "Uusi sääntöjoukko",
+    "fromTemplate": "Mallista",
+    "rules": "Säännöt",
+    "save": "Tallenna",
+    "saving": "Tallennetaan…",
+    "resetToDefaults": "Palauta oletusasetukset",
+    "editRuleset": "Muokkaa sääntöjoukkoa",
+    "rulesetName": "Sääntöjoukon nimi",
+    "addRule": "Lisää sääntö",
+    "saveRuleset": "Tallenna",
+    "deleteRuleset": "Poista sääntöjoukko",
+    "cancelEdit": "Peruuta",
+    "nutrient": "Ravintoaine",
+    "direction": "Suunta",
+    "value": "Arvo (g)",
+    "rating": "Arvio",
+    "above": "yli",
+    "below": "alle",
+    "orEqualTo": "tai yhtä kuin",
+    "is": "on",
+    "dragToReorder": "Vedä järjestaäksesi",
+    "viewRuleset": "Näytä sääntöjoukko",
+    "removeRule": "Poista sääntö",
+    "toast": {
+      "loadFailed": "Ravintoasetusten lataaminen epäonnistui",
+      "saved": "Asetukset tallennettu",
+      "saveFailed": "Asetusten tallentaminen epäonnistui",
+      "rulesetSaved": "Sääntöjoukko tallennettu",
+      "rulesetSaveFailed": "Sääntöjoukon tallentaminen epäonnistui",
+      "rulesetDeleted": "Sääntöjoukko poistettu",
+      "rulesetDeleteFailed": "Sääntöjoukon poistaminen epäonnistui",
+      "reset": "Asetukset palautettu oletuksiin",
+      "resetFailed": "Asetusten palauttaminen epäonnistui"
+    },
+    "error": {
+      "valueRequired": "Arvo vaaditaan",
+      "duplicateRule": "Sääntö ravintoaineelle {nutrient} / {rating} on jo olemassa",
+      "rulesetNameEmpty": "Sääntöjoukon nimi ei voi olla tyhjä"
+    },
+    "deleteConfirm": {
+      "title": "Poistetaanko sääntöjoukko?",
+      "description": "Tätä ei voi perua.",
+      "cancel": "Peruuta",
+      "delete": "Poista"
+    },
+    "resetConfirm": {
+      "title": "Palautetaanko kaikki asetukset?",
+      "description": "Tämä palauttaa kaikki ravintoasetukset — näkyvät rivit, korostukset ja sääntöjoukot — oletusarvoihin. Tätä ei voi perua.",
+      "cancel": "Peruuta",
+      "reset": "Palauta"
+    }
+  },
+  "ProductsTab": {
+    "searchPlaceholder": "Hae nimen tai EAN:n mukaan…",
+    "name": "Nimi",
+    "ean": "EAN",
+    "actions": "Toiminnot",
+    "viewProduct": "Näytä {name}",
+    "unsaveProduct": "Poista {name}",
+    "selectProduct": "Valitse {name}",
+    "compareSelected": "Vertaile",
+    "selectedCount": "{count} tuotetta valittu",
+    "clearSelection": "Tyhjennä",
+    "noProducts": "Ei vielä tallennettuja tuotteita.",
+    "noResults": "Hakua vastaavia tuotteita ei löydy.",
+    "toast": {
+      "loadFailed": "Tuotteiden lataaminen epäonnistui",
+      "unsaved": "Tuote poistettu",
+      "unsaveFailed": "Tuotteen poistaminen epäonnistui"
+    }
+  },
+  "ComparisonsTab": {
+    "searchPlaceholder": "Hae nimen tai EAN:n mukaan…",
+    "name": "Nimi",
+    "codes": "EAN-koodit",
+    "actions": "Toiminnot",
+    "viewComparison": "Näytä {name}",
+    "unsaveComparison": "Poista {name}",
+    "renameComparison": "Nimeä uudelleen: {name}",
+    "confirmRename": "Tallenna nimi",
+    "cancelRename": "Peruuta",
+    "noComparisons": "Ei vielä tallennettuja vertailuja.",
+    "noResults": "Hakua vastaavia vertailuja ei löydy.",
+    "error": {
+      "nameEmpty": "Nimi ei voi olla tyhjä"
+    },
+    "toast": {
+      "loadFailed": "Vertailujen lataaminen epäonnistui",
+      "renamed": "Vertailu nimetty uudelleen",
+      "renameFailed": "Uudelleennimeäminen epäonnistui",
+      "unsaved": "Vertailu poistettu",
+      "unsaveFailed": "Vertailun poistaminen epäonnistui"
+    }
+  },
+  "AdminPage": {
+    "title": "Ylläpito — Tuoteilmoitukset",
+    "loading": "Ladataan…",
+    "allStatuses": "Kaikki tilat",
+    "allReasons": "Kaikki syyt",
+    "changeStatus": "Muuta tila",
+    "selected": "{count} valittu",
+    "selectAll": "Valitse kaikki",
+    "selectRow": "Valitse {code}",
+    "columns": {
+      "code": "Koodi",
+      "date": "Päivämäärä",
+      "reason": "Syy",
+      "status": "Tila",
+      "action": "Toiminto"
+    },
+    "noReports": "Ei ilmoituksia.",
+    "actionsFor": "Toiminnot kohteelle {code}",
+    "page": "Sivu {page} / {total}",
+    "previous": "Edellinen",
+    "next": "Seuraava",
+    "status": {
+      "open": "Avoin",
+      "solved": "Ratkaistu",
+      "dismissed": "Hylätty"
+    },
+    "reason": {
+      "incorrectData": "Virheellinen tieto",
+      "missingProduct": "Puuttuva tuote"
+    }
+  },
+  "AuthActionPage": {
+    "verifying": "Vahvistetaan…",
+    "verifyingDescription": "Odota hetki, vahvistamme sähköpostiosoitettasi.",
+    "verified": "Sähköposti vahvistettu",
+    "verifiedDescription": "Sähköpostiosoitteesi on vahvistettu. Olet valmis.",
+    "goToApp": "Siirry sovellukseen",
+    "linkInvalid": "Linkki virheellinen",
+    "linkInvalidDescription": "Tämä vahvistuslinkki on vanhentunut tai se on jo käytetty. Kirjaudu sisään ja pyydä uutta vahvistusnäytöltä.",
+    "goToSignIn": "Siirry kirjautumiseen"
+  },
+  "ErrorPage": {
+    "title": "Jokin meni pieleen",
+    "description": "Tapahtui odottamaton virhe.",
+    "tryAgain": "Yritä uudelleen",
+    "goHome": "Etusivulle"
+  },
+  "NotFoundPage": {
+    "title": "Sivua ei löydy",
+    "description": "Etsimääsi sivua ei ole olemassa.",
+    "goHome": "Etusivulle"
+  },
+  "PrivacyPage": {
+    "title": "Tietosuojakäytäntö",
+    "lastUpdated": "Päivitetty viimeksi: maaliskuu 2026",
+    "sections": {
+      "responsible": {
+        "title": "Kuka vastaa tiedoistasi",
+        "content": "Nutriparea ylläpitää Ioana Tiplea. Jos sinulla on kysyttävää tiedoistasi tai haluat tehdä pyynnön, ota yhteyttä osoitteeseen <email>ioanatiplea94@gmail.com</email>."
+      },
+      "collected": {
+        "title": "Mitä tietoja keräämme ja miksi",
+        "noAccount": "Nutriparea voi käyttää ilman tiliä — kirjautumattomilta käyttäjiltä ei kerätä tietoja.",
+        "withAccount": "Jos luot tilin, keräämme ja tallennamme seuraavat tiedot:",
+        "items": {
+          "emailAndName": {
+            "label": "Sähköpostiosoite ja näyttönimi",
+            "description": "käytetään tilisi tunnistamiseen ja kokemuksen personointiin."
+          },
+          "savedData": {
+            "label": "Tallennetut tuotteet ja vertailut",
+            "description": "elintarvikkeet ja vertailut, jotka olet valinnut tallentaa tulevaa käyttöä varten."
+          },
+          "nutritionSettings": {
+            "label": "Ravitsemusasetukset",
+            "description": "mukautetut ravitsemusäännöt, näkyvät ravintoaineet ja näyttöasetukset."
+          }
+        },
+        "noTracking": "Emme kerää muita tietoja kuin edellä luetellut. Emme käytä analytiikkaa, mainontaa tai seurantaa."
+      },
+      "storage": {
+        "title": "Miten tietosi tallennetaan",
+        "content": "Tietosi tallennetaan Firebase Authentication- ja Firestore-palveluihin, jotka tarjoaa Google. Google toimii tietojenkäsittelijänä puolestamme asianmukaisten tietojenkäsittelyehtojen mukaisesti. Lisätietoja löydät <link>Firebasen tietosuojadokumentaatiosta</link>."
+      },
+      "retention": {
+        "title": "Kuinka kauan säilytämme tietojasi",
+        "content": "Tietojasi säilytetään niin kauan kuin tilisi on olemassa. Kun poistat tilisi, kaikki siihen liittyvät tiedot — mukaan lukien tallennetut tuotteet, vertailut ja asetukset — poistetaan pysyvästi välittömästi."
+      },
+      "rights": {
+        "title": "Oikeutesi",
+        "intro": "GDPR:n (ja vastaavien lakien) nojalla sinulla on oikeus käyttää, korjata, viedä ja poistaa henkilötietojasi. Nutripare antaa sinulle suoran hallinnan kaikkeen tähän Asetukset-sivulta:",
+        "items": {
+          "download": {
+            "label": "Lataa tietosi",
+            "description": "vie täydellinen kopio kaikista sinuun liittyvistä tallennetuista tiedoista JSON-tiedostona."
+          },
+          "update": {
+            "label": "Päivitä tietosi",
+            "description": "muuta näyttönimeäsi tai salasanaasi milloin tahansa."
+          },
+          "delete": {
+            "label": "Poista tilisi",
+            "description": "poistaa pysyvästi tilisi ja kaikki siihen liittyvät tiedot."
+          }
+        },
+        "contact": "Jos tarvitset apua näiden oikeuksien käyttämisessä, ota yhteyttä osoitteeseen <email>ioanatiplea94@gmail.com</email>."
+      },
+      "cookies": {
+        "title": "Evästeet",
+        "content": "Nutripare ei käytä evästeitä. Todennustila tallennetaan selaimen IndexedDB:hen, joka ei ole eväste eikä sitä jaeta kolmansille osapuolille."
+      },
+      "changes": {
+        "title": "Muutokset tähän käytäntöön",
+        "content": "Jos tämä käytäntö muuttuu merkittävästi, sivun yläosassa oleva päivämäärä päivitetään. Emme takautuvasti kavenna oikeuksiasi ilman ilmoitusta."
+      }
+    }
+  },
+  "HelpPage": {
+    "title": "Käyttöohje",
+    "toc": {
+      "onThisPage": "Tällä sivulla",
+      "sections": "{count} osiota"
+    },
+    "sections": {
+      "overview": {
+        "title": "Yleiskatsaus",
+        "p1": "Nutriparen avulla voit hakea elintarvikkeita EAN-viivakoodilla, näyttää niiden ravintosisällöt rinnakkain ja korostaa eroja konfiguroitavien sääntöjen perusteella. Syötä yksi tai useampi viivakoodi Vertailu-sivulle ja näe välittömästi miten tuotteet vertautuvat toisiinsa proteiinin, sokerin, rasvan, suolan ja muiden ravintoaineiden suhteen.",
+        "p2": "Tuotetiedot tulevat <link>Open Food Facts</link> ilmaisesta tietokannasta, joka on yhteisön vapaaehtoisesti ylläpitämä. Arvot voivat olla puutteellisia tai epätarkkoja — tarkista aina tärkeät tiedot fyysisestä tuote-etiketistä."
+      },
+      "searching": {
+        "title": "Tuotteiden hakeminen",
+        "p1": "EAN-viivakoodit syötetään hakukenttään Vertailu-sivulla. Kelvollisten koodien pituus on 8, 12 tai 13 numeroa — lyhyemmät tai pidemmät arvot hylätään välittömästi.",
+        "p2": "Voit syöttää yhden EAN:n yhden tuotteen hakemiseen tai useita EAN-koodeja kerralla erottamalla ne pilkuilla: <example>5000112637922, 8076809513388</example>. Ensimmäisen tuotteen lataamisen jälkeen lisää tuotteita voi lisätä yksitellen tai yhtäaikaisesti samalla syöttökentällä — ne lisätään uusina sarakkeina taulukkoon.",
+        "p3Pre": "",
+        "p3Mid": "Viivakoodiskannerin painike",
+        "p3Post": " avaa laitteen kameran fyysisen viivakoodin skannaamiseksi. Heikkolaatuiset webkamerat voivat tuottaa epäjohdonmukaisia tuloksia, joten manuaalinen syöttö on suositeltava vaihtoehto, jos skannaus toimii epäluotettavasti.",
+        "errors": "Kaksi virheilmoitusta näytetään keltaisella syöttökentän alla:",
+        "invalidFormat": "Virheellinen EAN-muoto",
+        "invalidFormatDesc": "koodi ei ole kelvollinen 8-, 12- tai 13-numeroinen EAN.",
+        "notFound": "Tuotetta ei löydy",
+        "notFoundDesc": "koodi on kelvollinen, mutta vastaavaa tuotetta ei löydy Open Food Factsista."
+      },
+      "nutritionTable": {
+        "title": "Ravintosisältötaulukko",
+        "p1": "Jokainen tuote näkyy sarakkeena. Kaikki arvot ovat per 100g.",
+        "colorCoding": "Värikoodaus",
+        "colors": {
+          "green": {
+            "label": "Vihreä (erinomainen)",
+            "desc": "arvo täyttää \"erinomainen\"-kynnyssäännön."
+          },
+          "blue": {
+            "label": "Sininen (hyvä)",
+            "desc": "arvo täyttää \"hyvä\"-kynnyssäännön."
+          },
+          "amber": {
+            "label": "Keltainen (huolestuttava)",
+            "desc": "arvo täyttää \"huolestuttava\"-kynnyssäännön."
+          },
+          "red": {
+            "label": "Punainen (huono)",
+            "desc": "arvo täyttää \"huono\"-kynnyssäännön."
+          },
+          "none": {
+            "label": "Ei väriä",
+            "desc": "arvo ei täsmää mihinkään sääntöön, tai kyseiselle ravintoaineelle ei ole määritelty sääntöjä."
+          }
+        },
+        "emojis": "Emoji-liput",
+        "crown": "Kruunu (👑)",
+        "crownDesc": "näkyy parhaassa arvossa tuotteiden välillä ravintoaineelle, jolla on \"erinomainen\"-sääntö.",
+        "flag": "Punainen lippu (🚩)",
+        "flagDesc": "näkyy heikoimmassa arvossa tuotteiden välillä ravintoaineelle, jolla on \"huono\"-sääntö.",
+        "emojiNote": "Emojit näkyvät vain kahta tai useampaa tuotetta vertailtaessa, ja ne voi piilottaa asetuksista.",
+        "defaultThresholds": "Oletuskynnysarvot",
+        "defaultThresholdsDesc": "Sovellukseen on sisäänrakennettu oletussääntöjoukko, joka perustuu <highlight>Ison-Britannian elintarviketurvallisuusviraston (FSA) 100 g kohti laskettuihin liikennevalo-kynnysarvoihin</highlight>. Nämä oletukset koskevat kirjautumattomia käyttäjiä sekä kirjautuneita käyttäjiä, jotka eivät ole vielä mukauttaneet asetuksiaan.",
+        "fsaHighlight": "Yhdistyneen kuningaskunnan elintarviketurvallisuusviraston (FSA) per-100g-liikennevalokynnyksiin",
+        "tableHeaders": {
+          "nutrient": "Ravintoaine",
+          "threshold": "Kynnys",
+          "value": "Arvo (per 100g)",
+          "rating": "Arvio"
+        },
+        "builtinRulesets": "Sisäänrakennetut sääntöjoukot",
+        "builtinRulesetsDesc": "Oletussääntöjoukon lisäksi sovellukseen on sisäänrakennettu viisi kohdennettua sääntöjoukkoa. Jokainen pisteyttää tuotteet tietyn ravitsemuksellisen tavoitteen perusteella.",
+        "sorting": "Lajittelu",
+        "sortingDesc": "Rivin nimen klikkaus lajittelee kaikki tuotesarakkeet kyseisen ravintoaineen mukaan, suurimmasta pienimpään. Klikkaamalla uudelleen käännetään lajittelu. Aktiivinen lajittelusarake on korostettu ja näyttää nuoli-indikaattorin.",
+        "computedScore": "Lasketut pisteet",
+        "computedScoreDesc": "Yksi 0–100 pisteytys aktiivisesta sääntöjoukosta laskettuna näkyy taulukon alaosassa. Se heijastaa, kuinka hyvin tuote suoriutuu kaikista säännöistä — positiiviset säännöt nostavat pisteitä, negatiiviset laskevat. Viemällä hiiren ohjeen kuvakkeen päälle näytetään lyhyt työkaluvinkki.",
+        "scoreFormula": "Pisteet lasketaan seuraavasti:",
+        "scoreStep1": "Jokaiselle säännölle, joka käynnistyy (tuotteen arvo täyttää säännön ehdon), lasketaan painotettu panos. Paino riippuu arvioinnista: Erinomainen = +3, Hyvä = +1, Huolestuttava = −1, Huono = −3.",
+        "scoreStep2": "Panosta skaalataan sen mukaan, kuinka paljon arvo ylittää kynnyksen: <formula>weight × log(1 + distance / max(threshold, 1))</formula>, jossa etäisyys on <distance>|value − threshold|</distance>.",
+        "scoreStep3": "Kaikki panokset lasketaan yhteen raaka-pisteeksi, joka sitten muunnetaan 0–100 alueelle kaavalla: <formula>round(50 × (1 + tanh(rawScore / 3)))</formula>, rajattuna [0, 100] välille.",
+        "scoreNote": "50 pistettä on neutraali (sääntöjä ei käynnisty). Yli 50 pistettä osoittaa yleisesti terveellistä profiilia aktiivisen sääntöjoukon mukaan; alle 50 pistettä osoittaa päinvastaista. Ravintoaineet, joilta puuttuu arvot, ohitetaan eivätkä vaikuta pisteisiin."
+      },
+      "tableActions": {
+        "title": "Taulukon toiminnot",
+        "expandDesc": "Työpöydällä <icon></icon> laajennuspainike työkalurivillä leventää taulukon kaikkien tuotesarakkeiden mukaan (enintään koko näkymäleveyteen). Klikkaa uudelleen pienentääksesi. Asetuksesi muistetaan istuntojen välillä.",
+        "menuDesc": "<icon></icon> valikko taulukon oikeassa yläkulmassa tarjoaa pääsyn koko taulukon toimintoihin:",
+        "switchRuleset": "Vaihda sääntöjoukko",
+        "switchRulesetDesc": "(kirjautuneet käyttäjät) — vaihtaa korostuksissa ja pisteytyksessä käytetyn sääntöjoukon.",
+        "saveUpdate": "Tallenna vertailu / Päivitä vertailu / Tallenna uutena vertailuna",
+        "saveUpdateDesc": "katso Tallennus alla.",
+        "shareAction": "Jaa",
+        "shareActionDesc": "kopioi jaettavan URL-osoitteen nykyisille tuotteille leikepöydälle.",
+        "clearAllAction": "Tyhjennä kaikki",
+        "clearAllActionDesc": "poistaa kaikki tuotteet taulukosta.",
+        "perColumnMenu": "Jokaisella tuotesarakkeella on myös oma <icon></icon> valikkonsa:",
+        "saveProductAction": "Tallenna tuote / Poista tallennus",
+        "saveProductDesc": "(vain kirjautuneille käyttäjille).",
+        "pinAction": "Kiinnitä sarake / Irrota sarake",
+        "pinDesc": "kiinnittää sarakkeen taulukon vasemmalle puolelle, jotta se pysyy näkyvissä vierittäessä vaakasuunnassa. Vain yksi sarake voidaan kiinnittää kerrallaan; toisen sarakkeen kiinnitysvalinnan valitseminen siirtää kiinnityksen. Täytetty nastakuvake näkyy sarakkeen otsikossa kiinnityksen aikana.",
+        "shareColumn": "Jaa",
+        "shareColumnDesc": "kopioi jaettavan URL-osoitteen juuri tälle tuotteelle.",
+        "removeAction": "Poista",
+        "removeDesc": "poistaa tuotesarakkeen taulukosta.",
+        "reportAction": "Ilmoita",
+        "reportDesc": "näkyy keltaisena. Avaa vahvistusvalintaikkunan tuotteen tietojen merkitsemiseksi puuttuviksi tai virheellisiksi. Ilmoitukset ovat anonyymejä."
+      },
+      "saving": {
+        "title": "Tuotteiden ja vertailujen tallentaminen",
+        "p1": "Kirjautuneet käyttäjät voivat tallentaa yksittäisiä tuotteita sarakekohtaisen valikon kautta. Tallennetut tuotteet löytyvät Asetukset-kohdan Tuotteet-välilehdeltä.",
+        "p2": "Kirjautuneet käyttäjät voivat tallentaa kahden tai useamman tuotteen nykyisen joukon nimettynä vertailuna. Valintaikkuna pyytää nimeä (esitäytettynä ehdotuksella). Tallennetut vertailut näkyvät Asetukset-kohdan Vertailut-välilehdellä.",
+        "p3": "Kun tallennettu vertailu ladataan (Vertailut-välilehden tai jaetun URL:n kautta), taulukko näyttää sen nimen ja seuraa onko tuotteita muutettu lataamisen jälkeen. Jos niitä on muutettu, <icon></icon> valikko tarjoaa <update>Päivitä vertailu</update> (korvaa) tai <saveAsNew>Tallenna uutena vertailuna</saveAsNew>.",
+        "p4": "Tallennetun vertailun poistamiseksi taulukkonäkymästä käytä <delete>Poista vertailu</delete> <icon></icon> valikossa. Yksittäisen tuotteen tallennuksen poistamiseen käytä <unsave>Poista tallennus</unsave> sarakekohtaisessa valikossa."
+      },
+      "settingsAccount": {
+        "title": "Asetukset — Tili",
+        "content": "Tili-välilehti antaa sinulle hallita kirjautunutta tiliäsi: päivittää näyttönimesi, vaihtaa sähköpostiosoitteesi, asettaa uuden salasanan ja kirjautua ulos."
+      },
+      "settingsNutrition": {
+        "title": "Asetukset — Ravinto",
+        "visibleRows": "Näkyvät rivit",
+        "visibleRowsDesc": "valintaruudut hallitsevat mitkä ravintoainerivit näkyvät taulukossa. Vetokahva jokaisen rivin vasemmalla puolella mahdollistaa järjestämisen — järjestys heijastuu taulukkoon.",
+        "highlights": "Korostukset",
+        "highlightsDesc": "kaksi kytkintä, \"Näytä kruunu (👑)\" ja \"Näytä lippu (🚩)\", ottavat käyttöön tai poistavat emoji-indikaattorit globaalisti.",
+        "rulesets": "Sääntöjoukot",
+        "rulesetsDesc": "luettelo tallennetuista sääntöjoukoista. Jokainen sääntöjoukko määrittää mitkä ravintoaineet korostetaan ja miten. Uudet tilit alkavat kuudella sisäänrakennetulla sääntöjoukolla: Oletus, Vähähiilihydraattinen, Runsasproteiininen, Runsaskuituinen, Vähärasvainen ja Vähäsuolainen. Käytä hakukenttää suodattaaksesi nimen mukaan; vetokahvat mahdollistavat luettelon järjestämisen.",
+        "eyeIcon": "silmäkuvake",
+        "eyeIconDesc": "avaa sääntöjoukon muokkaajan.",
+        "trashIcon": "roskakorikuvake",
+        "trashIconDesc": "(vahvistuksen kanssa) poistaa sääntöjoukon.",
+        "addRuleset": "Lisää sääntöjoukko",
+        "addRulesetDesc": "avaa pudotusvalikon kahdella vaihtoehdolla: <newRuleset>Uusi sääntöjoukko</newRuleset> luo tyhjän sääntöjoukon ja avaa muokkaajan välittömästi, ja <fromTemplate>Mallista</fromTemplate> antaa sinun palauttaa minkä tahansa kuudesta sisäänrakennetusta sääntöjoukosta yksitellen.",
+        "editorTitle": "Sääntöjoukon muokkaajassa:",
+        "editorItems": {
+          "editName": "Sääntöjoukon nimi on muokattavissa suoraan yläosassa.",
+          "ruleFields": "Jokainen sääntö määrittää: ravintoaine, suunta (yli/alle), kynnysarvo ja arviointi (erinomainen / hyvä / huolestuttava / huono).",
+          "reorder": "Sääntöjä voi järjestää uudelleen vetämällä. Tämä on puhtaasti organisatorinen toiminto eikä vaikuta pisteytykseen.",
+          "addRule": "Lisää sääntö",
+          "addRuleDesc": "lisää uuden tyhjän sääntörivin.",
+          "save": "Tallenna",
+          "saveDesc": "tallentaa sääntöjoukon.",
+          "deleteRuleset": "Poista sääntöjoukko",
+          "deleteRulesetDesc": "poistaa sen (vahvistuksen kanssa); poistettu käytöstä juuri luoduille tallentamattomille sääntöjoukoille.",
+          "cancel": "Peruuta",
+          "cancelDesc": "hylkää tallentamattomat muutokset; uuden sääntöjoukon peruuttaminen myös poistaa sen luettelosta."
+        },
+        "saveNote": "Kaikki muutokset — näkyvät rivit, rivijärjestys, korostuskytkimet ja sääntöjoukon muokkaukset — tallennetaan välilehden alaosassa olevalla <save>Tallenna</save>-painikkeella. <reset>Palauta oletusasetukset</reset> (Tallenna-painikkeen vieressä) palauttaa kaikki ravitsemusasetukset alkuperäiseen tilaansa, mukaan lukien kuusi sisäänrakennettua sääntöjoukkoa."
+      },
+      "settingsProducts": {
+        "title": "Asetukset — Tuotteet",
+        "p1": "Listaa kaikki tallennetut tuotteet hakukelpoisessa taulukossa. Hae nimen tai EAN:n mukaan suodattaaksesi luetteloa.",
+        "viewButton": "näytä-painike",
+        "viewButtonDesc": "avaa tuotteen Vertailu-sivulla uudessa välilehdessä.",
+        "unsaveButton": "poista tallennus -painike",
+        "unsaveButtonDesc": "poistaa tuotteen tallennetusta luettelostasi.",
+        "compareNote": "Kahden tai useamman tuotteen valitseminen aktivoi <compare>Vertaile</compare>-painikkeen alaosassa, joka avaa nämä tuotteet Vertailu-sivulla uudessa välilehdessä."
+      },
+      "settingsComparisons": {
+        "title": "Asetukset — Vertailut",
+        "p1": "Listaa kaikki tallennetut vertailut hakukelpoisessa taulukossa. Hae nimen tai EAN:n mukaan suodattaaksesi luetteloa. Jokainen rivi näyttää vertailun nimen ja sen sisältämät EAN-koodit.",
+        "pencilIcon": "kynäkuvake",
+        "pencilIconDesc": "asettaa rivin uudelleennimeämistilaan — vahvista valintamerkillä tai peruuta X:llä.",
+        "viewButton": "näytä-painike",
+        "viewButtonDesc": "avaa vertailun Vertailu-sivulla uudessa välilehdessä.",
+        "unsaveButton": "poista tallennus -painike",
+        "unsaveButtonDesc": "poistaa vertailun tallennetusta luettelostasi."
+      },
+      "accountFeatures": {
+        "title": "Kirjautunut vs. kirjautumaton",
+        "signedOut": "Kirjautumaton",
+        "signedIn": "Kirjautunut",
+        "features": {
+          "searchCompare": "Hae ja vertaile tuotteita",
+          "colorCoded": "Värikoodatut ravitsemuskorostukset",
+          "sorting": "Taulukon lajittelu",
+          "share": "Jaa tuotteet ja vertailut URL:n kautta",
+          "saveProducts": "Tallenna ja hallinnoi tuotteita",
+          "saveComparisons": "Tallenna ja hallinnoi vertailuja",
+          "createRulesets": "Luo ja mukauta sääntöjoukkoja",
+          "controlRows": "Hallitse näkyviä rivejä ja järjestystä",
+          "toggleIndicators": "Vaihda kruunu- ja lippuindikaattorit",
+          "switchRulesets": "Vaihda sääntöjoukkoja Vertailu-sivulla",
+          "syncSettings": "Asetukset synkronoitu eri laitteille"
+        }
+      },
+      "faq": {
+        "title": "FAQ",
+        "scanning": "Skannaus ja tuotteet",
+        "questions": {
+          "barcodeNotRecognized": {
+            "q": "Miksi viivakoodiani ei tunnisteta?",
+            "a": "Nutripare hyväksyy EAN-viivakoodit, joiden pituus on 8, 12 tai 13 numeroa. Lyhyemmät tai pidemmät arvot hylätään välittömästi. Jos koodisi on oikean pituinen mutta ei silti toimi, tuote ei ehkä ole Open Food Facts -tietokannassa — yritä hakea sitä suoraan osoitteesta <link>Open Food Facts</link>."
+          },
+          "dataSource": {
+            "q": "Mistä tuotetiedot tulevat?",
+            "a": "Kaikki tuotetiedot tulevat <link>Open Food Facts</link> ilmaisesta tietokannasta, joka on yhteisön vapaaehtoisesti ylläpitämä. Arvot voivat olla puutteellisia tai epätarkkoja — tarkista aina tärkeät ravitsemustiedot fyysisestä tuote-etiketistä."
+          },
+          "missingProduct": {
+            "q": "Voinko lisätä tuotteen, joka ei ole tietokannassa?",
+            "a": "Ei suoraan Nutriparen kautta. Jos tuote puuttuu, voit lisätä sen Open Food Factsiin heidän verkkosivustonsa tai mobiilisovelluksensa kautta — kun se on lisätty sinne, se on saatavilla myös Nutriparessa."
+          },
+          "storeBarcodes": {
+            "q": "Miksi kauppani viivakoodi ei toimi?",
+            "a": "Jotkut viivakoodit luodaan myymälässä eikä niitä ole rekisteröity mihinkään julkiseen tietokantaan. Yleisimpiä ovat hintakoodatut viivakoodit (alkavat 02 tai 20-29), jotka koodaavat painon tai hinnan tuoteidentiteetin sijaan."
+          },
+          "inaccurateData": {
+            "q": "Ravitsemustiedot näyttävät vääriltä. Mitä teen?",
+            "a": "Voit ilmoittaa siitä käyttämällä Ilmoita-vaihtoehtoa tuotesarakkeen valikossa. Tämä merkitsee tuotteen tarkistettavaksi. Tarkimpien arvojen saamiseksi tarkista aina fyysinen tuoteetiketti."
+          }
+        },
+        "scoring": "Pisteet",
+        "scoringQuestions": {
+          "scoreMeaning": {
+            "q": "Mitä ravitsemuspistemäärä oikeastaan mittaa?",
+            "a": "Pistemäärä (0–100) rakentuu ravitsemusäännöistäsi, joilla kullakin on suunta ja arviointi. Hyvät säännöt (esim. proteiini yli 20g) nostavat pistemäärää aktivoituessaan; varoitus- ja huono-säännöt (esim. sokeri yli 22,5g) laskevat sitä. Mitä kauempana arvo on kynnysarvosta, sitä suurempi on vaikutus. Tuote, jolla ei aktivoidu yhtään sääntöä, saa tarkalleen 50 pistettä. Pistemäärä on kokonaan henkilökohtaisten sääntöjesi ohjaamaa — kynnysarvojen, suuntien tai arviointien muuttaminen muuttaa sitä."
+          },
+          "lowScore": {
+            "q": "Miksi tuote, jonka uskon olevan terveellinen, saa alhaisen pistemäärän?",
+            "a": "Pistemäärä on vain niin hyvä kuin sen takana olevat säännöt. Jos ravintoaineella on tiukka kynnysarvo ja tuote ylittää sen — vaikka vain hieman — se laskee pistemäärää. Voit tarkistaa ja säätää kynnysarvojasi kohdassa Asetukset → Ravinto heijastamaan paremmin omia ruokavalio-prioriteettejasi."
+          },
+          "similarScores": {
+            "q": "Miksi kahdella samankaltaisella ravintosisällöllä olevalla tuotteella on hyvin erilaiset pistemäärät?",
+            "a": "Pistemäärä on epälineaarinen — kynnysarvon ylittämisellä on suurempi vaikutus mitä enemmän se ylittyy. Tuote, joka ylittää hieman monessa ravintoaineessa, voi pisteyttää hyvin eri tavalla kuin tuote, joka on useimmissa ravintoaineissa hyvin rajojen sisällä mutta ylittää yhden reilusti. Sääntöjen ravintoaineille antamat painot vaikuttavat myös tasapainoon."
+          }
+        },
+        "comparisons": "Vertailut ja asetukset",
+        "comparisonsQuestions": {
+          "compareLimit": {
+            "q": "Voinko vertailla enemmän kuin kahta tuotetta kerrallaan?",
+            "a": "Kyllä — ei ole kiinteää rajaa. Voit lisätä niin monta tuotetta kuin haluat syöttämällä lisää viivakoodeja hakukenttään. Jokainen uusi tuote lisätään uutena sarakkeena taulukkoon. Muista, että suuren tuotemäärän vertailu kerralla voi vaikuttaa suorituskykyyn."
+          },
+          "saveDifference": {
+            "q": "Mitä eroa on tuotteen tallentamisella ja vertailun tallentamisella?",
+            "a": "Tuotteen tallentaminen lisää yksittäisen tuotteen kirjanmerkkeihin, jotta voit ladata sen uudelleen myöhemmin Asetukset-kohdan Tuotteet-välilehdeltä. Vertailun tallentaminen tallentaa kaikki taulukossa tällä hetkellä olevat tuotteet yhdessä, jotta voit palauttaa koko vertailun yhdellä askeleella Vertailut-välilehdeltä."
+          },
+          "rulesUpdate": {
+            "q": "Jos muutan ravitsemusääntöjäni, päivittyvätkö vanhat vertailuni?",
+            "a": "Pisteet ja korostukset lasketaan reaaliajassa joka kerta kun lataat vertailun, joten ne heijastavat aina nykyisiä sääntöjäsi. Kuitenkin, jos vertailu tallennettiin tietyllä sääntöjoukolla, se latautuu oletuksena kyseisellä sääntöjoukolla — voit vaihtaa sääntöjoukkoa taulukon otsikosta."
+          },
+          "resetSettings": {
+            "q": "Mitä \"Palauta oletusasetukset\" tekee?",
+            "a": "Ravinto-välilehden alaosassa oleva Palauta oletusasetukset -painike palauttaa kaikki ravitsemusasetukset alkuperäiseen tilaansa — näkyvät rivit, rivijärjestys, korostuskytkimet ja kaikki sääntöjoukot (Oletus, Vähähiilihydraattinen, Runsasproteiininen, Runsaskuituinen, Vähärasvainen, Vähäsuolainen). Kaikki mukautetut sääntöjoukot tai tekemäsi muutokset menetetään. Jos haluat palauttaa vain tietyn sisäänrakennetun sääntöjoukon vaikuttamatta kaikkeen muuhun, käytä sen sijaan Lisää sääntöjoukko → Mallista."
+          }
+        },
+        "account": "Tili ja asetukset",
+        "accountQuestions": {
+          "deleteData": {
+            "q": "Miten poistan tietoni?",
+            "a": "Mene Asetukset → Tili ja käytä Poista tili -painiketta. Tämä poistaa pysyvästi tilisi ja kaikki siihen liittyvät tiedot välittömästi."
+          },
+          "exportData": {
+            "q": "Voinko ladata tietoni?",
+            "a": "Kyllä — Asetukset → Tili -kohdassa käytä Lataa tiedot -painiketta saadaksesi täydellisen JSON-viennin tilitiedoistasi, tallennetuista tuotteista, vertailuista ja ravitsemusasetuksista."
+          },
+          "rulesetLost": {
+            "q": "Poistin vahingossa sääntöjoukon. Voinko palauttaa sen?",
+            "a": "Kyllä, jos se oli yksi kuudesta sisäänrakennetusta sääntöjoukosta. Mene Asetukset → Ravinto, klikkaa Lisää sääntöjoukko, valitse sitten Mallista palauttaaksesi minkä tahansa niistä yksitellen."
+          },
+          "googleAccount": {
+            "q": "Kirjauduin Googlella — voinko asettaa salasanan?",
+            "a": "Ei tällä hetkellä. Google-tilit käyttävät Googlen todennusta eivätkä tue erillistä Nutripare-salasanaa."
+          },
+          "needAccount": {
+            "q": "Tarvitsenko tilin sovelluksen käyttämiseen?",
+            "a": "Ei. Voit hakea tuotteita ja vertailla niitä kirjautumatta sisään. Tiliä tarvitaan vain, jos haluat tallentaa tuotteita, tallentaa vertailuja tai synkronoida ravitsemusasetuksiasi eri laitteiden välillä."
+          },
+          "dataStored": {
+            "q": "Mitä tietoja tallennetaan tilin luomisen yhteydessä?",
+            "a": "Vain se mitä itse luot: sähköpostiosoitteesi, näyttönimesi, tallennetut tuotteet, tallennetut vertailut ja ravitsemusasetukset. Seurantaa, analytiikkaa tai mainontaa varten ei kerätä tietoja."
+          },
+          "multipleDevices": {
+            "q": "Voinko käyttää sovellusta useilla laitteilla?",
+            "a": "Kyllä. Tallennetut tuotteesi, vertailusi ja ravitsemusasetuksesi tallennetaan pilveen ja ovat käytettävissä kaikilla laitteilla, joille kirjaudut sisään."
+          }
+        }
+      }
+    }
+  },
+  "nutrients": {
+    "kcals": "Kalorit (kcal)",
+    "protein": "Proteiini (g)",
+    "carbohydrates": "Hiilihydraatit (g)",
+    "sugar": "Sokeri (g)",
+    "fat": "Rasva (g)",
+    "saturated_fat": "Tyydyttynyt rasva (g)",
+    "fiber": "Kuitu (g)",
+    "salt": "Suola (g)",
+    "computed_score": "Lasketut pisteet"
+  },
+  "rulesets": {
+    "default": {
+      "name": "Oletus",
+      "description": "Oletussääntöjoukko UK FSA liikennevalokynnysten perusteella."
+    },
+    "low-carb": {
+      "name": "Vähähiilihydraattinen",
+      "description": "Keskittyy hiilihydraatti- ja sokeripitoisuuteen."
+    },
+    "high-protein": {
+      "name": "Runsasproteiininen",
+      "description": "Keskittyy pelkästään proteiinipitoisuuteen."
+    },
+    "high-fiber": {
+      "name": "Runsaskuituinen",
+      "description": "Keskittyy pelkästään kuitupitoisuuteen."
+    },
+    "low-fat": {
+      "name": "Vähärasvainen",
+      "description": "Keskittyy rasvan ja tyydyttyneen rasvan pitoisuuteen."
+    },
+    "low-salt": {
+      "name": "Vähäsuolainen",
+      "description": "Keskittyy pelkästään suolapitoisuuteen."
+    }
+  },
+  "ratings": {
+    "positive": "Erinomainen",
+    "info": "Hyvä",
+    "warning": "Huolestuttava",
+    "negative": "Huono"
+  },
+  "helpSections": {
+    "overview": "Yleiskatsaus",
+    "searching": "Tuotteiden hakeminen",
+    "nutrition-table": "Ravintosisältötaulukko",
+    "table-actions": "Taulukon toiminnot",
+    "saving": "Tuotteiden ja vertailujen tallentaminen",
+    "settings-account": "Asetukset — Tili",
+    "settings-nutrition": "Asetukset — Ravinto",
+    "settings-products": "Asetukset — Tuotteet",
+    "settings-comparisons": "Asetukset — Vertailut",
+    "account-features": "Kirjautunut vs. kirjautumaton",
+    "faq": "FAQ"
+  }
+}

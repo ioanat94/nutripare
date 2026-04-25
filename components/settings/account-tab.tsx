@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   EmailAuthProvider,
@@ -8,26 +8,27 @@ import {
   reauthenticateWithPopup,
   updatePassword,
   updateProfile,
-} from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
+} from "firebase/auth";
+import { auth, db } from "@/lib/firebase";
 import {
   deleteAllUserData,
   getNutritionSettings,
   getSavedComparisons,
   getSavedProducts,
-} from '@/lib/firestore';
-import { doc, updateDoc } from 'firebase/firestore';
+} from "@/lib/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { PasswordInput } from '@/components/ui/password-input';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { toast } from "sonner";
+import { useRouter } from "@/i18n/navigation";
+import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 function isGoogleUser() {
   return (
-    auth.currentUser?.providerData.some((p) => p.providerId === 'google.com') ??
+    auth.currentUser?.providerData.some((p) => p.providerId === "google.com") ??
     false
   );
 }
@@ -40,14 +41,15 @@ export function AccountTab({
   displayName: string;
 }) {
   const [newName, setNewName] = useState(displayName);
-  const [currentPw, setCurrentPw] = useState('');
-  const [newPw, setNewPw] = useState('');
-  const [confirmPw, setConfirmPw] = useState('');
-  const [pwError, setPwError] = useState('');
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [pwError, setPwError] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deletePw, setDeletePw] = useState('');
-  const [deleteError, setDeleteError] = useState('');
+  const [deletePw, setDeletePw] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const router = useRouter();
+  const t = useTranslations("AccountTab");
 
   const googleUser = isGoogleUser();
 
@@ -57,17 +59,17 @@ export function AccountTab({
     e.preventDefault();
     const trimmed = newName.trim();
     if (!trimmed) {
-      toast.error('Display name cannot be empty');
+      toast.error(t("toast.displayNameEmpty"));
       return;
     }
     try {
       if (auth.currentUser) {
         await updateProfile(auth.currentUser, { displayName: trimmed });
       }
-      await updateDoc(doc(db, 'users', userId), { displayName: trimmed });
-      toast.success('Display name updated');
+      await updateDoc(doc(db, "users", userId), { displayName: trimmed });
+      toast.success(t("toast.displayNameUpdated"));
     } catch {
-      toast.error('Failed to update display name');
+      toast.error(t("toast.displayNameFailed"));
     }
   }
 
@@ -75,13 +77,13 @@ export function AccountTab({
     e: React.SyntheticEvent<HTMLFormElement>,
   ) {
     e.preventDefault();
-    setPwError('');
+    setPwError("");
     if (newPw !== confirmPw) {
-      setPwError('New passwords do not match');
+      setPwError(t("error.passwordMismatch"));
       return;
     }
     if (newPw === currentPw) {
-      setPwError('New password must differ from current password');
+      setPwError(t("error.passwordSame"));
       return;
     }
     const currentUser = auth.currentUser;
@@ -93,19 +95,19 @@ export function AccountTab({
       );
       await reauthenticateWithCredential(currentUser, credential);
       await updatePassword(currentUser, newPw);
-      setCurrentPw('');
-      setNewPw('');
-      setConfirmPw('');
-      toast.success('Password updated');
+      setCurrentPw("");
+      setNewPw("");
+      setConfirmPw("");
+      toast.success(t("toast.passwordUpdated"));
     } catch (e) {
       if (
         e instanceof Error &&
-        (e.message.includes('wrong-password') ||
-          e.message.includes('invalid-credential'))
+        (e.message.includes("wrong-password") ||
+          e.message.includes("invalid-credential"))
       ) {
-        setPwError('Current password is incorrect');
+        setPwError(t("error.wrongPassword"));
       } else {
-        setPwError('Failed to change password');
+        setPwError(t("error.passwordFailed"));
       }
     }
   }
@@ -113,7 +115,7 @@ export function AccountTab({
   async function handleDeleteAccount() {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
-    setDeleteError('');
+    setDeleteError("");
     try {
       if (googleUser) {
         await reauthenticateWithPopup(currentUser, new GoogleAuthProvider());
@@ -127,21 +129,21 @@ export function AccountTab({
       }
       await deleteUser(currentUser);
       await deleteAllUserData(currentUser.uid);
-      router.push('/');
+      router.push("/");
     } catch (e) {
       if (
         e instanceof Error &&
-        (e.message.includes('wrong-password') ||
-          e.message.includes('invalid-credential'))
+        (e.message.includes("wrong-password") ||
+          e.message.includes("invalid-credential"))
       ) {
-        setDeleteError('Incorrect password');
+        setDeleteError(t("error.incorrectPassword"));
       } else if (
         e instanceof Error &&
-        e.message.includes('popup-closed-by-user')
+        e.message.includes("popup-closed-by-user")
       ) {
         // user cancelled the Google popup — do nothing
       } else {
-        setDeleteError('Failed to delete account');
+        setDeleteError(t("error.deleteFailed"));
       }
     }
   }
@@ -157,7 +159,7 @@ export function AccountTab({
         getNutritionSettings(currentUser.uid),
       ]);
     } catch {
-      toast.error('Failed to download data');
+      toast.error(t("toast.downloadFailed"));
       return;
     }
     const data = {
@@ -175,12 +177,12 @@ export function AccountTab({
       savedComparisons: comparisons,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: 'application/json',
+      type: "application/json",
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'nutripare-data.json';
+    a.download = "nutripare-data.json";
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -188,16 +190,16 @@ export function AccountTab({
   const email = auth.currentUser?.email;
 
   return (
-    <div className='flex flex-col gap-8'>
+    <div className="flex flex-col gap-8">
       {/* Email (readonly) */}
       {email && (
-        <div className='flex flex-col gap-3 sm:max-w-sm'>
-          <h3 className='font-medium'>Email</h3>
+        <div className="flex flex-col gap-3 sm:max-w-sm">
+          <h3 className="font-medium">{t("email")}</h3>
           <Input
             value={email}
             readOnly
-            aria-label='Email'
-            className='cursor-not-allowed text-muted-foreground focus-visible:ring-0 focus-visible:border-input'
+            aria-label={t("email")}
+            className="cursor-not-allowed text-muted-foreground focus-visible:ring-0 focus-visible:border-input"
           />
         </div>
       )}
@@ -205,20 +207,20 @@ export function AccountTab({
       {/* Display name */}
       <form
         onSubmit={handleUpdateDisplayName}
-        className='flex flex-col gap-3 sm:max-w-sm'
+        className="flex flex-col gap-3 sm:max-w-sm"
       >
-        <h3 className='font-medium'>Display name</h3>
+        <h3 className="font-medium">{t("displayName")}</h3>
         <Input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          aria-label='Display name'
+          aria-label={t("displayName")}
         />
         <div>
           <Button
-            type='submit'
+            type="submit"
             disabled={newName.trim() === displayName.trim() || !newName.trim()}
           >
-            Save name
+            {t("saveName")}
           </Button>
         </div>
       </form>
@@ -227,109 +229,105 @@ export function AccountTab({
       {!googleUser && (
         <form
           onSubmit={handleChangePassword}
-          className='flex flex-col gap-3 sm:max-w-sm'
+          className="flex flex-col gap-3 sm:max-w-sm"
         >
-          <h3 className='font-medium'>Change password</h3>
+          <h3 className="font-medium">{t("changePassword")}</h3>
           <PasswordInput
-            placeholder='Current password'
+            placeholder={t("currentPassword")}
             value={currentPw}
             onChange={(e) => setCurrentPw(e.target.value)}
-            aria-label='Current password'
+            aria-label={t("currentPassword")}
           />
           <PasswordInput
-            placeholder='New password'
+            placeholder={t("newPassword")}
             value={newPw}
             onChange={(e) => setNewPw(e.target.value)}
-            aria-label='New password'
+            aria-label={t("newPassword")}
           />
           <PasswordInput
-            placeholder='Confirm new password'
+            placeholder={t("confirmPassword")}
             value={confirmPw}
             onChange={(e) => setConfirmPw(e.target.value)}
-            aria-label='Confirm new password'
+            aria-label={t("confirmPassword")}
           />
           {pwError && (
-            <p role='alert' className='text-sm text-destructive'>
+            <p role="alert" className="text-sm text-destructive">
               {pwError}
             </p>
           )}
           <div>
-            <Button type='submit' disabled={!currentPw || !newPw || !confirmPw}>
-              Change password
+            <Button type="submit" disabled={!currentPw || !newPw || !confirmPw}>
+              {t("changePasswordBtn")}
             </Button>
           </div>
         </form>
       )}
 
       {/* Download your data */}
-      <div className='flex flex-col gap-3'>
-        <h3 className='font-medium'>Download your data</h3>
-        <p className='text-sm text-muted-foreground'>
-          Download a copy of your account data, saved products, comparisons, and
-          nutrition settings.
+      <div className="flex flex-col gap-3">
+        <h3 className="font-medium">{t("downloadData")}</h3>
+        <p className="text-sm text-muted-foreground">
+          {t("downloadDataDescription")}
         </p>
         <div>
-          <Button variant='outline' onClick={handleDownloadData}>
-            Download data
+          <Button variant="outline" onClick={handleDownloadData}>
+            {t("downloadDataBtn")}
           </Button>
         </div>
       </div>
 
       {/* Delete account */}
-      <div className='flex flex-col gap-3'>
-        <h3 className='font-medium'>Delete account</h3>
-        <p className='text-sm text-muted-foreground'>
-          This action is permanent and cannot be undone. All your saved
-          products, comparisons, and settings will be deleted.
+      <div className="flex flex-col gap-3">
+        <h3 className="font-medium">{t("deleteAccount")}</h3>
+        <p className="text-sm text-muted-foreground">
+          {t("deleteAccountDescription")}
         </p>
         {!showDeleteConfirm ? (
           <div>
             <Button
-              variant='destructive'
+              variant="destructive"
               onClick={() => setShowDeleteConfirm(true)}
             >
-              Delete account
+              {t("deleteAccountBtn")}
             </Button>
           </div>
         ) : (
-          <div className='flex flex-col gap-2'>
+          <div className="flex flex-col gap-2">
             {googleUser ? (
-              <p className='text-sm font-medium'>
-                You will be asked to confirm with Google.
-              </p>
+              <p className="text-sm font-medium">{t("confirmWithGoogle")}</p>
             ) : (
               <>
-                <p className='text-sm font-medium'>
-                  Enter your password to confirm
+                <p className="text-sm font-medium">
+                  {t("enterPasswordToConfirm")}
                 </p>
-                <div className='sm:max-w-sm'>
+                <div className="sm:max-w-sm">
                   <PasswordInput
-                    placeholder='Your password'
+                    placeholder={t("yourPassword")}
                     value={deletePw}
                     onChange={(e) => setDeletePw(e.target.value)}
-                    aria-label='Password confirmation'
+                    aria-label={t("yourPassword")}
                   />
                 </div>
               </>
             )}
             {deleteError && (
-              <p role='alert' className='text-sm text-destructive'>
+              <p role="alert" className="text-sm text-destructive">
                 {deleteError}
               </p>
             )}
-            <div className='flex gap-2'>
-              <Button variant='destructive' onClick={handleDeleteAccount}>
-                Yes, delete
+            <div className="flex gap-2">
+              <Button variant="destructive" onClick={handleDeleteAccount}>
+                {t("yesDelete")}
               </Button>
               <Button
-                variant='outline'
+                variant="outline"
                 onClick={() => {
                   setShowDeleteConfirm(false);
-                  setDeletePw('');
-                  setDeleteError('');
+                  setDeletePw("");
+                  setDeleteError("");
                 }}
               >
-                Cancel
+                {t("cancel")}
               </Button>
             </div>
           </div>

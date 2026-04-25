@@ -1,6 +1,6 @@
-import { ThresholdColor } from './firestore';
+import { ThresholdColor } from "./firestore";
 
-type ThresholdDirection = 'above' | 'below';
+type ThresholdDirection = "above" | "below";
 
 interface ThresholdCondition {
   color: ThresholdColor;

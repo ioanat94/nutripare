@@ -4,65 +4,86 @@ import {
   render,
   screen,
   waitFor,
-} from '@testing-library/react';
+} from "@testing-library/react";
 
-import { Suspense } from 'react';
-import { vi } from 'vitest';
+import React, { Suspense } from "react";
+import { vi } from "vitest";
 
-// Mock next/navigation
-vi.mock('next/navigation', () => ({
+// Mock next/navigation (useRouter for action page, useSearchParams for login page)
+vi.mock("next/navigation", () => ({
   useRouter: vi.fn(() => ({ replace: vi.fn(), push: vi.fn() })),
   useSearchParams: vi.fn(() => ({ get: vi.fn().mockReturnValue(null) })),
 }));
 
+vi.mock("@/i18n/navigation", () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children: unknown;
+    [key: string]: unknown;
+  }) => {
+    return React.createElement(
+      "a",
+      { href, ...props },
+      children as React.ReactNode,
+    );
+  },
+  useRouter: vi.fn(() => ({ push: vi.fn(), replace: vi.fn() })),
+  usePathname: () => "/",
+  redirect: vi.fn(),
+}));
+
 // Mock auth context
-vi.mock('@/contexts/auth-context', () => ({
+vi.mock("@/contexts/auth-context", () => ({
   useAuth: vi.fn(),
 }));
 
 // Mutable mock user so reload() can flip emailVerified
 const mockCurrentUser = {
-  email: 'test@example.com',
+  email: "test@example.com",
   emailVerified: false,
   reload: vi.fn().mockResolvedValue(undefined),
 };
 
-vi.mock('@/lib/firebase', () => ({
+vi.mock("@/lib/firebase", () => ({
   auth: { currentUser: mockCurrentUser },
 }));
 
-vi.mock('firebase/auth', () => ({
+vi.mock("firebase/auth", () => ({
   sendEmailVerification: vi.fn().mockResolvedValue(undefined),
   signOut: vi.fn().mockResolvedValue(undefined),
   applyActionCode: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Stub sub-components so login page renders without deep dependency chains
-vi.mock('@/components/auth-screen', () => ({
-  AuthScreen: () => <div data-testid='auth-screen' />,
+vi.mock("@/components/auth-screen", () => ({
+  AuthScreen: () => <div data-testid="auth-screen" />,
 }));
-vi.mock('@/components/auth-form', () => ({
+vi.mock("@/components/auth-form", () => ({
   AuthForm: () => null,
 }));
-vi.mock('@firebase-oss/ui-react', () => ({
+vi.mock("@firebase-oss/ui-react", () => ({
   GoogleSignInButton: () => null,
   useOnUserAuthenticated: vi.fn(),
 }));
 
-const { useAuth } = await import('@/contexts/auth-context');
+const { useAuth } = await import("@/contexts/auth-context");
 const mockUseAuth = vi.mocked(useAuth);
 
-const { useRouter } = await import('next/navigation');
+const { useRouter } = await import("@/i18n/navigation");
 const mockUseRouter = vi.mocked(useRouter);
 
 const { sendEmailVerification, signOut, applyActionCode } =
-  await import('firebase/auth');
+  await import("firebase/auth");
 const mockSendEmailVerification = vi.mocked(sendEmailVerification);
 const mockSignOut = vi.mocked(signOut);
 const mockApplyActionCode = vi.mocked(applyActionCode);
 
 const mockReplace = vi.fn();
-const mockUser = { id: 'uid-1', displayName: 'Test' };
+const mockUser = { id: "uid-1", displayName: "Test" };
 
 const mockRefreshEmailVerified = vi.fn().mockResolvedValue(undefined);
 
@@ -84,7 +105,7 @@ beforeEach(() => {
 });
 
 async function renderLoginPage() {
-  const { default: LoginPage } = await import('@/app/login/page');
+  const { default: LoginPage } = await import("@/app/[locale]/login/page");
   await act(async () => {
     render(
       <Suspense fallback={null}>
@@ -96,13 +117,13 @@ async function renderLoginPage() {
 
 async function renderVerificationScreen() {
   const { EmailVerificationScreen } =
-    await import('@/components/email-verification-screen');
+    await import("@/components/email-verification-screen");
   const onVerified = vi.fn();
   const onSignOut = vi.fn();
   await act(async () => {
     render(
       <EmailVerificationScreen
-        email='test@example.com'
+        email="test@example.com"
         onVerified={onVerified}
         onSignOut={onSignOut}
       />,
@@ -113,8 +134,8 @@ async function renderVerificationScreen() {
 
 // ─── Rendering guards ─────────────────────────────────────────────────────────
 
-describe('Email verification — login page rendering', () => {
-  it('shows the verification screen when user is signed in but email is not verified', async () => {
+describe("Email verification — login page rendering", () => {
+  it("shows the verification screen when user is signed in but email is not verified", async () => {
     mockUseAuth.mockReturnValue({
       user: mockUser as never,
       loading: false,
@@ -125,10 +146,10 @@ describe('Email verification — login page rendering', () => {
     await waitFor(() =>
       expect(screen.getByText(/check your inbox/i)).toBeInTheDocument(),
     );
-    expect(screen.queryByRole('button', { name: /sign in/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /sign in/i })).toBeNull();
   });
 
-  it('does not show the verification screen when the user email is verified', async () => {
+  it("does not show the verification screen when the user email is verified", async () => {
     mockUseAuth.mockReturnValue({
       user: mockUser as never,
       loading: false,
@@ -139,7 +160,7 @@ describe('Email verification — login page rendering', () => {
     expect(screen.queryByText(/check your inbox/i)).toBeNull();
   });
 
-  it('does not show the verification screen for OAuth users (emailVerified is always true)', async () => {
+  it("does not show the verification screen for OAuth users (emailVerified is always true)", async () => {
     mockUseAuth.mockReturnValue({
       user: mockUser as never,
       loading: false,
@@ -153,11 +174,11 @@ describe('Email verification — login page rendering', () => {
 
 // ─── Button behaviours ────────────────────────────────────────────────────────
 
-describe('Email verification — verification screen buttons', () => {
+describe("Email verification — verification screen buttons", () => {
   it('"Resend email" calls sendEmailVerification and shows a success message', async () => {
     await renderVerificationScreen();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /resend email/i }));
+      fireEvent.click(screen.getByRole("button", { name: /resend email/i }));
     });
     await waitFor(() =>
       expect(mockSendEmailVerification).toHaveBeenCalledOnce(),
@@ -172,7 +193,7 @@ describe('Email verification — verification screen buttons', () => {
     });
     const { onVerified } = await renderVerificationScreen();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /check again/i }));
+      fireEvent.click(screen.getByRole("button", { name: /check again/i }));
     });
     await waitFor(() => expect(onVerified).toHaveBeenCalledOnce());
   });
@@ -181,7 +202,7 @@ describe('Email verification — verification screen buttons', () => {
     mockCurrentUser.emailVerified = false;
     await renderVerificationScreen();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /check again/i }));
+      fireEvent.click(screen.getByRole("button", { name: /check again/i }));
     });
     await waitFor(() =>
       expect(screen.getByText(/not verified yet/i)).toBeInTheDocument(),
@@ -191,7 +212,7 @@ describe('Email verification — verification screen buttons', () => {
   it('"Sign out" button calls signOut', async () => {
     const { onSignOut } = await renderVerificationScreen();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /sign out/i }));
+      fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
     });
     await waitFor(() => expect(mockSignOut).toHaveBeenCalledOnce());
     expect(onSignOut).toHaveBeenCalledOnce();
@@ -200,8 +221,8 @@ describe('Email verification — verification screen buttons', () => {
 
 // ─── Login page — Check again flow ───────────────────────────────────────────
 
-describe('Email verification — login page Check again flow', () => {
-  it('calls refreshEmailVerified then navigates when Check again confirms verification', async () => {
+describe("Email verification — login page Check again flow", () => {
+  it("calls refreshEmailVerified then navigates when Check again confirms verification", async () => {
     mockUseAuth.mockReturnValue({
       user: mockUser as never,
       loading: false,
@@ -219,19 +240,19 @@ describe('Email verification — login page Check again flow', () => {
     );
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /check again/i }));
+      fireEvent.click(screen.getByRole("button", { name: /check again/i }));
     });
 
     await waitFor(() =>
       expect(mockRefreshEmailVerified).toHaveBeenCalledOnce(),
     );
-    expect(mockReplace).toHaveBeenCalledWith('/');
+    expect(mockReplace).toHaveBeenCalledWith("/");
   });
 });
 
 // ─── Auth action page ─────────────────────────────────────────────────────────
 
-const { useSearchParams } = await import('next/navigation');
+const { useSearchParams } = await import("next/navigation");
 const mockUseSearchParams = vi.mocked(useSearchParams);
 
 function makeSearchParams(params: Record<string, string>) {
@@ -239,7 +260,7 @@ function makeSearchParams(params: Record<string, string>) {
 }
 
 async function renderActionPage() {
-  const { default: AuthActionPage } = await import('@/app/auth/action/page');
+  const { default: AuthActionPage } = await import("@/app/auth/action/page");
   await act(async () => {
     render(
       <Suspense fallback={null}>
@@ -249,34 +270,34 @@ async function renderActionPage() {
   });
 }
 
-describe('Auth action page — email verification', () => {
-  it('shows loading state initially', async () => {
+describe("Auth action page — email verification", () => {
+  it("shows loading state initially", async () => {
     mockApplyActionCode.mockReturnValue(new Promise(() => {}));
     mockUseSearchParams.mockReturnValue(
-      makeSearchParams({ mode: 'verifyEmail', oobCode: 'abc123' }),
+      makeSearchParams({ mode: "verifyEmail", oobCode: "abc123" }),
     );
     await renderActionPage();
     expect(screen.getByText(/verifying/i)).toBeInTheDocument();
   });
 
-  it('shows success state after applyActionCode resolves', async () => {
+  it("shows success state after applyActionCode resolves", async () => {
     mockApplyActionCode.mockResolvedValue(undefined);
     mockUseSearchParams.mockReturnValue(
-      makeSearchParams({ mode: 'verifyEmail', oobCode: 'abc123' }),
+      makeSearchParams({ mode: "verifyEmail", oobCode: "abc123" }),
     );
     await renderActionPage();
     await waitFor(() =>
       expect(screen.getByText(/email verified/i)).toBeInTheDocument(),
     );
     expect(
-      screen.getByRole('button', { name: /go to app/i }),
+      screen.getByRole("button", { name: /go to app/i }),
     ).toBeInTheDocument();
   });
 
-  it('calls refreshEmailVerified after applyActionCode so the auth context is updated', async () => {
+  it("calls refreshEmailVerified after applyActionCode so the auth context is updated", async () => {
     mockApplyActionCode.mockResolvedValue(undefined);
     mockUseSearchParams.mockReturnValue(
-      makeSearchParams({ mode: 'verifyEmail', oobCode: 'abc123' }),
+      makeSearchParams({ mode: "verifyEmail", oobCode: "abc123" }),
     );
     await renderActionPage();
     await waitFor(() =>
@@ -284,21 +305,21 @@ describe('Auth action page — email verification', () => {
     );
   });
 
-  it('shows error state when applyActionCode rejects', async () => {
-    mockApplyActionCode.mockRejectedValue(new Error('expired'));
+  it("shows error state when applyActionCode rejects", async () => {
+    mockApplyActionCode.mockRejectedValue(new Error("expired"));
     mockUseSearchParams.mockReturnValue(
-      makeSearchParams({ mode: 'verifyEmail', oobCode: 'abc123' }),
+      makeSearchParams({ mode: "verifyEmail", oobCode: "abc123" }),
     );
     await renderActionPage();
     await waitFor(() =>
       expect(screen.getByText(/link invalid/i)).toBeInTheDocument(),
     );
     expect(
-      screen.getByRole('button', { name: /go to sign in/i }),
+      screen.getByRole("button", { name: /go to sign in/i }),
     ).toBeInTheDocument();
   });
 
-  it('shows error state when mode or oobCode is missing', async () => {
+  it("shows error state when mode or oobCode is missing", async () => {
     mockUseSearchParams.mockReturnValue(makeSearchParams({}));
     await renderActionPage();
     await waitFor(() =>

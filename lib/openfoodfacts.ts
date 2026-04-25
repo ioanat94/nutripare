@@ -1,10 +1,10 @@
 import type {
   OFFProductResponse,
   ProductNutrition,
-} from '@/types/openfoodfacts';
+} from "@/types/openfoodfacts";
 
 function isValidEanCheckDigit(code: string): boolean {
-  const digits = code.split('').map(Number);
+  const digits = code.split("").map(Number);
   const check = digits.pop()!;
   const sum = digits
     .reverse()
@@ -19,7 +19,7 @@ export function parseEanInput(raw: string): {
   const tokens = [
     ...new Set(
       raw
-        .split(',')
+        .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
     ),
@@ -36,15 +36,15 @@ export function parseEanInput(raw: string): {
   return { valid, invalid };
 }
 
-function resolveProductName(product: OFFProductResponse['product']): string {
-  if (!product) return '';
+function resolveProductName(product: OFFProductResponse["product"]): string {
+  if (!product) return "";
   if (product.product_name) return product.product_name;
   if (product.product_name_en) return product.product_name_en;
   if (product.product_name_fi) return product.product_name_fi;
   const fallback = Object.entries(product).find(
-    ([k, v]) => k.startsWith('product_name_') && typeof v === 'string' && v,
+    ([k, v]) => k.startsWith("product_name_") && typeof v === "string" && v,
   );
-  return fallback ? (fallback[1] as string) : '';
+  return fallback ? (fallback[1] as string) : "";
 }
 
 export function mapProduct(
@@ -55,12 +55,12 @@ export function mapProduct(
   return {
     code,
     product_name: resolveProductName(raw.product),
-    kcals: n['energy-kcal_100g'],
+    kcals: n["energy-kcal_100g"],
     protein: n.proteins_100g,
     carbohydrates: n.carbohydrates_100g,
     sugar: n.sugars_100g,
     fat: n.fat_100g,
-    saturated_fat: n['saturated-fat_100g'],
+    saturated_fat: n["saturated-fat_100g"],
     fiber: n.fiber_100g,
     salt: n.salt_100g,
   };
@@ -86,7 +86,7 @@ export async function fetchProducts(
     const batch = codes.slice(i, i + concurrency);
     const settled = await Promise.allSettled(batch.map(fetchProduct));
     settled.forEach((result, j) => {
-      if (result.status === 'fulfilled' && result.value !== null) {
+      if (result.status === "fulfilled" && result.value !== null) {
         fetched.push(result.value);
       } else {
         notFound.push(batch[j]);

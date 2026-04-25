@@ -38,6 +38,8 @@ function resolveKey(obj: Record<string, unknown>, key: string): string {
   return typeof cur === "string" ? cur : key;
 }
 
+const translatorCache = new Map<string, ReturnType<typeof makeTranslator>>();
+
 function makeTranslator(namespace: string) {
   const ns = (enMessages as Record<string, unknown>)[namespace] as
     | Record<string, unknown>
@@ -90,9 +92,17 @@ function makeTranslator(namespace: string) {
   return t;
 }
 
+function getTranslator(namespace: string) {
+  if (!translatorCache.has(namespace)) {
+    translatorCache.set(namespace, makeTranslator(namespace));
+  }
+
+  return translatorCache.get(namespace)!;
+}
+
 // Mock next-intl so components work without NextIntlClientProvider in tests
 vi.mock("next-intl", () => ({
-  useTranslations: (namespace: string) => makeTranslator(namespace),
+  useTranslations: (namespace: string) => getTranslator(namespace),
   useLocale: () => "en",
   useMessages: () => enMessages,
 }));

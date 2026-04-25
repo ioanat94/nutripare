@@ -21,7 +21,7 @@
     "hero": {
       "title1": "Tiedä mitä syöt.",
       "title2": "Oikeasti.",
-      "description": "Skannaa tai syötä viivakoodi ja saat selkeät ravintotiedot sekunneissa. Vertaile tuotteita, havaitse oleellinen ja tee parempia valintoja — ilman arvausta.",
+      "description": "Skannaa tai syötä viivakoodi ja saat selkeät ravintotiedot sekunneissa. Vertaile tuotteita, havaitse oleellinen ero ja tee parempia valintoja — ilman arvausta.",
       "startComparing": "Aloita vertailu →",
       "howItWorks": "Miten se toimii"
     },
@@ -48,8 +48,8 @@
       }
     },
     "benefits": {
-      "title": "Entistä parempi tilillä",
-      "subtitle": "Nutripare on ilmainen — ei luottokorttia, ei piiloja.",
+      "title": "Entistä parempi tilin kanssa",
+      "subtitle": "Nutripare on ilmainen — ei luottokorttia, ei jujuja.",
       "items": {
         "saveProducts": {
           "title": "Tallenna tuotteet",
@@ -428,15 +428,15 @@
       "overview": {
         "title": "Yleiskatsaus",
         "p1": "Nutriparen avulla voit hakea elintarvikkeita EAN-viivakoodilla, näyttää niiden ravintosisällöt rinnakkain ja korostaa eroja konfiguroitavien sääntöjen perusteella. Syötä yksi tai useampi viivakoodi Vertailu-sivulle ja näe välittömästi miten tuotteet vertautuvat toisiinsa proteiinin, sokerin, rasvan, suolan ja muiden ravintoaineiden suhteen.",
-        "p2": "Tuotetiedot tulevat <link>Open Food Facts</link> -tietokannasta, ilmaisesta yhteisöllisestä tietokannasta, jota vapaaehtoiset ylläpitävät. Arvot voivat olla puutteellisia tai epätarkkoja — tarkista aina tärkeät tiedot fyysisestä tuoteetiketistä."
+        "p2": "Tuotetiedot tulevat <link>Open Food Facts</link> ilmaisesta tietokannasta, joka on yhteisön vapaaehtoisesti ylläpitämä. Arvot voivat olla puutteellisia tai epätarkkoja — tarkista aina tärkeät tiedot fyysisestä tuote-etiketistä."
       },
       "searching": {
         "title": "Tuotteiden hakeminen",
         "p1": "EAN-viivakoodit syötetään hakukenttään Vertailu-sivulla. Kelvollisten koodien pituus on 8, 12 tai 13 numeroa — lyhyemmät tai pidemmät arvot hylätään välittömästi.",
-        "p2": "Voit syöttää yhden EAN:n yhden tuotteen hakemiseen tai useita EAN-koodeja kerralla erottamalla ne pilkuilla: <example>5000112637922, 8076809513388</example>. Ensimmäisen tuotteen lataamisen jälkeen lisää tuotteita voi lisätä yksitellen tai useina samalla syöttökentällä — ne lisätään uusina sarakkeina taulukkoon.",
+        "p2": "Voit syöttää yhden EAN:n yhden tuotteen hakemiseen tai useita EAN-koodeja kerralla erottamalla ne pilkuilla: <example>5000112637922, 8076809513388</example>. Ensimmäisen tuotteen lataamisen jälkeen lisää tuotteita voi lisätä yksitellen tai yhtäaikaisesti samalla syöttökentällä — ne lisätään uusina sarakkeina taulukkoon.",
         "p3Pre": "",
         "p3Mid": "Viivakoodiskannerin painike",
-        "p3Post": " avaa laitteen kameran fyysisen viivakoodin skannaamiseksi. Heikkolaatuiset webkamerat voivat tuottaa epäjohdonmukaisia tuloksia, joten manuaalinen syöttö on suositeltava vaihtoehto, jos skannaus on epäluotettavaa.",
+        "p3Post": " avaa laitteen kameran fyysisen viivakoodin skannaamiseksi. Heikkolaatuiset webkamerat voivat tuottaa epäjohdonmukaisia tuloksia, joten manuaalinen syöttö on suositeltava vaihtoehto, jos skannaus toimii epäluotettavasti.",
         "errors": "Kaksi virheilmoitusta näytetään keltaisella syöttökentän alla:",
         "invalidFormat": "Virheellinen EAN-muoto",
         "invalidFormatDesc": "koodi ei ole kelvollinen 8-, 12- tai 13-numeroinen EAN.",
@@ -474,9 +474,9 @@
         "crownDesc": "näkyy parhaassa arvossa tuotteiden välillä ravintoaineelle, jolla on \"erinomainen\"-sääntö.",
         "flag": "Punainen lippu (🚩)",
         "flagDesc": "näkyy heikoimmassa arvossa tuotteiden välillä ravintoaineelle, jolla on \"huono\"-sääntö.",
-        "emojiNote": "Emojit näkyvät vain kahta tai useampaa tuotetta vertailtaessa, ja ne voi piilottaa asetuksissa.",
+        "emojiNote": "Emojit näkyvät vain kahta tai useampaa tuotetta vertailtaessa, ja ne voi piilottaa asetuksista.",
         "defaultThresholds": "Oletuskynnysarvot",
-        "defaultThresholdsDesc": "Sovellukseen on sisäänrakennettu oletussääntöjoukko, joka perustuu <highlight>Ison-Britannian elintarviketurvallisuusviraston (FSA) 100 g kohti laskettuihin liikennevalokynnyksiin</highlight>. Nämä oletukset koskevat kirjautumattomia käyttäjiä ja kirjautuneita käyttäjiä, jotka eivät ole vielä mukauttaneet asetuksiaan.",
+        "defaultThresholdsDesc": "Sovellukseen on sisäänrakennettu oletussääntöjoukko, joka perustuu <highlight>Ison-Britannian elintarviketurvallisuusviraston (FSA) 100 g kohti laskettuihin liikennevalo-kynnysarvoihin</highlight>. Nämä oletukset koskevat kirjautumattomia käyttäjiä sekä kirjautuneita käyttäjiä, jotka eivät ole vielä mukauttaneet asetuksiaan.",
         "fsaHighlight": "Yhdistyneen kuningaskunnan elintarviketurvallisuusviraston (FSA) per-100g-liikennevalokynnyksiin",
         "tableHeaders": {
           "nutrient": "Ravintoaine",
@@ -487,14 +487,14 @@
         "builtinRulesets": "Sisäänrakennetut sääntöjoukot",
         "builtinRulesetsDesc": "Oletussääntöjoukon lisäksi sovellukseen on sisäänrakennettu viisi kohdennettua sääntöjoukkoa. Jokainen pisteyttää tuotteet tietyn ravitsemuksellisen tavoitteen perusteella.",
         "sorting": "Lajittelu",
-        "sortingDesc": "Klikkaamalla rivin nimeä lajitellaan kaikki tuotesarakkeet kyseisen ravintoaineen mukaan, suurimmasta pienimpään. Klikkaamalla uudelleen käännetään lajittelu. Aktiivinen lajittelusarake on korostettu ja näyttää nuoli-indikaattorin.",
-        "computedScore": "Laskettu pisteet",
-        "computedScoreDesc": "Yksi 0–100 pisteet aktiivisesta sääntöjoukosta laskettuna näkyy taulukon alaosassa. Se heijastaa, kuinka hyvin tuote suoriutuu kaikista säännöistä — positiiviset säännöt nostavat pisteitä, negatiiviset laskevat. Viemällä hiiren ohjeen kuvakkeen päälle näytetään lyhyt työkaluvinkki.",
+        "sortingDesc": "Rivin nimen klikkaus lajittelee kaikki tuotesarakkeet kyseisen ravintoaineen mukaan, suurimmasta pienimpään. Klikkaamalla uudelleen käännetään lajittelu. Aktiivinen lajittelusarake on korostettu ja näyttää nuoli-indikaattorin.",
+        "computedScore": "Lasketut pisteet",
+        "computedScoreDesc": "Yksi 0–100 pisteytys aktiivisesta sääntöjoukosta laskettuna näkyy taulukon alaosassa. Se heijastaa, kuinka hyvin tuote suoriutuu kaikista säännöistä — positiiviset säännöt nostavat pisteitä, negatiiviset laskevat. Viemällä hiiren ohjeen kuvakkeen päälle näytetään lyhyt työkaluvinkki.",
         "scoreFormula": "Pisteet lasketaan seuraavasti:",
-        "scoreStep1": "Jokaiselle säännölle, joka laukeaa (tuotteen arvo täyttää säännön ehdon), lasketaan painotettu panos. Paino riippuu arvioinnista: Erinomainen = +3, Hyvä = +1, Huolestuttava = −1, Huono = −3.",
+        "scoreStep1": "Jokaiselle säännölle, joka käynnistyy (tuotteen arvo täyttää säännön ehdon), lasketaan painotettu panos. Paino riippuu arvioinnista: Erinomainen = +3, Hyvä = +1, Huolestuttava = −1, Huono = −3.",
         "scoreStep2": "Panosta skaalataan sen mukaan, kuinka paljon arvo ylittää kynnyksen: <formula>weight × log(1 + distance / max(threshold, 1))</formula>, jossa etäisyys on <distance>|value − threshold|</distance>.",
-        "scoreStep3": "Kaikki panokset lasketaan yhteen raakaPisteksi, joka sitten muunnetaan 0–100 alueelle kaavalla: <formula>round(50 × (1 + tanh(rawScore / 3)))</formula>, rajattuna [0, 100] välille.",
-        "scoreNote": "50 pistettä on neutraali (ei sääntöjä laukea). Yli 50 pistettä osoittaa yleisesti terveellistä profiilia aktiivisen sääntöjoukon mukaan; alle 50 pistettä osoittaa päinvastaista. Ravintoaineet, joilta puuttuu arvot, ohitetaan eivätkä vaikuta pisteisiin."
+        "scoreStep3": "Kaikki panokset lasketaan yhteen raaka-pisteeksi, joka sitten muunnetaan 0–100 alueelle kaavalla: <formula>round(50 × (1 + tanh(rawScore / 3)))</formula>, rajattuna [0, 100] välille.",
+        "scoreNote": "50 pistettä on neutraali (sääntöjä ei käynnisty). Yli 50 pistettä osoittaa yleisesti terveellistä profiilia aktiivisen sääntöjoukon mukaan; alle 50 pistettä osoittaa päinvastaista. Ravintoaineet, joilta puuttuu arvot, ohitetaan eivätkä vaikuta pisteisiin."
       },
       "tableActions": {
         "title": "Taulukon toiminnot",
@@ -524,7 +524,7 @@
         "title": "Tuotteiden ja vertailujen tallentaminen",
         "p1": "Kirjautuneet käyttäjät voivat tallentaa yksittäisiä tuotteita sarakekohtaisen valikon kautta. Tallennetut tuotteet löytyvät Asetukset-kohdan Tuotteet-välilehdeltä.",
         "p2": "Kirjautuneet käyttäjät voivat tallentaa kahden tai useamman tuotteen nykyisen joukon nimettynä vertailuna. Valintaikkuna pyytää nimeä (esitäytettynä ehdotuksella). Tallennetut vertailut näkyvät Asetukset-kohdan Vertailut-välilehdellä.",
-        "p3": "Kun tallennettu vertailu ladataan (Vertailut-välilehden tai jaetun URL:n kautta), taulukko näyttää sen nimen ja seuraa onko tuotteita muutettu lataamisen jälkeen. Jos muutettu, <icon></icon> valikko tarjoaa <update>Päivitä vertailu</update> (ylikirjoita) tai <saveAsNew>Tallenna uutena vertailuna</saveAsNew>.",
+        "p3": "Kun tallennettu vertailu ladataan (Vertailut-välilehden tai jaetun URL:n kautta), taulukko näyttää sen nimen ja seuraa onko tuotteita muutettu lataamisen jälkeen. Jos niitä on muutettu, <icon></icon> valikko tarjoaa <update>Päivitä vertailu</update> (korvaa) tai <saveAsNew>Tallenna uutena vertailuna</saveAsNew>.",
         "p4": "Tallennetun vertailun poistamiseksi taulukkonäkymästä käytä <delete>Poista vertailu</delete> <icon></icon> valikossa. Yksittäisen tuotteen tallennuksen poistamiseen käytä <unsave>Poista tallennus</unsave> sarakekohtaisessa valikossa."
       },
       "settingsAccount": {
@@ -599,7 +599,7 @@
         }
       },
       "faq": {
-        "title": "UKK",
+        "title": "FAQ",
         "scanning": "Skannaus ja tuotteet",
         "questions": {
           "barcodeNotRecognized": {
@@ -608,7 +608,7 @@
           },
           "dataSource": {
             "q": "Mistä tuotetiedot tulevat?",
-            "a": "Kaikki tuotetiedot tulevat <link>Open Food Facts</link> -tietokannasta, ilmaisesta yhteisöllisestä tietokannasta, jota vapaaehtoiset ympäri maailman ylläpitävät. Arvot voivat olla puutteellisia tai epätarkkoja — tarkista aina tärkeät ravitsemustiedot fyysisestä tuoteetiketistä."
+            "a": "Kaikki tuotetiedot tulevat <link>Open Food Facts</link> ilmaisesta tietokannasta, joka on yhteisön vapaaehtoisesti ylläpitämä. Arvot voivat olla puutteellisia tai epätarkkoja — tarkista aina tärkeät ravitsemustiedot fyysisestä tuote-etiketistä."
           },
           "missingProduct": {
             "q": "Voinko lisätä tuotteen, joka ei ole tietokannassa?",
@@ -664,7 +664,7 @@
             "a": "Mene Asetukset → Tili ja käytä Poista tili -painiketta. Tämä poistaa pysyvästi tilisi ja kaikki siihen liittyvät tiedot välittömästi."
           },
           "exportData": {
-            "q": "Voinko viedä tietoni?",
+            "q": "Voinko ladata tietoni?",
             "a": "Kyllä — Asetukset → Tili -kohdassa käytä Lataa tiedot -painiketta saadaksesi täydellisen JSON-viennin tilitiedoistasi, tallennetuista tuotteista, vertailuista ja ravitsemusasetuksista."
           },
           "rulesetLost": {
@@ -700,7 +700,7 @@
     "saturated_fat": "Tyydyttynyt rasva (g)",
     "fiber": "Kuitu (g)",
     "salt": "Suola (g)",
-    "computed_score": "Laskettu pisteet"
+    "computed_score": "Lasketut pisteet"
   },
   "rulesets": {
     "default": {
@@ -721,7 +721,7 @@
     },
     "low-fat": {
       "name": "Vähärasvainen",
-      "description": "Keskittyy rasva- ja tyydyttyneen rasvan pitoisuuteen."
+      "description": "Keskittyy rasvan ja tyydyttyneen rasvan pitoisuuteen."
     },
     "low-salt": {
       "name": "Vähäsuolainen",
@@ -745,6 +745,6 @@
     "settings-products": "Asetukset — Tuotteet",
     "settings-comparisons": "Asetukset — Vertailut",
     "account-features": "Kirjautunut vs. kirjautumaton",
-    "faq": "UKK"
+    "faq": "FAQ"
   }
 }

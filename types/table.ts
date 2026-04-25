@@ -1,6 +1,6 @@
 type CellData = {
   value: string;
   className: string;
-  emoji: '👑' | '🚩' | null;
+  emoji: "👑" | "🚩" | null;
 };
-export type RowData = { label: string; cells: CellData[] };
+export type RowData = { label: string; key?: string; cells: CellData[] };

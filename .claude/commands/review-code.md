@@ -21,6 +21,7 @@ Review ONLY the code in scope. Do not analyze, reference, or make assumptions ab
 ## Project Context
 
 This is a Next.js 16 App Router + React 19 application using:
+
 - TypeScript 5 in strict mode
 - Tailwind CSS v4 via PostCSS (theme tokens defined with `oklch` in `globals.css`, dark mode via `.dark` class)
 - Vitest + `@testing-library/react` + `@testing-library/jest-dom` (jsdom environment, globals enabled)
@@ -35,39 +36,46 @@ This is a Next.js 16 App Router + React 19 application using:
 For each issue found, categorize it as one of:
 
 ### 1. Clarity & Readability
+
 - Is the code self-documenting?
 - Are complex logic blocks adequately commented?
 - Is the control flow easy to follow?
 - Are there deeply nested conditionals that could be flattened?
 
 ### 2. Naming
+
 - Do variable/function/component names clearly convey intent?
 - Are names consistent with project conventions?
 - Are abbreviations avoided unless universally understood?
 - Do boolean variables/functions use is/has/should/can prefixes?
 
 ### 3. Duplication
+
 - Is there repeated code that could be extracted into a utility or component?
 - Are there copy-pasted patterns with minor variations?
 - Only flag duplication if extraction would genuinely reduce complexity
 
 ### 4. Error Handling
+
 - Are errors caught and handled appropriately?
 - Are error messages descriptive and actionable?
 - Are async operations properly handling rejection cases?
 - Are there silent failures that could cause debugging nightmares?
 
 ### 5. Secrets & Security
+
 - Are there hardcoded secrets, API keys, or credentials?
 - Is sensitive data being logged or exposed?
 - Are environment variables used correctly for configuration?
 
 ### 6. Input Validation
+
 - Are user inputs validated before processing?
 - Are type guards used appropriately for runtime safety?
 - Are edge cases (null, undefined, empty arrays) handled?
 
 ### 7. Performance
+
 - Are there unnecessary re-renders in React components?
 - Are expensive computations memoized when appropriate?
 - Are there obvious N+1 patterns or inefficient loops?
@@ -77,7 +85,7 @@ For each issue found, categorize it as one of:
 
 Structure your review as follows:
 
-```
+````
 ## Summary
 [Brief 1-2 sentence overview of code quality and main findings]
 
@@ -90,11 +98,12 @@ Structure your review as follows:
 **Current Code:**
 ```typescript
 [relevant code snippet]
-```
+````
 
 **Issue:** [Clear explanation of the problem]
 
 **Suggested Fix:**
+
 ```typescript
 [refactored code]
 ```
@@ -106,10 +115,13 @@ Structure your review as follows:
 [Repeat for each issue]
 
 ## Positive Observations
+
 [Note 1-2 things done well, if applicable]
 
 ## Final Verdict
+
 [Ready to merge / Needs minor fixes / Needs significant revision]
+
 ```
 
 ## Review Principles
@@ -137,3 +149,4 @@ Structure your review as follows:
 - Issues in code outside the review scope
 
 Begin by confirming the review scope, then proceed systematically through each category.
+```

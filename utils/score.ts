@@ -1,6 +1,6 @@
-import { COMPUTED_SCORE_KEY } from './constants';
-import type { NutritionRule } from '@/types/firestore';
-import type { ProductNutrition } from '@/types/openfoodfacts';
+import { COMPUTED_SCORE_KEY } from "./constants";
+import type { NutritionRule } from "@/types/firestore";
+import type { ProductNutrition } from "@/types/openfoodfacts";
 
 const RATING_WEIGHT: Record<string, number> = {
   positive: 3,
@@ -24,7 +24,7 @@ export function computeScore(
     if (value === undefined || isNaN(value)) continue;
 
     const fires =
-      rule.direction === 'above' ? value > rule.value : value < rule.value;
+      rule.direction === "above" ? value > rule.value : value < rule.value;
     if (!fires) continue;
 
     const distance = Math.abs(value - rule.value);

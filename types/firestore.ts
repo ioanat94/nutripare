@@ -16,11 +16,11 @@ export interface SavedComparison {
   rulesetId?: string;
 }
 
-export type ThresholdColor = 'positive' | 'info' | 'warning' | 'negative';
+export type ThresholdColor = "positive" | "info" | "warning" | "negative";
 
 export interface NutritionRule {
   nutrient: string;
-  direction: 'above' | 'below';
+  direction: "above" | "below";
   value: number;
   rating: ThresholdColor;
 }
@@ -39,11 +39,11 @@ export interface NutritionSettings {
   rowOrder?: string[];
 }
 
-export type ReportStatus = 'open' | 'solved' | 'dismissed';
-export type ReportReason = 'incorrect data' | 'missing product';
+export type ReportStatus = "open" | "solved" | "dismissed";
+export type ReportReason = "incorrect data" | "missing product";
 export interface Report {
   code: string;
-  date: import('firebase/firestore').Timestamp;
+  date: import("firebase/firestore").Timestamp;
   reason: ReportReason;
   status: ReportStatus;
 }

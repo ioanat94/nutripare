@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   AlertDialog,
@@ -7,14 +7,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 import {
   ExternalLink,
   Loader2,
   ScanBarcode,
   TriangleAlert,
-} from 'lucide-react';
-import { Suspense, useEffect, useState } from 'react';
+} from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
 import {
   deleteComparisonById,
   deleteProduct,
@@ -25,26 +25,28 @@ import {
   saveProduct,
   updateComparisonEans,
   updateComparisonRuleset,
-} from '@/lib/firestore';
+} from "@/lib/firestore";
 import {
   fetchProduct,
   fetchProducts,
   parseEanInput,
-} from '@/lib/openfoodfacts';
-import { useRouter, useSearchParams } from 'next/navigation';
+} from "@/lib/openfoodfacts";
+import { useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import type { NutritionSettings } from '@/types/firestore';
-import { NutritionTable } from '@/components/nutrition-table';
-import type { ProductNutrition } from '@/types/openfoodfacts';
-import dynamic from 'next/dynamic';
-import { getDefaultRules } from '@/utils/getDefaultRules';
-import { submitReport } from '@/lib/reports';
-import { toast } from 'sonner';
-import { useAuth } from '@/contexts/auth-context';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { NutritionSettings } from "@/types/firestore";
+import { NutritionTable } from "@/components/nutrition-table";
+import type { ProductNutrition } from "@/types/openfoodfacts";
+import dynamic from "next/dynamic";
+import { getDefaultRules } from "@/utils/getDefaultRules";
+import { submitReport } from "@/lib/reports";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/auth-context";
+import { useTranslations } from "next-intl";
 
-const BarcodeScanner = dynamic(() => import('@/components/barcode-scanner'), {
+const BarcodeScanner = dynamic(() => import("@/components/barcode-scanner"), {
   ssr: false,
 });
 
@@ -65,7 +67,8 @@ function ComparePageContent() {
   const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [input, setInput] = useState('');
+  const t = useTranslations("ComparePage");
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<ProductNutrition[]>([]);
   const [notFoundCodes, setNotFoundCodes] = useState<string[]>([]);
@@ -85,7 +88,7 @@ function ComparePageContent() {
     null,
   );
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [saveDialogName, setSaveDialogName] = useState('');
+  const [saveDialogName, setSaveDialogName] = useState("");
   const [reportCode, setReportCode] = useState<string | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [nutritionSettings, setNutritionSettings] = useState<
@@ -100,12 +103,12 @@ function ComparePageContent() {
     }
     getNutritionSettings(user.id).then((settings) => {
       setNutritionSettings(settings);
-      setSelectedRulesetId(settings?.rulesets[0]?.id ?? 'default');
+      setSelectedRulesetId(settings?.rulesets[0]?.id ?? "default");
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, authLoading]);
 
-  const productCodesKey = products.map((p) => p.code).join(',');
+  const productCodesKey = products.map((p) => p.code).join(",");
   useEffect(() => {
     if (!user || products.length === 0) return;
     const codes = products.map((p) => p.code);
@@ -130,7 +133,7 @@ function ComparePageContent() {
   const settingsLoaded = nutritionSettings !== undefined;
   useEffect(() => {
     if (!settingsLoaded) return;
-    const codes = searchParams?.get('codes');
+    const codes = searchParams?.get("codes");
     if (codes) runSearch(codes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settingsLoaded]);
@@ -156,9 +159,9 @@ function ComparePageContent() {
     setInvalidCodes(invalid);
     setNotFoundCodes(notFound);
     notFound.forEach((code) =>
-      submitReport(code, 'missing product').catch(() => {}),
+      submitReport(code, "missing product").catch(() => {}),
     );
-    setInput('');
+    setInput("");
     setLoading(false);
   }
 
@@ -191,8 +194,8 @@ function ComparePageContent() {
     setSavedProductCodes(new Set());
     setSavedComparisonId(null);
     setLoadedComparison(null);
-    if (searchParams?.get('codes'))
-      router.replace('/compare', { scroll: false });
+    if (searchParams?.get("codes"))
+      router.replace("/compare", { scroll: false });
   }
 
   async function handleSaveProduct(code: string) {
@@ -203,13 +206,13 @@ function ComparePageContent() {
     try {
       await saveProduct(user.id, { name, ean: code });
       setSavedProductCodes((prev) => new Set(prev).add(code));
-      toast.success('Product saved');
+      toast.success(t("toast.productSaved"));
     } catch (e) {
-      if (e instanceof Error && e.message === 'DUPLICATE') {
+      if (e instanceof Error && e.message === "DUPLICATE") {
         setSavedProductCodes((prev) => new Set(prev).add(code));
-        toast.info('Product already saved');
+        toast.info(t("toast.productAlreadySaved"));
       } else {
-        toast.error('Failed to save product');
+        toast.error(t("toast.productSaveFailed"));
       }
     }
   }
@@ -223,15 +226,15 @@ function ComparePageContent() {
         next.delete(code);
         return next;
       });
-      toast.success('Product removed');
+      toast.success(t("toast.productRemoved"));
     } catch {
-      toast.error('Failed to remove product');
+      toast.error(t("toast.productRemoveFailed"));
     }
   }
 
   function handleSaveComparison() {
     if (!user) return;
-    const firstName = products[0]?.product_name || products[0]?.code || '';
+    const firstName = products[0]?.product_name || products[0]?.code || "";
     const defaultName =
       products.length > 1
         ? `${firstName} + ${products.length - 1} others`
@@ -250,21 +253,21 @@ function ComparePageContent() {
       setSaveDialogOpen(false);
       if (selectedRulesetId) {
         updateComparisonRuleset(user.id, id, selectedRulesetId).catch(() => {
-          toast.error('Failed to update ruleset');
+          toast.error(t("toast.rulesetUpdateFailed"));
         });
       }
-      toast.success('Comparison saved');
+      toast.success(t("toast.comparisonSaved"));
     } catch (e) {
-      if (e instanceof Error && e.message === 'DUPLICATE') {
+      if (e instanceof Error && e.message === "DUPLICATE") {
         const existing = await findSavedComparison(user.id, eans);
         if (existing) {
           setSavedComparisonId(existing.id);
           setLoadedComparison({ id: existing.id, name: existing.name });
         }
         setSaveDialogOpen(false);
-        toast.info('Comparison already saved');
+        toast.info(t("toast.comparisonAlreadySaved"));
       } else {
-        toast.error('Failed to save comparison');
+        toast.error(t("toast.comparisonSaveFailed"));
       }
     }
   }
@@ -275,9 +278,9 @@ function ComparePageContent() {
     try {
       await updateComparisonEans(user.id, loadedComparison.id, eans);
       setSavedComparisonId(loadedComparison.id);
-      toast.success('Comparison updated');
+      toast.success(t("toast.comparisonUpdated"));
     } catch {
-      toast.error('Failed to update comparison');
+      toast.error(t("toast.comparisonUpdateFailed"));
     }
   }
 
@@ -289,9 +292,9 @@ function ComparePageContent() {
       await deleteComparisonById(user.id, targetId);
       setSavedComparisonId(null);
       setLoadedComparison(null);
-      toast.success('Comparison removed');
+      toast.success(t("toast.comparisonRemoved"));
     } catch {
-      toast.error('Failed to remove comparison');
+      toast.error(t("toast.comparisonRemoveFailed"));
     }
   }
 
@@ -299,7 +302,7 @@ function ComparePageContent() {
     setSelectedRulesetId(id);
     if (!user || !savedComparisonId) return;
     updateComparisonRuleset(user.id, savedComparisonId, id).catch(() => {
-      toast.error('Failed to update ruleset');
+      toast.error(t("toast.rulesetUpdateFailed"));
     });
   }
 
@@ -315,7 +318,7 @@ function ComparePageContent() {
       const product = await fetchProduct(code);
       if (product === null) {
         setNotFoundCodes([code]);
-        submitReport(code, 'missing product').catch(() => {});
+        submitReport(code, "missing product").catch(() => {});
       } else {
         setProducts((prev) => replaceOrAppend(prev, product));
         setNotFoundCodes([]);
@@ -329,53 +332,50 @@ function ComparePageContent() {
 
   const rulesets = nutritionSettings
     ? (nutritionSettings.rulesets ?? [
-        { id: 'default', name: 'Default', rules: getDefaultRules() },
+        { id: "default", name: "Default", rules: getDefaultRules() },
       ])
     : undefined;
 
   return (
-    <main className='mx-auto w-full max-w-262 px-6 py-12'>
+    <main className="mx-auto w-full max-w-262 px-6 py-12">
       {/* Header */}
-      <div className='mb-8'>
-        <h1 className='text-3xl font-bold tracking-tight'>Compare products</h1>
-        <p className='mt-1.5 text-muted-foreground'>
-          Enter EAN barcodes to see nutritional values side by side. Add
-          multiple codes at once by separating them with commas.
-        </p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+        <p className="mt-1.5 text-muted-foreground">{t("description")}</p>
       </div>
 
       {/* Search form */}
-      <form onSubmit={handleSubmit} className='flex gap-2'>
-        <div className='relative flex-1'>
-          <ScanBarcode className='absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <div className="relative flex-1">
+          <ScanBarcode className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
-            placeholder='e.g. 5000112637922, 8076809513388'
-            aria-label='EAN barcodes'
-            className='pl-9'
+            placeholder={t("input.placeholder")}
+            aria-label={t("input.ariaLabel")}
+            className="pl-9"
           />
         </div>
-        <Button type='submit' disabled={loading} className='shrink-0'>
+        <Button type="submit" disabled={loading} className="shrink-0">
           {loading ? (
-            <Loader2 className='size-4 animate-spin' />
+            <Loader2 className="size-4 animate-spin" />
           ) : products.length > 0 ? (
-            'Add products'
+            t("addProducts")
           ) : (
-            'Look up'
+            t("lookUp")
           )}
         </Button>
         <Button
-          type='button'
-          variant='outline'
-          size='icon'
+          type="button"
+          variant="outline"
+          size="icon"
           disabled={loading}
           onClick={() => setScannerOpen(true)}
-          aria-label='Scan barcode'
-          className='shrink-0 px-5'
+          aria-label={t("scanBarcode")}
+          className="shrink-0 px-5"
         >
-          <ScanBarcode className='size-4' />
+          <ScanBarcode className="size-4" />
         </Button>
       </form>
       {scannerOpen && (
@@ -387,8 +387,8 @@ function ComparePageContent() {
 
       {/* Loading spinner */}
       {loading && (
-        <div className='mt-10 flex justify-center'>
-          <Loader2 className='size-6 animate-spin text-muted-foreground' />
+        <div className="mt-10 flex justify-center">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
         </div>
       )}
 
@@ -397,31 +397,31 @@ function ComparePageContent() {
           {/* Invalid format notice */}
           {invalidCodes.length > 0 && (
             <p
-              role='alert'
-              className='mt-3 flex items-center gap-1.5 text-sm text-warning'
+              role="alert"
+              className="mt-3 flex items-center gap-1.5 text-sm text-warning"
             >
-              <TriangleAlert className='size-4 shrink-0' aria-hidden='true' />
-              Invalid EAN format:{' '}
-              <span className='font-mono'>{invalidCodes.join(', ')}</span>
+              <TriangleAlert className="size-4 shrink-0" aria-hidden="true" />
+              {t("invalidFormat")}{" "}
+              <span className="font-mono">{invalidCodes.join(", ")}</span>
             </p>
           )}
 
           {/* Not-found notice */}
           {notFoundCodes.length > 0 && (
             <p
-              role='alert'
-              className='mt-3 flex items-center gap-1.5 text-sm text-warning'
+              role="alert"
+              className="mt-3 flex items-center gap-1.5 text-sm text-warning"
             >
-              <TriangleAlert className='size-4 shrink-0' aria-hidden='true' />
-              No product found for:{' '}
-              <span className='font-mono'>{notFoundCodes.join(', ')}</span>
+              <TriangleAlert className="size-4 shrink-0" aria-hidden="true" />
+              {t("notFound")}{" "}
+              <span className="font-mono">{notFoundCodes.join(", ")}</span>
             </p>
           )}
 
           {/* One-time hint to keep adding */}
           {products.length > 0 && (
-            <p className='mt-3 text-sm text-muted-foreground'>
-              Enter another barcode above to add a column.
+            <p className="mt-3 text-sm text-muted-foreground">
+              {t("addAnother")}
             </p>
           )}
         </>
@@ -429,7 +429,7 @@ function ComparePageContent() {
 
       {/* Results */}
       {!loading && products.length > 0 && (
-        <div className='mt-10'>
+        <div className="mt-10">
           <NutritionTable
             products={products}
             onDismiss={handleDismiss}
@@ -452,16 +452,16 @@ function ComparePageContent() {
             onRulesetChange={user ? handleRulesetChange : undefined}
             onReport={setReportCode}
           />
-          <p className='mt-4 text-xs text-muted-foreground'>
-            Data sourced from{' '}
+          <p className="mt-4 text-xs text-muted-foreground">
+            Data sourced from{" "}
             <a
-              href='https://world.openfoodfacts.org'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='inline-flex items-center gap-1 underline underline-offset-2 hover:text-foreground transition-colors'
+              href="https://world.openfoodfacts.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-foreground transition-colors"
             >
               Open Food Facts
-              <ExternalLink className='size-3' aria-hidden='true' />
+              <ExternalLink className="size-3" aria-hidden="true" />
             </a>
             , a free, collaborative database. Nutritional values may be
             incomplete or inaccurate.
@@ -476,32 +476,33 @@ function ComparePageContent() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Report product data</AlertDialogTitle>
+            <AlertDialogTitle>{t("report.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Report missing or incorrect product data? Your report is
-              anonymous.
+              {t("report.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <Button variant='outline' onClick={() => setReportCode(null)}>
-              Cancel
+            <Button variant="outline" onClick={() => setReportCode(null)}>
+              {t("report.cancel")}
             </Button>
             <Button
-              variant='warning'
+              variant="warning"
               disabled={reportLoading}
               onClick={async () => {
                 if (reportCode) {
                   setReportLoading(true);
-                  await submitReport(reportCode, 'incorrect data');
+                  await submitReport(reportCode, "incorrect data");
                   setReportLoading(false);
-                  toast.success('Report submitted');
+                  toast.success(t("toast.reportSubmitted"));
                 }
                 setReportCode(null);
               }}
             >
-              <span className='relative flex items-center justify-center'>
-                <span className={reportLoading ? 'invisible' : ''}>Confirm</span>
-                {reportLoading && <Loader2 className='animate-spin absolute' />}
+              <span className="relative flex items-center justify-center">
+                <span className={reportLoading ? "invisible" : ""}>
+                  {t("report.confirm")}
+                </span>
+                {reportLoading && <Loader2 className="animate-spin absolute" />}
               </span>
             </Button>
           </AlertDialogFooter>
@@ -510,30 +511,30 @@ function ComparePageContent() {
       <AlertDialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Name this comparison</AlertDialogTitle>
+            <AlertDialogTitle>{t("saveDialog.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Choose a name for your saved comparison.
+              {t("saveDialog.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <Input
-            className='my-2'
+            className="my-2"
             value={saveDialogName}
             onChange={(e) => setSaveDialogName(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && saveDialogName.trim())
+              if (e.key === "Enter" && saveDialogName.trim())
                 handleConfirmSaveComparison();
             }}
             autoFocus
           />
           <AlertDialogFooter>
-            <Button variant='outline' onClick={() => setSaveDialogOpen(false)}>
-              Cancel
+            <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
+              {t("saveDialog.cancel")}
             </Button>
             <Button
               onClick={handleConfirmSaveComparison}
               disabled={!saveDialogName.trim()}
             >
-              Save
+              {t("saveDialog.save")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

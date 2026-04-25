@@ -1,0 +1,751 @@
+{
+  "Metadata": {
+    "title": "Nutripare",
+    "description": "Make healthier food choices"
+  },
+  "Navbar": {
+    "home": "Home",
+    "compare": "Compare",
+    "help": "Help",
+    "accountSettings": "Account settings",
+    "signIn": "Sign in",
+    "toggleTheme": "Toggle theme",
+    "toggleLocale": "Switch language"
+  },
+  "Footer": {
+    "openFoodFacts": "Open Food Facts",
+    "privacyPolicy": "Privacy Policy",
+    "github": "GitHub repository"
+  },
+  "HomePage": {
+    "hero": {
+      "title1": "Know what you're eating.",
+      "title2": "Actually.",
+      "description": "Scan or enter a barcode and get clear nutritional info in seconds. Compare products, spot what matters, and make better choices — no guesswork.",
+      "startComparing": "Start comparing →",
+      "howItWorks": "How it works"
+    },
+    "features": {
+      "title": "What it does",
+      "subtitle": "Everything you need to make sense of a nutrition label, fast.",
+      "items": {
+        "scan": {
+          "title": "Scan or type a barcode",
+          "description": "Enter an EAN code or scan a product barcode to instantly pull up its full nutritional breakdown."
+        },
+        "glance": {
+          "title": "See what matters at a glance",
+          "description": "Key nutrients are flagged as good or bad so you know immediately what to watch out for."
+        },
+        "compare": {
+          "title": "Compare products side by side",
+          "description": "Add multiple products and see how they stack up against each other across every nutrient."
+        },
+        "sort": {
+          "title": "Sort by any nutrient",
+          "description": "Rank your comparison by protein, sugar, calories, or any other factor that matters to you."
+        }
+      }
+    },
+    "benefits": {
+      "title": "Even better with an account",
+      "subtitle": "Nutripare is free to use — no credit card, no catch.",
+      "items": {
+        "saveProducts": {
+          "title": "Save products",
+          "description": "Bookmark products you scan so you can find them again without re-entering the barcode."
+        },
+        "saveComparisons": {
+          "title": "Save comparisons",
+          "description": "Keep your comparison groups saved so you can revisit them any time."
+        },
+        "chooseNutrients": {
+          "title": "Choose your nutrients",
+          "description": "Decide which nutrients are highlighted — focus on what actually matters to your diet."
+        },
+        "buildProfiles": {
+          "title": "Build nutrition profiles",
+          "description": "Create named rulesets that define what matters to your diet — switch between them per comparison."
+        }
+      }
+    }
+  },
+  "ComparePage": {
+    "title": "Compare products",
+    "description": "Enter EAN barcodes to see nutritional values side by side. Add multiple codes at once by separating them with commas.",
+    "input": {
+      "placeholder": "e.g. 5000112637922, 8076809513388",
+      "ariaLabel": "EAN barcodes"
+    },
+    "scanBarcode": "Scan barcode",
+    "lookUp": "Look up",
+    "addProducts": "Add products",
+    "invalidFormat": "Invalid EAN format:",
+    "notFound": "No product found for:",
+    "addAnother": "Enter another barcode above to add a column.",
+    "dataSource": "Data sourced from {link}, a free, collaborative database. Nutritional values may be incomplete or inaccurate.",
+    "openFoodFacts": "Open Food Facts",
+    "report": {
+      "title": "Report product data",
+      "description": "Report missing or incorrect product data? Your report is anonymous.",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "saveDialog": {
+      "title": "Name this comparison",
+      "description": "Choose a name for your saved comparison.",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "toast": {
+      "productSaved": "Product saved",
+      "productAlreadySaved": "Product already saved",
+      "productSaveFailed": "Failed to save product",
+      "productRemoved": "Product removed",
+      "productRemoveFailed": "Failed to remove product",
+      "comparisonSaved": "Comparison saved",
+      "comparisonAlreadySaved": "Comparison already saved",
+      "comparisonSaveFailed": "Failed to save comparison",
+      "comparisonUpdated": "Comparison updated",
+      "comparisonUpdateFailed": "Failed to update comparison",
+      "comparisonRemoved": "Comparison removed",
+      "comparisonRemoveFailed": "Failed to remove comparison",
+      "rulesetUpdateFailed": "Failed to update ruleset",
+      "reportSubmitted": "Report submitted",
+      "linkCopied": "Link copied to clipboard",
+      "linkCopyFailed": "Failed to copy link"
+    }
+  },
+  "LoginPage": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signInDescription": "Sign in to your account",
+    "signUpDescription": "Create a new account"
+  },
+  "SettingsPage": {
+    "title": "Settings",
+    "logOut": "Log out",
+    "tabs": {
+      "account": "account",
+      "nutrition": "nutrition",
+      "products": "products",
+      "comparisons": "comparisons"
+    }
+  },
+  "AccountTab": {
+    "email": "Email",
+    "displayName": "Display name",
+    "saveName": "Save name",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "changePasswordBtn": "Change password",
+    "downloadData": "Download your data",
+    "downloadDataDescription": "Download a copy of your account data, saved products, comparisons, and nutrition settings.",
+    "downloadDataBtn": "Download data",
+    "deleteAccount": "Delete account",
+    "deleteAccountDescription": "This action is permanent and cannot be undone. All your saved products, comparisons, and settings will be deleted.",
+    "deleteAccountBtn": "Delete account",
+    "confirmWithGoogle": "You will be asked to confirm with Google.",
+    "enterPasswordToConfirm": "Enter your password to confirm",
+    "yourPassword": "Your password",
+    "yesDelete": "Yes, delete",
+    "cancel": "Cancel",
+    "toast": {
+      "displayNameUpdated": "Display name updated",
+      "displayNameFailed": "Failed to update display name",
+      "displayNameEmpty": "Display name cannot be empty",
+      "passwordUpdated": "Password updated",
+      "downloadFailed": "Failed to download data"
+    },
+    "error": {
+      "passwordMismatch": "New passwords do not match",
+      "passwordSame": "New password must differ from current password",
+      "wrongPassword": "Current password is incorrect",
+      "passwordFailed": "Failed to change password",
+      "incorrectPassword": "Incorrect password",
+      "deleteFailed": "Failed to delete account"
+    }
+  },
+  "NutritionTable": {
+    "perHundredG": "per 100g",
+    "unknownProduct": "Unknown product",
+    "productCount_one": "{count} product",
+    "productCount_other": "{count} products",
+    "expandTable": "Expand table",
+    "collapseTable": "Collapse table",
+    "moreOptions": "More options",
+    "rulesetLabel": "Ruleset:",
+    "rulesetNone": "None",
+    "updateComparison": "Update \"{name}\"",
+    "saveAsNew": "Save as new comparison",
+    "saveComparison": "Save comparison",
+    "deleteComparison": "Delete \"{name}\"",
+    "share": "Share",
+    "clearAll": "Clear all",
+    "unpinColumn": "Unpin column",
+    "optionsFor": "Options for {name}",
+    "unsaveProduct": "Unsave product",
+    "saveProduct": "Save product",
+    "pinColumn": "Pin column",
+    "report": "Report",
+    "remove": "Remove",
+    "noNutrients": "No nutrients visible. Enable some in Settings → Nutrition.",
+    "scoreTooltip": "Score from 0–100 based on your nutrition rules.",
+    "linkCopied": "Link copied to clipboard",
+    "linkCopyFailed": "Failed to copy link"
+  },
+  "NutritionTab": {
+    "visibleRows": "Visible rows",
+    "highlights": "Highlights",
+    "showCrown": "Show crown (👑)",
+    "showCrownDescription": "Marks the top result for nutrients with a 'Great' rule.",
+    "showFlag": "Show flag (🚩)",
+    "showFlagDescription": "Marks the worst result for nutrients with a 'Bad' rule.",
+    "rulesets": "Rulesets",
+    "searchRulesets": "Search rulesets…",
+    "noResultsSearch": "No rulesets match your search.",
+    "addRuleset": "Add ruleset",
+    "newRuleset": "New Ruleset",
+    "fromTemplate": "From template",
+    "rules": "Rules",
+    "save": "Save",
+    "saving": "Saving…",
+    "resetToDefaults": "Reset to defaults",
+    "editRuleset": "Edit ruleset",
+    "rulesetName": "Ruleset name",
+    "addRule": "Add rule",
+    "saveRuleset": "Save",
+    "deleteRuleset": "Delete ruleset",
+    "cancelEdit": "Cancel",
+    "nutrient": "Nutrient",
+    "direction": "Direction",
+    "value": "Value (g)",
+    "rating": "Rating",
+    "above": "above",
+    "below": "below",
+    "orEqualTo": "or equal to",
+    "is": "is",
+    "dragToReorder": "Drag to reorder",
+    "viewRuleset": "View ruleset",
+    "removeRule": "Remove rule",
+    "toast": {
+      "loadFailed": "Failed to load nutrition settings",
+      "saved": "Settings saved",
+      "saveFailed": "Failed to save settings",
+      "rulesetSaved": "Ruleset saved",
+      "rulesetSaveFailed": "Failed to save ruleset",
+      "rulesetDeleted": "Ruleset deleted",
+      "rulesetDeleteFailed": "Failed to delete ruleset",
+      "reset": "Settings reset to defaults",
+      "resetFailed": "Failed to reset settings"
+    },
+    "error": {
+      "valueRequired": "Value is required",
+      "duplicateRule": "A rule for {nutrient} / {rating} already exists",
+      "rulesetNameEmpty": "Ruleset name cannot be empty"
+    },
+    "deleteConfirm": {
+      "title": "Delete ruleset?",
+      "description": "This cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "resetConfirm": {
+      "title": "Reset all settings?",
+      "description": "This will restore all nutrition settings — visible rows, highlights, and rulesets — to their defaults. This cannot be undone.",
+      "cancel": "Cancel",
+      "reset": "Reset"
+    }
+  },
+  "ProductsTab": {
+    "searchPlaceholder": "Search by name or EAN…",
+    "name": "Name",
+    "ean": "EAN",
+    "actions": "Actions",
+    "viewProduct": "View {name}",
+    "unsaveProduct": "Unsave {name}",
+    "selectProduct": "Select {name}",
+    "compareSelected": "Compare",
+    "selectedCount": "{count} products selected",
+    "clearSelection": "Clear",
+    "noProducts": "No saved products yet.",
+    "noResults": "No products match your search.",
+    "toast": {
+      "loadFailed": "Failed to load products",
+      "unsaved": "Product removed",
+      "unsaveFailed": "Failed to remove product"
+    }
+  },
+  "ComparisonsTab": {
+    "searchPlaceholder": "Search by name or EAN…",
+    "name": "Name",
+    "codes": "EAN codes",
+    "actions": "Actions",
+    "viewComparison": "View {name}",
+    "unsaveComparison": "Unsave {name}",
+    "renameComparison": "Rename {name}",
+    "confirmRename": "Save name",
+    "cancelRename": "Cancel",
+    "noComparisons": "No saved comparisons yet.",
+    "noResults": "No comparisons match your search.",
+    "error": {
+      "nameEmpty": "Name cannot be empty"
+    },
+    "toast": {
+      "loadFailed": "Failed to load comparisons",
+      "renamed": "Comparison renamed",
+      "renameFailed": "Failed to rename comparison",
+      "unsaved": "Comparison removed",
+      "unsaveFailed": "Failed to remove comparison"
+    }
+  },
+  "AdminPage": {
+    "title": "Admin — Product Reports",
+    "loading": "Loading…",
+    "allStatuses": "All statuses",
+    "allReasons": "All reasons",
+    "changeStatus": "Change status",
+    "selected": "{count} selected",
+    "selectAll": "Select all",
+    "selectRow": "Select {code}",
+    "columns": {
+      "code": "Code",
+      "date": "Date",
+      "reason": "Reason",
+      "status": "Status",
+      "action": "Action"
+    },
+    "noReports": "No reports.",
+    "actionsFor": "Actions for {code}",
+    "page": "Page {page} of {total}",
+    "previous": "Previous",
+    "next": "Next",
+    "status": {
+      "open": "Open",
+      "solved": "Solved",
+      "dismissed": "Dismissed"
+    },
+    "reason": {
+      "incorrectData": "Incorrect data",
+      "missingProduct": "Missing product"
+    }
+  },
+  "AuthActionPage": {
+    "verifying": "Verifying…",
+    "verifyingDescription": "Just a moment while we confirm your email address.",
+    "verified": "Email verified",
+    "verifiedDescription": "Your email address has been confirmed. You're all set.",
+    "goToApp": "Go to app",
+    "linkInvalid": "Link invalid",
+    "linkInvalidDescription": "This verification link has expired or already been used. Sign in and request a new one from the verification screen.",
+    "goToSignIn": "Go to sign in"
+  },
+  "ErrorPage": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred.",
+    "tryAgain": "Try again",
+    "goHome": "Go home"
+  },
+  "NotFoundPage": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist.",
+    "goHome": "Go home"
+  },
+  "PrivacyPage": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: March 2026",
+    "sections": {
+      "responsible": {
+        "title": "Who is responsible for your data",
+        "content": "Nutripare is operated by Ioana Tiplea. If you have any questions about your data or want to make a request, you can contact me at <email>ioanatiplea94@gmail.com</email>."
+      },
+      "collected": {
+        "title": "What data we collect and why",
+        "noAccount": "Nutripare can be used without an account — no data is collected from signed-out users.",
+        "withAccount": "If you create an account, we collect and store the following:",
+        "items": {
+          "emailAndName": {
+            "label": "Email address and display name",
+            "description": "used to identify your account and personalise the experience."
+          },
+          "savedData": {
+            "label": "Saved products and comparisons",
+            "description": "food products and comparisons you choose to save for future reference."
+          },
+          "nutritionSettings": {
+            "label": "Nutrition settings",
+            "description": "your custom nutrition rules, visible nutrients, and display preferences."
+          }
+        },
+        "noTracking": "We do not collect any data beyond what is listed above. We do not use analytics, advertising, or tracking of any kind."
+      },
+      "storage": {
+        "title": "How your data is stored",
+        "content": "Your data is stored using Firebase Authentication and Firestore, services provided by Google. Google acts as a data processor on our behalf and is bound by appropriate data processing terms. You can read more in <link>Firebase's privacy documentation</link>.",
+        "linkText": "Firebase's privacy documentation"
+      },
+      "retention": {
+        "title": "How long we keep your data",
+        "content": "Your data is kept for as long as your account exists. When you delete your account, all associated data — including saved products, comparisons, and settings — is permanently deleted immediately."
+      },
+      "rights": {
+        "title": "Your rights",
+        "intro": "Under GDPR (and equivalent laws), you have the right to access, correct, export, and delete your personal data. Nutripare gives you direct control over all of this from the Settings page:",
+        "items": {
+          "download": {
+            "label": "Download your data",
+            "description": "export a full copy of everything stored about you as a JSON file."
+          },
+          "update": {
+            "label": "Update your details",
+            "description": "change your display name or password at any time."
+          },
+          "delete": {
+            "label": "Delete your account",
+            "description": "permanently removes your account and all associated data."
+          }
+        },
+        "contact": "If you need help exercising any of these rights, contact me at <email>ioanatiplea94@gmail.com</email>."
+      },
+      "cookies": {
+        "title": "Cookies",
+        "content": "Nutripare does not use cookies. Authentication state is stored in your browser's IndexedDB, which is not a cookie and is not shared with any third party."
+      },
+      "changes": {
+        "title": "Changes to this policy",
+        "content": "If this policy changes in a meaningful way, the date at the top of this page will be updated. We will not retroactively reduce your rights without notice."
+      }
+    }
+  },
+  "HelpPage": {
+    "title": "User Guide",
+    "toc": {
+      "onThisPage": "On this page",
+      "sections": "{count} sections"
+    },
+    "sections": {
+      "overview": {
+        "title": "Overview",
+        "p1": "Nutripare lets you look up food products by EAN barcode, display their nutritional values side by side, and highlight differences based on configurable rules. Enter one or more barcodes on the Compare page and instantly see how products stack up across protein, sugar, fat, salt, and more.",
+        "p2": "Product data comes from <link>Open Food Facts</link>, a free collaborative database maintained by volunteers. Values may be incomplete or inaccurate — always verify important information against the physical product label."
+      },
+      "searching": {
+        "title": "Searching for Products",
+        "p1": "EAN barcodes are entered into the search field on the Compare page. Valid codes are 8, 12, or 13 digits long — shorter or longer values are rejected immediately.",
+        "p2": "You can enter a single EAN to look up one product, or enter multiple EANs at once by separating them with commas: <example>5000112637922, 8076809513388</example>. After the first product loads, additional products can be added one at a time or in bulk using the same input field — they are appended as new columns in the table.",
+        "p3Pre": "The ",
+        "p3Mid": "barcode scanner button",
+        "p3Post": " opens the device camera to scan a physical barcode. Low-resolution webcams can produce inconsistent results, so manual entry is recommended as a fallback if scanning is unreliable.",
+        "errors": "Two error states are displayed in amber below the input:",
+        "invalidFormat": "Invalid EAN format",
+        "invalidFormatDesc": "the code is not a valid 8, 12, or 13-digit EAN.",
+        "notFound": "Product not found",
+        "notFoundDesc": "the code is valid but no matching product exists in Open Food Facts."
+      },
+      "nutritionTable": {
+        "title": "The Nutrition Table",
+        "p1": "Each product appears as a column. All values are per 100g.",
+        "colorCoding": "Color coding",
+        "colors": {
+          "green": {
+            "label": "Green (great)",
+            "desc": "the value meets a \"great\" threshold rule."
+          },
+          "blue": {
+            "label": "Blue (good)",
+            "desc": "the value meets a \"good\" threshold rule."
+          },
+          "amber": {
+            "label": "Amber (concerning)",
+            "desc": "the value meets a \"concerning\" threshold rule."
+          },
+          "red": {
+            "label": "Red (bad)",
+            "desc": "the value meets a \"bad\" threshold rule."
+          },
+          "none": {
+            "label": "No color",
+            "desc": "the value does not match any rule, or no rules are defined for that nutrient."
+          }
+        },
+        "emojis": "Emoji flags",
+        "crown": "Crown (👑)",
+        "crownDesc": "shown on the best value across products for a nutrient that has a \"great\" rule.",
+        "flag": "Red flag (🚩)",
+        "flagDesc": "shown on the worst value across products for a nutrient that has a \"bad\" rule.",
+        "emojiNote": "Emojis only appear when comparing two or more products, and can be hidden in Settings.",
+        "defaultThresholds": "Default thresholds",
+        "defaultThresholdsDesc": "The app ships with a built-in default ruleset based on the <highlight>UK Food Standards Agency (FSA) per-100g traffic light thresholds</highlight>, which are also widely used across the EU for front-of-pack nutrition labeling. These defaults apply to signed-out users and to signed-in users who have not yet customized their settings.",
+        "fsaHighlight": "UK Food Standards Agency (FSA) per-100g traffic light thresholds",
+        "tableHeaders": {
+          "nutrient": "Nutrient",
+          "threshold": "Threshold",
+          "value": "Value (per 100g)",
+          "rating": "Rating"
+        },
+        "builtinRulesets": "Built-in rulesets",
+        "builtinRulesetsDesc": "In addition to the Default ruleset above, the app ships with five focused rulesets. Each one scores products based on a specific nutritional goal.",
+        "sorting": "Sorting",
+        "sortingDesc": "Clicking any row label sorts all product columns by that nutrient, highest to lowest. Clicking again reverses the sort. The active sort column is highlighted and shows an arrow indicator.",
+        "computedScore": "Computed Score",
+        "computedScoreDesc": "A single 0–100 score calculated from the active ruleset appears at the bottom of the table. It reflects how well a product performs across all rules — positive rules raise the score, negative rules lower it. Hovering the help icon next to the label shows a brief tooltip.",
+        "scoreFormula": "The score is computed as follows:",
+        "scoreStep1": "For each rule that fires (the product's value meets the rule's condition), a weighted contribution is calculated. The weight depends on the rating: Great = +3, Good = +1, Concerning = −1, Bad = −3.",
+        "scoreStep2": "The contribution is scaled by how far the value exceeds the threshold: <formula>weight × log(1 + distance / max(threshold, 1))</formula>, where distance is <distance>|value − threshold|</distance>.",
+        "scoreStep3": "All contributions are summed into a raw score, then mapped to the 0–100 range using: <formula>round(50 × (1 + tanh(rawScore / 3)))</formula>, clamped to [0, 100].",
+        "scoreNote": "A score of 50 is neutral (no rules fire). Scores above 50 indicate a generally healthy profile under the active ruleset; scores below 50 indicate the opposite. Nutrients with missing values are skipped and do not affect the score."
+      },
+      "tableActions": {
+        "title": "Table Actions",
+        "expandDesc": "On desktop, the <icon></icon> expand button in the toolbar widens the table to fit all product columns (up to the full viewport width). Click it again to collapse back. Your preference is remembered across sessions.",
+        "menuDesc": "The <icon></icon> menu in the top-right of the table gives access to table-wide actions:",
+        "switchRuleset": "Switch ruleset",
+        "switchRulesetDesc": "(signed-in users) — changes which ruleset is used for highlights and scoring.",
+        "saveUpdate": "Save comparison / Update comparison / Save as new comparison",
+        "saveUpdateDesc": "see Saving below.",
+        "shareAction": "Share",
+        "shareActionDesc": "copies a shareable URL for the current set of products to the clipboard.",
+        "clearAllAction": "Clear all",
+        "clearAllActionDesc": "removes all products from the table.",
+        "perColumnMenu": "Each product column also has its own <icon></icon> menu with:",
+        "saveProductAction": "Save product / Unsave product",
+        "saveProductDesc": "(signed-in users only).",
+        "pinAction": "Pin column / Unpin column",
+        "pinDesc": "sticks the column to the left of the table so it stays visible when scrolling horizontally. Only one column can be pinned at a time; selecting another column's pin option moves the pin. A filled pin icon appears in the column header while it is pinned.",
+        "shareColumn": "Share",
+        "shareColumnDesc": "copies a shareable URL for just that product.",
+        "removeAction": "Remove",
+        "removeDesc": "removes the product column from the table.",
+        "reportAction": "Report",
+        "reportDesc": "shown in amber. Opens a confirmation dialog to flag the product's data as missing or incorrect. Reports are anonymous."
+      },
+      "saving": {
+        "title": "Saving Products and Comparisons",
+        "p1": "Signed-in users can save individual products via the per-column menu. Saved products are stored in the Products tab under Settings.",
+        "p2": "Signed-in users can save the current set of two or more products as a named comparison. A dialog prompts for a name (pre-filled with a suggestion). Saved comparisons appear in the Comparisons tab under Settings.",
+        "p3": "When a saved comparison is loaded (via the Comparisons tab or a shared URL), the table shows its name and tracks whether the products have been modified since loading. If modified, the <icon></icon> menu offers <update>Update comparison</update> (overwrite) or <saveAsNew>Save as new comparison</saveAsNew>.",
+        "p4": "To delete a saved comparison from the table view, use <delete>Delete comparison</delete> in the <icon></icon> menu. To unsave an individual product, use <unsave>Unsave product</unsave> in the per-column menu."
+      },
+      "settingsAccount": {
+        "title": "Settings — Account",
+        "content": "The Account tab lets you manage your signed-in account: update your display name, change your email address, set a new password, and sign out."
+      },
+      "settingsNutrition": {
+        "title": "Settings — Nutrition",
+        "visibleRows": "Visible rows",
+        "visibleRowsDesc": "checkboxes control which nutrient rows appear in the table. The drag handle to the left of each row allows reordering — the order is reflected in the table.",
+        "highlights": "Highlights",
+        "highlightsDesc": "two toggles, \"Show crown (👑)\" and \"Show flag (🚩)\", enable or disable the emoji indicators globally.",
+        "rulesets": "Rulesets",
+        "rulesetsDesc": "a list of saved rulesets. Each ruleset defines which nutrients are highlighted and how. New accounts start with six built-in rulesets: Default, Low Carb, High Protein, High Fiber, Low Fat, and Low Salt. Use the search box to filter by name; drag handles allow reordering the list.",
+        "eyeIcon": "eye icon",
+        "eyeIconDesc": "opens the ruleset editor.",
+        "trashIcon": "trash icon",
+        "trashIconDesc": "(with confirmation) deletes the ruleset.",
+        "addRuleset": "Add ruleset",
+        "addRulesetDesc": "opens a dropdown with two options: <newRuleset>New ruleset</newRuleset> creates a blank ruleset and opens the editor immediately, and <fromTemplate>From template</fromTemplate> lets you restore any of the six built-in rulesets individually.",
+        "editorTitle": "In the ruleset editor:",
+        "editorItems": {
+          "editName": "The ruleset name is editable inline at the top.",
+          "ruleFields": "Each rule defines: nutrient, direction (above/below), threshold value, and rating (great / good / concerning / bad).",
+          "reorder": "Rules can be reordered by dragging. This is purely for organizational purposes and does not affect the scoring.",
+          "addRule": "Add rule",
+          "addRuleDesc": "appends a new blank rule row.",
+          "save": "Save",
+          "saveDesc": "persists the ruleset.",
+          "deleteRuleset": "Delete ruleset",
+          "deleteRulesetDesc": "removes it (with confirmation); disabled for newly created unsaved rulesets.",
+          "cancel": "Cancel",
+          "cancelDesc": "discards unsaved changes; cancelling a new ruleset also removes it from the list."
+        },
+        "saveNote": "All changes — visible rows, row order, highlight toggles, and ruleset edits — are saved using the <save>Save</save> button at the bottom of the tab. <reset>Reset to defaults</reset> (next to Save) restores all nutrition settings to their original state, including the six built-in rulesets."
+      },
+      "settingsProducts": {
+        "title": "Settings — Products",
+        "p1": "Lists all saved products in a searchable table. Search by name or EAN to filter the list.",
+        "viewButton": "view button",
+        "viewButtonDesc": "opens the product on the Compare page in a new tab.",
+        "unsaveButton": "unsave button",
+        "unsaveButtonDesc": "removes the product from your saved list.",
+        "compareNote": "Checking two or more products enables a <compare>Compare</compare> button at the bottom that opens those products on the Compare page in a new tab."
+      },
+      "settingsComparisons": {
+        "title": "Settings — Comparisons",
+        "p1": "Lists all saved comparisons in a searchable table. Search by name or EAN to filter the list. Each row shows the comparison name and the EAN codes it contains.",
+        "pencilIcon": "pencil icon",
+        "pencilIconDesc": "puts the row into rename mode — confirm with the checkmark or cancel with the X.",
+        "viewButton": "view button",
+        "viewButtonDesc": "opens the comparison on the Compare page in a new tab.",
+        "unsaveButton": "unsave button",
+        "unsaveButtonDesc": "removes the comparison from your saved list."
+      },
+      "accountFeatures": {
+        "title": "Signed-in vs. Signed-out",
+        "signedOut": "Signed out",
+        "signedIn": "Signed in",
+        "features": {
+          "searchCompare": "Search and compare products",
+          "colorCoded": "Color-coded nutrition highlights",
+          "sorting": "Table sorting",
+          "share": "Share products and comparisons via URL",
+          "saveProducts": "Save and manage products",
+          "saveComparisons": "Save and manage comparisons",
+          "createRulesets": "Create and customize rulesets",
+          "controlRows": "Control visible rows and order",
+          "toggleIndicators": "Toggle crown and flag indicators",
+          "switchRulesets": "Switch rulesets on the Compare page",
+          "syncSettings": "Settings synced across devices"
+        }
+      },
+      "faq": {
+        "title": "FAQ",
+        "scanning": "Scanning & Products",
+        "questions": {
+          "barcodeNotRecognized": {
+            "q": "Why isn't my barcode being recognized?",
+            "a": "Nutripare accepts EAN barcodes that are 8, 12, or 13 digits long. Shorter or longer values are rejected immediately. If your code is the right length but still fails, the product may not exist in the Open Food Facts database — try searching for it directly on <link>Open Food Facts</link>."
+          },
+          "dataSource": {
+            "q": "Where does the product data come from?",
+            "a": "All product data comes from <link>Open Food Facts</link>, a free collaborative database maintained by volunteers worldwide. Values may be incomplete or inaccurate — always verify important nutritional information against the physical product label."
+          },
+          "missingProduct": {
+            "q": "Can I add a product that isn't in the database?",
+            "a": "Not directly through Nutripare. If a product is missing, you can contribute it to Open Food Facts using their website or mobile app — once added there, it will be available in Nutripare too."
+          },
+          "storeBarcodes": {
+            "q": "Why doesn't my supermarket's barcode work?",
+            "a": "Some barcodes are generated in-store and are not registered in any public database. The most common are price-embedded barcodes (starting with 02 or 20-29) which encode the weight or price rather than a product identity."
+          },
+          "inaccurateData": {
+            "q": "The nutritional data looks wrong. What should I do?",
+            "a": "You can report it using the Report option in the product column menu. This flags the product for review. For the most accurate values, always check the physical product label."
+          }
+        },
+        "scoring": "Scoring",
+        "scoringQuestions": {
+          "scoreMeaning": {
+            "q": "What does the nutrition score actually measure?",
+            "a": "The score (0–100) is built from your nutrition rules, each of which has a direction and a rating. Great and good rules (e.g. protein above 20g) push the score up when they fire; caution and bad rules (e.g. sugar above 22.5g) push it down. The further a value is past its threshold, the larger the contribution. A product where no rules fire at all scores exactly 50. The score is entirely driven by your personal rules — changing thresholds, directions, or ratings will change it."
+          },
+          "lowScore": {
+            "q": "Why does a product I think is healthy have a low score?",
+            "a": "The score is only as good as the rules behind it. If a nutrient has a strict threshold and the product exceeds it — even slightly — it will drag the score down. You can review and adjust your thresholds in Settings → Nutrition to better reflect your own dietary priorities."
+          },
+          "similarScores": {
+            "q": "Why do two products with similar nutrition have very different scores?",
+            "a": "The score is non-linear — exceeding a threshold has a larger impact the further over it you go. A product that is slightly over on many nutrients can score very differently from one that is well within limits on most but heavily over on one. Weights assigned to each nutrient in your rules also affect the balance."
+          }
+        },
+        "comparisons": "Comparisons & Settings",
+        "comparisonsQuestions": {
+          "compareLimit": {
+            "q": "Can I compare more than two products at once?",
+            "a": "Yes — there is no hard limit. You can add as many products as you like by entering additional barcodes into the search field. Each new product is appended as a new column in the table. Keep in mind that comparing a large number of products at once may affect performance."
+          },
+          "saveDifference": {
+            "q": "What's the difference between saving a product and saving a comparison?",
+            "a": "Saving a product bookmarks a single item so you can quickly load it again later from the Products tab in Settings. Saving a comparison saves the full set of products currently in the table together, so you can restore the entire comparison in one step from the Comparisons tab."
+          },
+          "rulesUpdate": {
+            "q": "If I change my nutrition rules, do my old comparisons update?",
+            "a": "Scores and highlights are calculated live each time you load a comparison, so they always reflect your current rules. However, if a comparison was saved with a specific ruleset, it will load using that ruleset by default — you can switch rulesets from the table header."
+          },
+          "resetSettings": {
+            "q": "What does \"Reset to defaults\" do?",
+            "a": "The Reset to defaults button at the bottom of the Nutrition tab restores all nutrition settings to their original state — visible rows, row order, highlight toggles, and all rulesets (Default, Low Carb, High Protein, High Fiber, Low Fat, Low Salt). Any custom rulesets or changes you've made will be lost. If you only want to restore a specific built-in ruleset without affecting everything else, use Add ruleset → From template instead."
+          }
+        },
+        "account": "Account & Settings",
+        "accountQuestions": {
+          "deleteData": {
+            "q": "How do I delete my data?",
+            "a": "Go to Settings → Account and use the Delete account button. This permanently removes your account and all associated data immediately."
+          },
+          "exportData": {
+            "q": "Can I export my data?",
+            "a": "Yes — in Settings → Account, use the Download data button to get a full JSON export of your account information, saved products, comparisons, and nutrition settings."
+          },
+          "rulesetLost": {
+            "q": "I accidentally deleted a ruleset. Can I restore it?",
+            "a": "Yes, if it was one of the six built-in rulesets. Go to Settings → Nutrition, click Add ruleset, then choose From template to restore any of them individually."
+          },
+          "googleAccount": {
+            "q": "I signed in with Google — can I set a password?",
+            "a": "Not currently. Google accounts use Google's authentication and don't support a separate Nutripare password."
+          },
+          "needAccount": {
+            "q": "Do I need an account to use the app?",
+            "a": "No. You can look up products and compare them without signing in. An account is only needed if you want to save products, save comparisons, or sync your nutrition settings across devices."
+          },
+          "dataStored": {
+            "q": "What data is stored when I create an account?",
+            "a": "Only what you explicitly create: your email address, display name, saved products, saved comparisons, and nutrition settings. No tracking, analytics, or advertising data is collected."
+          },
+          "multipleDevices": {
+            "q": "Can I use the app on multiple devices?",
+            "a": "Yes. Your saved products, comparisons, and nutrition settings are stored in the cloud and will be available on any device you sign in to."
+          }
+        }
+      }
+    }
+  },
+  "nutrients": {
+    "kcals": "Calories (kcal)",
+    "protein": "Protein (g)",
+    "carbohydrates": "Carbohydrates (g)",
+    "sugar": "Sugar (g)",
+    "fat": "Fat (g)",
+    "saturated_fat": "Saturated Fat (g)",
+    "fiber": "Fiber (g)",
+    "salt": "Salt (g)",
+    "computed_score": "Computed Score"
+  },
+  "rulesets": {
+    "default": {
+      "name": "Default",
+      "description": "Default ruleset based on UK FSA traffic light thresholds."
+    },
+    "low-carb": {
+      "name": "Low Carb",
+      "description": "Focuses on carbohydrate and sugar content."
+    },
+    "high-protein": {
+      "name": "High Protein",
+      "description": "Focuses on protein content only."
+    },
+    "high-fiber": {
+      "name": "High Fiber",
+      "description": "Focuses on fiber content only."
+    },
+    "low-fat": {
+      "name": "Low Fat",
+      "description": "Focuses on fat and saturated fat content."
+    },
+    "low-salt": {
+      "name": "Low Salt",
+      "description": "Focuses on salt content only."
+    }
+  },
+  "ratings": {
+    "positive": "Great",
+    "info": "Good",
+    "warning": "Concerning",
+    "negative": "Bad"
+  },
+  "helpSections": {
+    "overview": "Overview",
+    "searching": "Searching for Products",
+    "nutrition-table": "The Nutrition Table",
+    "table-actions": "Table Actions",
+    "saving": "Saving Products and Comparisons",
+    "settings-account": "Settings — Account",
+    "settings-nutrition": "Settings — Nutrition",
+    "settings-products": "Settings — Products",
+    "settings-comparisons": "Settings — Comparisons",
+    "account-features": "Signed-in vs. Signed-out",
+    "faq": "FAQ"
+  }
+}

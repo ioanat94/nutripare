@@ -1,7 +1,7 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
-@import '@firebase-oss/ui-styles/tailwind';
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@firebase-oss/ui-styles/tailwind";
 
 /* Firebase UI's @variant dark uses :root:is(.dark *) which never matches with
    class-based dark mode. Override the fui variables here so they inherit from
@@ -154,17 +154,17 @@
   }
 }
 
-[data-sonner-toast][data-type='success'],
-[data-sonner-toast][data-type='success'] * {
+[data-sonner-toast][data-type="success"],
+[data-sonner-toast][data-type="success"] * {
   color: var(--positive-foreground) !important;
 }
 
-[data-sonner-toast][data-type='error'],
-[data-sonner-toast][data-type='error'] * {
+[data-sonner-toast][data-type="error"],
+[data-sonner-toast][data-type="error"] * {
   color: var(--destructive-foreground) !important;
 }
 
-[data-sonner-toast][data-type='info'],
-[data-sonner-toast][data-type='info'] * {
+[data-sonner-toast][data-type="info"],
+[data-sonner-toast][data-type="info"] * {
   color: var(--info-foreground) !important;
 }

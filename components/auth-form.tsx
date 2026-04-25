@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { FirebaseUIError, getTranslation } from '@firebase-oss/ui-core';
+import { FirebaseUIError, getTranslation } from "@firebase-oss/ui-core";
 import {
   Form,
   FormControl,
@@ -8,39 +8,39 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from "@/components/ui/form";
 import {
   useSignInAuthFormAction,
   useSignUpAuthFormAction,
   useUI,
-} from '@firebase-oss/ui-react';
+} from "@firebase-oss/ui-react";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { PasswordInput } from '@/components/ui/password-input';
-import { Policies } from './policies';
-import { auth } from '@/lib/firebase';
-import { sendEmailVerification } from 'firebase/auth';
-import { useForm } from 'react-hook-form';
-import { useMemo } from 'react';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { Policies } from "./policies";
+import { auth } from "@/lib/firebase";
+import { sendEmailVerification } from "firebase/auth";
+import { useForm } from "react-hook-form";
+import { useMemo } from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type Schema = { email: string; password: string; confirmPassword: string };
 
-const CONFIRM_PASSWORD_LABEL = 'Confirm password';
-const HAVE_ACCOUNT_PROMPT = 'Already have an account? Sign in';
+const CONFIRM_PASSWORD_LABEL = "Confirm password";
+const HAVE_ACCOUNT_PROMPT = "Already have an account? Sign in";
 
-function buildSchema(mode: 'signIn' | 'signUp') {
+function buildSchema(mode: "signIn" | "signUp") {
   const passwordSchema =
-    mode === 'signUp'
+    mode === "signUp"
       ? z
           .string()
-          .min(8, 'Must be at least 8 characters.')
-          .regex(/[A-Z]/, 'Must contain at least one uppercase letter.')
-          .regex(/[a-z]/, 'Must contain at least one lowercase letter.')
-          .regex(/[0-9]/, 'Must contain at least one number.')
-          .regex(/[^A-Za-z0-9]/, 'Must contain at least one special character.')
+          .min(8, "Must be at least 8 characters.")
+          .regex(/[A-Z]/, "Must contain at least one uppercase letter.")
+          .regex(/[a-z]/, "Must contain at least one lowercase letter.")
+          .regex(/[0-9]/, "Must contain at least one number.")
+          .regex(/[^A-Za-z0-9]/, "Must contain at least one special character.")
       : z.string().min(1);
 
   const base = z.object({
@@ -49,17 +49,17 @@ function buildSchema(mode: 'signIn' | 'signUp') {
     confirmPassword: z.string(),
   });
 
-  if (mode === 'signUp') {
+  if (mode === "signUp") {
     return base.refine((d) => d.password === d.confirmPassword, {
-      message: 'Passwords do not match.',
-      path: ['confirmPassword'],
+      message: "Passwords do not match.",
+      path: ["confirmPassword"],
     });
   }
   return base;
 }
 
 interface AuthFormProps {
-  mode: 'signIn' | 'signUp';
+  mode: "signIn" | "signUp";
   onModeToggle?: () => void;
   onForgotPasswordClick?: () => void;
 }
@@ -76,12 +76,12 @@ export function AuthForm({
 
   const form = useForm<Schema>({
     resolver: zodResolver(schema),
-    defaultValues: { email: '', password: '', confirmPassword: '' },
+    defaultValues: { email: "", password: "", confirmPassword: "" },
   });
 
   async function onSubmit(values: Schema) {
     try {
-      if (mode === 'signIn') {
+      if (mode === "signIn") {
         await signInAction({ email: values.email, password: values.password });
       } else {
         await signUpAction({ email: values.email, password: values.password });
@@ -98,7 +98,7 @@ export function AuthForm({
         error instanceof FirebaseUIError
           ? error.message
           : String((error as Error).message ?? error);
-      form.setError('root', { message });
+      form.setError("root", { message });
     }
   }
 
@@ -106,21 +106,21 @@ export function AuthForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className='flex flex-col gap-y-4'
+        className="flex flex-col gap-y-4"
       >
         <FormField
           control={form.control}
-          name='email'
+          name="email"
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                {getTranslation(ui, 'labels', 'emailAddress')}
+                {getTranslation(ui, "labels", "emailAddress")}
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  type='email'
-                  className='h-10 bg-transparent dark:bg-transparent'
+                  type="email"
+                  className="h-10 bg-transparent dark:bg-transparent"
                 />
               </FormControl>
               <FormMessage />
@@ -129,22 +129,22 @@ export function AuthForm({
         />
         <FormField
           control={form.control}
-          name='password'
+          name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className='flex items-center gap-2'>
-                <span className='grow'>
-                  {getTranslation(ui, 'labels', 'password')}
+              <FormLabel className="flex items-center gap-2">
+                <span className="grow">
+                  {getTranslation(ui, "labels", "password")}
                 </span>
-                {mode === 'signIn' && onForgotPasswordClick ? (
+                {mode === "signIn" && onForgotPasswordClick ? (
                   <Button
-                    type='button'
-                    variant='link'
-                    size='sm'
+                    type="button"
+                    variant="link"
+                    size="sm"
                     onClick={onForgotPasswordClick}
                   >
-                    <span className='text-xs'>
-                      {getTranslation(ui, 'labels', 'forgotPassword')}
+                    <span className="text-xs">
+                      {getTranslation(ui, "labels", "forgotPassword")}
                     </span>
                   </Button>
                 ) : null}
@@ -152,24 +152,24 @@ export function AuthForm({
               <FormControl>
                 <PasswordInput
                   {...field}
-                  className='h-10 bg-transparent dark:bg-transparent'
+                  className="h-10 bg-transparent dark:bg-transparent"
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        {mode === 'signUp' ? (
+        {mode === "signUp" ? (
           <FormField
             control={form.control}
-            name='confirmPassword'
+            name="confirmPassword"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{CONFIRM_PASSWORD_LABEL}</FormLabel>
                 <FormControl>
                   <PasswordInput
                     {...field}
-                    className='h-10 bg-transparent dark:bg-transparent'
+                    className="h-10 bg-transparent dark:bg-transparent"
                   />
                 </FormControl>
                 <FormMessage />
@@ -179,29 +179,29 @@ export function AuthForm({
         ) : null}
         <Policies />
         <Button
-          type='submit'
-          size='lg'
-          className='w-full'
-          disabled={ui.state !== 'idle'}
+          type="submit"
+          size="lg"
+          className="w-full"
+          disabled={ui.state !== "idle"}
         >
-          {mode === 'signIn'
-            ? getTranslation(ui, 'labels', 'signIn')
-            : getTranslation(ui, 'labels', 'signUp')}
+          {mode === "signIn"
+            ? getTranslation(ui, "labels", "signIn")
+            : getTranslation(ui, "labels", "signUp")}
         </Button>
         {form.formState.errors.root?.message && (
           <FormMessage>{form.formState.errors.root.message}</FormMessage>
         )}
         {onModeToggle ? (
           <Button
-            type='button'
-            variant='ghost'
-            size='sm'
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={onModeToggle}
-            className='text-muted-foreground hover:text-muted-foreground'
+            className="text-muted-foreground hover:text-muted-foreground"
           >
-            <span className='text-xs'>
-              {mode === 'signIn'
-                ? `${getTranslation(ui, 'prompts', 'noAccount')} ${getTranslation(ui, 'labels', 'signUp')}`
+            <span className="text-xs">
+              {mode === "signIn"
+                ? `${getTranslation(ui, "prompts", "noAccount")} ${getTranslation(ui, "labels", "signUp")}`
                 : HAVE_ACCOUNT_PROMPT}
             </span>
           </Button>

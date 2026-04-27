@@ -28,10 +28,12 @@ type Messages = {
   goToSignIn: string;
 };
 
-function getLocaleFromCookie(): string {
-  if (typeof document === "undefined") return "en";
-  const match = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]*)/);
-  return match?.[1] === "fi" ? "fi" : "en";
+function getLocaleFromStorage(): string {
+  try {
+    return localStorage.getItem("nutripare-locale") === "fi" ? "fi" : "en";
+  } catch {
+    return "en";
+  }
 }
 
 const EN_MESSAGES: Messages = {
@@ -50,7 +52,7 @@ const FI_MESSAGES: Messages = {
   verifying: "Vahvistetaan…",
   verifyingDescription: "Odota hetki, vahvistamme sähköpostiosoitettasi.",
   verified: "Sähköposti vahvistettu",
-  verifiedDescription: "Sähköpostiosoitteesi on vahvistettu. Olet valmis.",
+  verifiedDescription: "Sähköpostiosoitteesi on vahvistettu. Kaikki valmista.",
   goToApp: "Siirry sovellukseen",
   linkInvalid: "Linkki virheellinen",
   linkInvalidDescription:
@@ -70,7 +72,7 @@ function ActionContent() {
   const [msgs, setMsgs] = useState<Messages>(EN_MESSAGES);
 
   useEffect(() => {
-    const locale = getLocaleFromCookie();
+    const locale = getLocaleFromStorage();
     setMsgs(locale === "fi" ? FI_MESSAGES : EN_MESSAGES);
   }, []);
 
@@ -86,12 +88,12 @@ function ActionContent() {
   }, [mode, oobCode]);
 
   function handleGoToApp() {
-    const locale = getLocaleFromCookie();
+    const locale = getLocaleFromStorage();
     router.push(`/${locale}/`);
   }
 
   function handleGoToSignIn() {
-    const locale = getLocaleFromCookie();
+    const locale = getLocaleFromStorage();
     router.push(`/${locale}/login`);
   }
 

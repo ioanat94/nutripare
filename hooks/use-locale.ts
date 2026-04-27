@@ -1,8 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
-import { useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
+
+import { useLocale } from "next-intl";
+import { useTransition } from "react";
 
 export function useLocaleToggle() {
   const locale = useLocale();
@@ -12,7 +13,6 @@ export function useLocaleToggle() {
 
   function toggleLocale() {
     const next = locale === "en" ? "fi" : "en";
-    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=${60 * 60 * 24 * 365}`;
     try {
       localStorage.setItem("nutripare-locale", next);
     } catch {
